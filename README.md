@@ -17,19 +17,20 @@
 
 ---
 
-## 🔄 Sprint 1 – Planejamento inicial, Infraestrutura e Preparação  
+<details>
+<summary><b>🔄 Sprint 1 – Planejamento inicial, Infraestrutura e Preparação</b></summary>
 
 ### 📅 Período  
 ### 🎯 Objetivos Principais  
 
-<details open>  
+<details>  
 <summary>📌 Histórias Selecionadas para a Sprint 1</summary>  
 </details>  
 
-- História 2 – Desenvolvimento do Front-End -  
-- História 3 – Desenvolvimento do Front-End -   
-- História 4 – Desenvolvimento do Front-End - 
-- História 5 – Desenvolvimento do Front-End - 
+- História 2 – Desenvolvimento do Front-End  
+- História 3 – Desenvolvimento do Front-End  
+- História 4 – Desenvolvimento do Front-End  
+- História 5 – Desenvolvimento do Front-End  
 - História 6 – Interatividade de Ambientes  
 
 ### 📋 Requisitos da Sprint 1  
@@ -42,7 +43,7 @@
 ### 🎥 Review  
 ### 🚀 Resultados  
 
-<details open>  
+<details>  
 <summary><b>🎨 Design do Site</b></summary>  
 </details>  
 
@@ -54,14 +55,14 @@
   - Paleta de Cores  
 - 💡 Diferenciais de UX  
 
-<details open>  
+<details>  
 <summary><b>📋 Visão Geral dos Casos de Uso</b></summary>  
 </details>  
 
 - 📝 Principais Funcionalidades  
 - 👥 Atores do Sistema  
 
-<details open>  
+<details>  
 <summary><b>📊 Modelo de Dados</b></summary>  
 </details>  
 
@@ -71,7 +72,7 @@
 - Características Técnicas  
 - 💡 Características do Sistema  
 
-<details open>  
+<details>  
 <summary><b>🚀 Funcionalidades Implementadas</b></summary>  
 </details>  
 
@@ -82,14 +83,14 @@
   - Frontend  
   - Arquitetura e Ferramentas  
 
-<details open>  
+<details>  
 <summary><b>📉 Burndown Chart</b></summary>  
 </details>  
 
 - 🖼️ Gráfico de Burndown  
 - 📋 Análise do Desempenho  
 
-<details open>  
+<details>  
 <summary><b>🔍 Sprint Retrospective</b></summary>  
 </details>  
 
@@ -102,32 +103,35 @@
   - Planejamento e execução  
 - 📈 Métricas para Sprint 2  
 
+</details>
+
 ---
 
-## 🔄 Sprint 2 – Aplicação do Protótipo na Prática  
+<details>
+<summary><b>🔄 Sprint 2 – Aplicação do Protótipo na Prática</b></summary>
 
 ### 📅 Período  
 ### 🎯 Objetivos Principais  
 
-<details open>  
+<details>  
 <summary>📄 Product Backlog - Sprint 2</summary>  
 </details>  
 
-<details open>  
+<details>  
 <summary>📌 Histórias Selecionadas para a Sprint 2</summary>  
 </details>  
 
-- História 2 – Desenvolvimento do Front-End - 
-- História 3 – Desenvolvimento do Front-End - 
-- História 4 – Desenvolvimento do Front-End - 
-- História 5 – Desenvolvimento do Front-End -
-- História 12 - 
-- História 13 - 
-- História 14 - 
-- História 15 – 
-- História 16 – 
-- História 17 – 
-- História 18 – 
+- História 2 – Desenvolvimento do Front-End  
+- História 3 – Desenvolvimento do Front-End  
+- História 4 – Desenvolvimento do Front-End  
+- História 5 – Desenvolvimento do Front-End  
+- História 12  
+- História 13  
+- História 14  
+- História 15  
+- História 16  
+- História 17  
+- História 18  
 
 ### 📋 Requisitos da Sprint 2  
 - Requisitos Funcionais  
@@ -139,7 +143,7 @@
 ### 🎥 Review  
 ### 🚀 Resultados  
 
-<details open>  
+<details>  
 <summary><b>🎨 Design do Site</b></summary>  
 </details>  
 
@@ -150,7 +154,7 @@
   - Paleta de Cores  
 - 💡 Diferenciais de UX  
 
-<details open>  
+<details>  
 <summary><b>📊 Diagrama de Classes</b></summary>  
 </details>  
 
@@ -161,7 +165,7 @@
 - Características Técnicas  
 - 💡 Características do Sistema  
 
-<details open>  
+<details>  
 <summary><b>🚀 Funcionalidades Implementadas</b></summary>  
 </details>  
 
@@ -172,14 +176,14 @@
   - Frontend  
   - Arquitetura e Ferramentas  
 
-<details open>  
+<details>  
 <summary><b>📉 Burndown Chart</b></summary>  
 </details>  
 
 - 🖼️ Gráfico de Burndown  
 - 📋 Análise do Desempenho  
 
-<details open>  
+<details>  
 <summary><b>🔍 Sprint Retrospective</b></summary>  
 </details>  
 
@@ -189,27 +193,30 @@
 - 🚀 Melhorias implementadas (e seus resultados)  
 - 📈 Recomendações para as próximas sprints  
 
+</details>
+
 ---
 
-## 🔄 Sprint 3 – Refinamento e Entrega Final  
+<details>
+<summary><b>🔄 Sprint 3 – Refinamento e Entrega Final</b></summary>
 
 ### 📅 Período  
 ### 🎯 Objetivos Principais  
 ### 📝 Product Backlog - Sprint 3  
 
-<details open>  
+<details>  
 <summary>📌 Histórias Selecionadas para a Sprint 3</summary>  
 </details>  
 
-- História 2 – Desenvolvimento do Front-End -
-- História 4 – Desenvolvimento do Front-End - 
-- História 6 –
-- História 10 – 
-- História 11 – 
-- História 14 - 
-- História 19 -   
-- História 20 - 
-- História 21 -
+- História 2 – Desenvolvimento do Front-End  
+- História 4 – Desenvolvimento do Front-End  
+- História 6  
+- História 10  
+- História 11  
+- História 14  
+- História 19  
+- História 20  
+- História 21  
 
 ### 📋 Requisitos da Sprint 3  
 - Requisitos Funcionais  
@@ -221,7 +228,7 @@
 ### 🎥 Review  
 ### 🚀 Resultados  
 
-<details open>  
+<details>  
 <summary><b>🎨 Site Definitivo</b></summary>  
 </details>  
 
@@ -232,7 +239,7 @@
   - Paleta de Cores  
 - 💡 Recursos Implementados  
 
-<details open>  
+<details>  
 <summary><b>🚀 Funcionalidades Implementadas</b></summary>  
 </details>  
 
@@ -243,14 +250,14 @@
   - Frontend  
   - Arquitetura e Ferramentas  
 
-<details open>  
+<details>  
 <summary><b>📉 Burndown Chart</b></summary>  
 </details>  
 
 - 🖼️ Gráfico de Burndown  
 - 📋 Sprint final do projeto  
 
-<details open>  
+<details>  
 <summary><b>🔍 Sprint Retrospective</b></summary>  
 </details>  
 
@@ -268,7 +275,12 @@
 - 🚀 Próximos horizontes  
 - 💡 Reflexão final  
 
+</details>
+
 ---
+
+
+## 👥 Nossa Equipe  
 
 <div align="center">
     <table>
@@ -352,3 +364,46 @@
         </tr>
     </table>
 </div>
+
+## 👨‍🏫 Coordenação e Orientação  
+
+<div align="center">
+    <table>
+        <tr>
+            <td align="center"><b>Professor</b></td>
+        </tr>
+        <tr>
+            <td align="center">
+                <table>
+                    <tr>
+                        <td align="center">
+                            <b>Prof. Andre Olimpo</b><br>
+                            <i>Focal Point</i><br>
+                            <a href="https://github.com/marcelosudo">
+                                <img src="https://img.shields.io/badge/GitHub-333?style=flat-square&logo=github"/>
+                            </a>
+                            <a href="https://www.linkedin.com/in/marcelo-sudo/">
+                                <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white"/>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+
+
+
+## 📜 Licença
+
+<div align="center">
+    <a href="https://github.com/ErrorSquad-ABP/ErrorSquadABP/blob/main/LICENSE">
+        <img src="https://img.shields.io/badge/📄_Licença-MIT-4a90e2?style=for-the-badge"/>
+    </a>
+</div>
+
+<div align="center">
+    <img src="https://capsule-render.vercel.app/api?type=waving&color=4a90e2&height=100&section=footer" width="100%"/>
+</div>
+
