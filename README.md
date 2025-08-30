@@ -398,7 +398,7 @@
 ## 📜 Licença
 
 <div align="center">
-    <a href="https://github.com/ErrorSquad-ABP/ErrorSquadABP/blob/main/LICENSE">
+    <a href="https://github.com/ABP2-Documentacao/ABP2-Documentacao/blob/main/LICENSE">
         <img src="https://img.shields.io/badge/📄_Licença-MIT-4a90e2?style=for-the-badge"/>
     </a>
 </div>
