@@ -1,5 +1,16 @@
 # 📚 Sistema de Gestão de Horários Acadêmicos  
 
+
+<div align="center">
+
+[![Site](https://img.shields.io/badge/🌐_Site-Online-000000?style=for-the-badge)]()
+[![Status](https://img.shields.io/badge/⚙️_Status-A_ser_feito-orange?style=for-the-badge)](#-sobre-o-projeto)
+[![Sprint](https://img.shields.io/badge/📅_Sprint-1/3-orange?style=for-the-badge)](#-sprint-3)
+[![Docs](https://img.shields.io/badge/📚_Docs-Wiki-4a90e2?style=for-the-badge)](#documentação)
+
+</div>
+
+
 ---
 
 ## 📋 Sobre o Projeto  
