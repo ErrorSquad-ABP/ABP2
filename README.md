@@ -15,16 +15,30 @@
 
 ## 📋 Sobre o Projeto  
 <details>  
-<summary><b>ℹ️ Informações do Projeto</b></summary>  
+<summary><b>ℹ️ Informações do Projeto</b></summary> 
+
+| Categoria      | Detalhes                                                            |
+| -------------- | ------------------------------------------------------------------- |
+| 📍 Instituição | FATEC Jacareí                                                       |
+| 📚 Curso       | DSM - 2º Semestre 2025                                              |
+| 🔄 Metodologia | Aprendizagem Baseada em Projetos (ABP)                              |
+| 👤 Focal Point | Prof. André Olimpio                                         |
+| 📧 Contato     | [andre.olimpio@fatec.sp.gov.br](mailto:andre.olimpio@fatec.sp.gov.br) |
+| 📅 Início      | 16/09/2025                                                          |
+| 📊 Status      | Em desenvolvimento                                                  |
 </details>  
 
 ---
 
 ## 🚀 Tema do Semestre  
 
+Desenvolver um sistema web para consulta e visualização de dados e gráficos limnológicos do INPE, organizando e otimizando a busca e utilização dos dados já existentes.
+
 ---
 
 ## 🔍 Desafio  
+
+atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluidos e sem quaisquer maneira de facil visualização e consulta grafica. O sistema proposto visa resolver esse problema, permitindo consultas por topicos, e seleção de parametros e periodos para geração de graficos.
 
 ---
 
@@ -32,17 +46,26 @@
 <summary><b>🔄 Sprint 1 – Planejamento inicial, Infraestrutura e Preparação</b></summary>
 
 ### 📅 Período  
+
+- **Início:** 16/09/2025
+- **Término:** 06/10/2025
+- **Review:** 07/10/2025  
+
 ### 🎯 Objetivos Principais  
+
+- Implementar as funcionalidades básicas do sistema
+- Desenvolver a interface com base nos protótipos
+- Integrar frontend com backend
 
 <details>  
 <summary>📌 Histórias Selecionadas para a Sprint 1</summary>  
 </details>  
 
-- História 2 – Desenvolvimento do Front-End  
-- História 3 – Desenvolvimento do Front-End  
-- História 4 – Desenvolvimento do Front-End  
-- História 5 – Desenvolvimento do Front-End  
-- História 6 – Interatividade de Ambientes  
+- História 2 –   
+- História 3 –  
+- História 4 –  
+- História 5 –  
+- História 6 –   
 
 ### 📋 Requisitos da Sprint 1  
 - Requisitos Funcionais  
@@ -58,7 +81,6 @@
 <summary><b>🎨 Design do Site</b></summary>  
 </details>  
 
-- 🔗 Acesso ao Protótipo  
 - 🧭 Objetivo do Protótipo  
 - 📊 Interfaces Principais  
 - 🗂️ Arquitetura de Navegação  
@@ -388,7 +410,7 @@
                 <table>
                     <tr>
                         <td align="center">
-                            <b>Prof. Andre Olimpo</b><br>
+                            <b>Prof. André Olimpio</b><br>
                             <i>Focal Point</i><br>
                             <a href="https://github.com/marcelosudo">
                                 <img src="https://img.shields.io/badge/GitHub-333?style=flat-square&logo=github"/>
