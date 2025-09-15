@@ -1,4 +1,4 @@
-# 📚 Sistema de Gestão de Horários Acadêmicos  
+# 🌎 Sistema de Visualização e Disseminação de Dados Limnológicos 
 
 
 <div align="center">
