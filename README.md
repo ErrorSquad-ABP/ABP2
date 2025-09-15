@@ -59,27 +59,140 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
 
 <details>  
 <summary>📌 Histórias Selecionadas para a Sprint 1</summary>  
+
+
+## História 1 – Visualizar e Filtrar Dados Limnológicos
+**Como usuário,**  
+Quero visualizar todos os parâmetros limnológicos armazenados,  
+**Para** filtrá-los por instituição, reservatório e período de tempo.
+
+**Tarefas:**
+- Criar endpoint no backend para listar dados com filtros aplicados.  
+- Conectar ao banco PostgreSQL para consulta dos parâmetros.  
+- Implementar filtros no frontend (instituição, reservatório, período).  
+- Criar componente de listagem bruta dos dados.  
+- Validar filtragem com dataset de teste.  
+
+**Prioridade:** Média  
+
+**Critérios de Aceite:**
+- Dados exibidos de forma bruta mas legível.  
+- Filtros funcionando corretamente (instituição, reservatório e período).  
+
+---
+
+## História 2 – Exibir Dados em Tabelas Ordenáveis
+**Como usuário,**  
+Quero visualizar os dados em formato de tabela,  
+**Para** facilitar a análise e ordenação.
+
+**Tarefas:**
+- Criar componente de tabela no React.  
+- Implementar ordenação de colunas (asc/desc).  
+- Integrar tabela com API de dados filtrados.  
+- Garantir responsividade e acessibilidade da tabela.  
+- Realizar testes de usabilidade da ordenação.  
+
+**Prioridade:** Alta  
+
+**Critérios de Aceite:**
+- Dados exibidos corretamente em tabelas.  
+- Ordenação por colunas funcionando.  
+- Interface responsiva e intuitiva.  
+
+---
+
+## História 4 – Configurar Banco PostgreSQL e Integração
+**Como desenvolvedor,**  
+Quero configurar o banco PostgreSQL,  
+**Para** armazenar e disponibilizar os dados limnológicos ao backend.
+
+**Tarefas:**
+- Configurar container Docker com PostgreSQL.  
+- Criar estrutura inicial de tabelas para os parâmetros.  
+- Carregar dataset inicial no banco.  
+- Criar queries otimizadas para consultas filtradas/ordenadas.  
+- Testar integração Node.js ↔ PostgreSQL.  
+
+**Prioridade:** Alta  
+
+**Critérios de Aceite:**
+- Banco de dados PostgreSQL configurado e acessível.  
+- Dados carregados corretamente.  
+- Backend acessando o banco sem erros.  
+
+---
+
+## História 8 – Dockerizar Front, Back e Banco
+**Como desenvolvedor,**  
+Quero separar a aplicação em containers independentes,  
+**Para** garantir modularidade e portabilidade.
+
+**Tarefas:**
+- Criar Dockerfile do backend (Node.js + TypeScript).  
+- Criar Dockerfile do frontend (React + TypeScript).  
+- Criar Dockerfile/configuração do PostgreSQL.  
+- Configurar `docker-compose.yml` para orquestração.  
+- Validar comunicação entre containers.  
+- Testar subida da aplicação completa em ambiente Docker.  
+
+**Prioridade:** Alta  
+
+**Critérios de Aceite:**
+- Containers do front, back e banco sobem sem erros.  
+- Comunicação entre serviços validada (front → back → banco).  
+- Aplicação funcional em ambiente dockerizado.  
+  
 </details>  
 
-- História 2 –   
-- História 3 –  
-- História 4 –  
-- História 5 –  
-- História 6 –   
-
-### 📋 Requisitos da Sprint 1  
-- Requisitos Funcionais  
-- Requisitos Não Funcionais  
-
-### 📝 Principais Funcionalidades  
-### ✅ Critérios de Aceite Gerais da Sprint 1  
-### 📊 Métricas da Sprint  
-### 🎥 Review  
-### 🚀 Resultados  
 
 <details>  
-<summary><b>🎨 Design do Site</b></summary>  
-</details>  
+<summary><b>📋 Requisitos da Sprint 1</b></summary>  
+
+**Requisitos Funcionais contemplados:**  
+- **RF01:** Permitir aos usuários visualizar todos os parâmetros armazenados, filtrando por instituição, reservatório e período de tempo.  
+- **RF02:** Consultar e visualizar os dados no formato de tabelas.  
+
+**Requisitos Não Funcionais contemplados:**  
+- **RNF01:** A usabilidade será um requisito crítico, exigindo uma interface intuitiva, clara e de fácil navegação.  
+- **RNF02:** A aplicação deve apresentar desempenho otimizado, garantindo carregamento rápido dos dados.  
+- **RNF03:** A interface deve seguir os padrões institucionais do INPE e a identidade visual definida pelo cliente.  
+- **RP04 (restrição de projeto):** A aplicação deve utilizar containers independentes para o banco de dados, o back-end e o front-end.  
+
+---
+  
+</details> 
+
+<details>  
+<summary><b>📝 Principais Funcionalidades</b></summary>  
+
+- Exibição inicial dos dados limnológicos em formato bruto.  
+- Filtros para refinar os dados por **instituição**, **reservatório** e **período de tempo**.  
+- Tabelas interativas com ordenação por colunas principais (parâmetro, valor, data, instituição).  
+- Banco de dados PostgreSQL configurado e integrado ao backend em Node.js.  
+- Backend e frontend em containers separados, orquestrados junto ao banco via Docker Compose.  
+  
+</details>
+
+
+<details>  
+<summary><b>✅ Critérios de Aceite Gerais da Sprint 1</b></summary>  
+
+- Os dados limnológicos devem ser carregados do banco e exibidos corretamente no frontend.  
+- Os filtros devem retornar os resultados corretos de acordo com as seleções do usuário.  
+- A ordenação em tabelas deve ser funcional, intuitiva e responsiva.  
+- O banco PostgreSQL deve estar configurado em container, acessível pelo backend sem erros.  
+- O backend deve expor endpoints funcionando para o frontend consumir.  
+- Os três containers (front, back e banco) devem subir sem falhas e se comunicar corretamente.  
+- Interface deve atender requisitos de usabilidade mínimos definidos no projeto.  
+  
+</details>
+
+
+
+
+<details>  
+<summary><b>🎨 Design do Site</b></summary>
 
 - 🧭 Objetivo do Protótipo  
 - 📊 Interfaces Principais  
@@ -88,16 +201,23 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
   - Paleta de Cores  
 - 💡 Diferenciais de UX  
 
+  
+</details>  
+
+
+
 <details>  
 <summary><b>📋 Visão Geral dos Casos de Uso</b></summary>  
-</details>  
 
 - 📝 Principais Funcionalidades  
 - 👥 Atores do Sistema  
+  
+</details>  
+
+
 
 <details>  
 <summary><b>📊 Modelo de Dados</b></summary>  
-</details>  
 
 - Diagrama ER  
 - 📝 Principais Classes e Relacionamentos  
@@ -105,9 +225,13 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
 - Características Técnicas  
 - 💡 Características do Sistema  
 
+  
+</details>  
+
+
+
 <details>  
 <summary><b>🚀 Funcionalidades Implementadas</b></summary>  
-</details>  
 
 - 💻 Visão Geral das Implementações  
 - 🔍 Detalhes das Implementações  
@@ -115,17 +239,23 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
   - Banco de Dados  
   - Frontend  
   - Arquitetura e Ferramentas  
+  
+</details>  
+
+
 
 <details>  
 <summary><b>📉 Burndown Chart</b></summary>  
-</details>  
 
 - 🖼️ Gráfico de Burndown  
 - 📋 Análise do Desempenho  
+  
+</details>  
+
+
 
 <details>  
 <summary><b>🔍 Sprint Retrospective</b></summary>  
-</details>  
 
 - 🎯 Visão Geral da Retrospectiva  
 - ✅ O que funcionou bem  
@@ -135,6 +265,10 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
   - Gestão de tarefas  
   - Planejamento e execução  
 - 📈 Métricas para Sprint 2  
+  
+</details>  
+
+
 
 </details>
 
@@ -144,63 +278,184 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
 <summary><b>🔄 Sprint 2 – Aplicação do Protótipo na Prática</b></summary>
 
 ### 📅 Período  
+
+- **Início:** 16/09/2025
+- **Término:** 06/10/2025
+- **Review:** 07/10/2025  
+
 ### 🎯 Objetivos Principais  
 
-<details>  
-<summary>📄 Product Backlog - Sprint 2</summary>  
-</details>  
+- Implementar as funcionalidades básicas do sistema
+- Desenvolver a interface com base nos protótipos
+- Integrar frontend com backend
 
 <details>  
-<summary>📌 Histórias Selecionadas para a Sprint 2</summary>  
+<summary>📌 Histórias Selecionadas para a Sprint 1</summary>  
+
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+  
 </details>  
 
-- História 2 – Desenvolvimento do Front-End  
-- História 3 – Desenvolvimento do Front-End  
-- História 4 – Desenvolvimento do Front-End  
-- História 5 – Desenvolvimento do Front-End  
-- História 12  
-- História 13  
-- História 14  
-- História 15  
-- História 16  
-- História 17  
-- História 18  
-
-### 📋 Requisitos da Sprint 2  
-- Requisitos Funcionais  
-- Requisitos Não Funcionais  
-
-### 📝 Principais Funcionalidades  
-### ✅ Critérios de Aceite Gerais da Sprint 2  
-### 📊 Métricas da Sprint  
-### 🎥 Review  
-### 🚀 Resultados  
 
 <details>  
-<summary><b>🎨 Design do Site</b></summary>  
-</details>  
+<summary><b>📋 Requisitos da Sprint 1</b></summary>  
 
-- 🔗 Acesso ao Protótipo  
+**Requisitos Funcionais contemplados:**  
+-  
+- 
+**Requisitos Não Funcionais contemplados:**  
+- 
+- 
+-
+- 
+
+---
+  
+</details> 
+
+<details>  
+<summary><b>📝 Principais Funcionalidades</b></summary>  
+
+- 
+- 
+-  
+-   
+-  
+  
+</details>
+
+
+<details>  
+<summary><b>✅ Critérios de Aceite Gerais da Sprint 1</b></summary>  
+
+-   
+- 
+- 
+- 
+-   
+- 
+- 
+</details>
+
+
+
+
+<details>  
+<summary><b>🎨 Design do Site</b></summary>
+
 - 🧭 Objetivo do Protótipo  
+- 📊 Interfaces Principais  
 - 🗂️ Arquitetura de Navegação  
-- 🎨 Design do Sistema  
+- 🎨 Design System  
   - Paleta de Cores  
 - 💡 Diferenciais de UX  
 
-<details>  
-<summary><b>📊 Diagrama de Classes</b></summary>  
+  
 </details>  
 
-- 📊 Visão Geral do Diagrama de Classes  
+
+
+<details>  
+<summary><b>📋 Visão Geral dos Casos de Uso</b></summary>  
+
+- 📝 Principais Funcionalidades  
+- 👥 Atores do Sistema  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📊 Modelo de Dados</b></summary>  
+
+- Diagrama ER  
 - 📝 Principais Classes e Relacionamentos  
-- Principais Entidades  
 - 🔄 Relacionamentos Principais  
 - Características Técnicas  
 - 💡 Características do Sistema  
 
+  
+</details>  
+
+
+
 <details>  
 <summary><b>🚀 Funcionalidades Implementadas</b></summary>  
-</details>  
 
 - 💻 Visão Geral das Implementações  
 - 🔍 Detalhes das Implementações  
@@ -208,23 +463,36 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
   - Banco de Dados  
   - Frontend  
   - Arquitetura e Ferramentas  
+  
+</details>  
+
+
 
 <details>  
 <summary><b>📉 Burndown Chart</b></summary>  
-</details>  
 
 - 🖼️ Gráfico de Burndown  
 - 📋 Análise do Desempenho  
+  
+</details>  
+
+
 
 <details>  
 <summary><b>🔍 Sprint Retrospective</b></summary>  
-</details>  
 
-- 🎯 Visão Geral da Retrospectiva – Sprint 2  
+- 🎯 Visão Geral da Retrospectiva  
 - ✅ O que funcionou bem  
 - ⚠️ Desafios enfrentados  
-- 🚀 Melhorias implementadas (e seus resultados)  
-- 📈 Recomendações para as próximas sprints  
+- 🚀 Plano de melhorias  
+  - Processo e comunicação  
+  - Gestão de tarefas  
+  - Planejamento e execução  
+- 📈 Métricas para Sprint 2  
+  
+</details>  
+
+
 
 </details>
 
@@ -234,47 +502,184 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
 <summary><b>🔄 Sprint 3 – Refinamento e Entrega Final</b></summary>
 
 ### 📅 Período  
+
+- **Início:** 16/09/2025
+- **Término:** 06/10/2025
+- **Review:** 07/10/2025  
+
 ### 🎯 Objetivos Principais  
-### 📝 Product Backlog - Sprint 3  
+
+- Implementar as funcionalidades básicas do sistema
+- Desenvolver a interface com base nos protótipos
+- Integrar frontend com backend
 
 <details>  
-<summary>📌 Histórias Selecionadas para a Sprint 3</summary>  
+<summary>📌 Histórias Selecionadas para a Sprint 1</summary>  
+
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+  
 </details>  
 
-- História 2 – Desenvolvimento do Front-End  
-- História 4 – Desenvolvimento do Front-End  
-- História 6  
-- História 10  
-- História 11  
-- História 14  
-- História 19  
-- História 20  
-- História 21  
-
-### 📋 Requisitos da Sprint 3  
-- Requisitos Funcionais  
-- Requisitos Não Funcionais  
-
-### ✅ Critérios de Aceite Gerais da Sprint 3  
-### 📝 Principais Funcionalidades  
-### 📊 Métricas da Sprint  
-### 🎥 Review  
-### 🚀 Resultados  
 
 <details>  
-<summary><b>🎨 Site Definitivo</b></summary>  
-</details>  
+<summary><b>📋 Requisitos da Sprint 1</b></summary>  
 
-- 🔗 Acesso ao Site  
-- 🎯 Funcionalidades do Sistema  
+**Requisitos Funcionais contemplados:**  
+-  
+- 
+**Requisitos Não Funcionais contemplados:**  
+- 
+- 
+-
+- 
+
+---
+  
+</details> 
+
+<details>  
+<summary><b>📝 Principais Funcionalidades</b></summary>  
+
+- 
+- 
+-  
+-   
+-  
+  
+</details>
+
+
+<details>  
+<summary><b>✅ Critérios de Aceite Gerais da Sprint 1</b></summary>  
+
+-   
+- 
+- 
+- 
+-   
+- 
+- 
+</details>
+
+
+
+
+<details>  
+<summary><b>🎨 Design do Site</b></summary>
+
+- 🧭 Objetivo do Protótipo  
+- 📊 Interfaces Principais  
 - 🗂️ Arquitetura de Navegação  
-- 🎨 Design do Sistema  
+- 🎨 Design System  
   - Paleta de Cores  
-- 💡 Recursos Implementados  
+- 💡 Diferenciais de UX  
+
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📋 Visão Geral dos Casos de Uso</b></summary>  
+
+- 📝 Principais Funcionalidades  
+- 👥 Atores do Sistema  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📊 Modelo de Dados</b></summary>  
+
+- Diagrama ER  
+- 📝 Principais Classes e Relacionamentos  
+- 🔄 Relacionamentos Principais  
+- Características Técnicas  
+- 💡 Características do Sistema  
+
+  
+</details>  
+
+
 
 <details>  
 <summary><b>🚀 Funcionalidades Implementadas</b></summary>  
-</details>  
 
 - 💻 Visão Geral das Implementações  
 - 🔍 Detalhes das Implementações  
@@ -282,31 +687,36 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
   - Banco de Dados  
   - Frontend  
   - Arquitetura e Ferramentas  
+  
+</details>  
+
+
 
 <details>  
 <summary><b>📉 Burndown Chart</b></summary>  
-</details>  
 
 - 🖼️ Gráfico de Burndown  
-- 📋 Sprint final do projeto  
+- 📋 Análise do Desempenho  
+  
+</details>  
+
+
 
 <details>  
 <summary><b>🔍 Sprint Retrospective</b></summary>  
+
+- 🎯 Visão Geral da Retrospectiva  
+- ✅ O que funcionou bem  
+- ⚠️ Desafios enfrentados  
+- 🚀 Plano de melhorias  
+  - Processo e comunicação  
+  - Gestão de tarefas  
+  - Planejamento e execução  
+- 📈 Métricas para Sprint 2  
+  
 </details>  
 
-- 🎯 Visão Geral da Retrospectiva – Sprint 3  
-- ✅ O que funcionou bem  
-- 🚀 Principais conquistas  
-- ⚡ Evolução da equipe comparada às sprints anteriores  
-- 🎯 Desafios superados com maestria  
-- 🧠 Lições aprendidas consolidadas  
-- ☑️ Indicadores de sucesso atingidos  
-- 🔮 Legado para projetos futuros  
-- 🏆 Conquistas técnicas destacadas  
-- 🎉 Nota da equipe ErrorSquad  
-- 📋 Estatísticas finais do projeto  
-- 🚀 Próximos horizontes  
-- 💡 Reflexão final  
+
 
 </details>
 
