@@ -250,7 +250,7 @@ Quero separar a aplicação em containers independentes,
 - 🖼️ Gráfico de Burndown
 
 <div align="center">
-    <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/inpe-dsm/SCRUM/burndown/Sprint%201/Sprint1_Burndown_Inicial.jpeg" alt="Burndown Chart da Sprint" width="80%">
+    <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/burndown/Sprint%201/Sprint1Burndown.jpeg" alt="Burndown Chart da Sprint" width="80%">
 </div>
 
 - 📋 Análise do Desempenho  
