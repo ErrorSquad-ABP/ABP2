@@ -1,156 +1,857 @@
-## 📊 Projeto ABP – Repositório de Dados Limnológicos
-
-Este projeto integra múltiplos bancos de dados PostgreSQL, uma API em Node.js/Express escrita em TypeScript, e um front-end em React (Vite + TypeScript + styled-components).
-O objetivo é oferecer uma aplicação organizada, containerizada e com boas práticas de desenvolvimento (linting, formatação, CI/CD e tema global).
+# 🌎 Sistema de Visualização e Disseminação de Dados Limnológicos 
 
 
-### ▶️ Subindo os Containers
+<div align="center">
 
-Para inicializar todo o ambiente (bancos de dados, servidor e front-end):
-```bash
-docker compose -f docker-compose.dev.yml up --build -d
-```
-- A flag `--build` força a reconstrução das imagens (aplica alterações recentes).
-- Certifique-se de executar o comando na raiz do projeto, ou seja, no diretório onde está localizado o arquivo `docker-compose.dev.yml`. Caso contrário, o Docker não encontrará as definições dos serviços.
-- Para parar os containers:
-```bash
-docker compose -f docker-compose.dev.yml down
-```
+[![Site](https://img.shields.io/badge/🌐_Site-Online-000000?style=for-the-badge)]()
+[![Status](https://img.shields.io/badge/⚙️_Status-A_ser_feito-orange?style=for-the-badge)](#-sobre-o-projeto)
+[![Sprint](https://img.shields.io/badge/📅_Sprint-1/3-orange?style=for-the-badge)](#-sprint-3)
+[![Docs](https://img.shields.io/badge/📚_Docs-Wiki-4a90e2?style=for-the-badge)](#documentação)
+
+</div>
+
 
 ---
 
-### 📂 Estrutura de Pastas
+## 📋 Sobre o Projeto  
+<details>  
+<summary><b>ℹ️ Informações do Projeto</b></summary> 
 
-A organização do projeto segue uma separação clara entre bancos de dados (scripts e dados), servidor (código da aplicação) e configurações gerais.
+| Categoria      | Detalhes                                                            |
+| -------------- | ------------------------------------------------------------------- |
+| 📍 Instituição | FATEC Jacareí                                                       |
+| 📚 Curso       | DSM - 2º Semestre 2025                                              |
+| 🔄 Metodologia | Aprendizagem Baseada em Projetos (ABP)                              |
+| 👤 Focal Point | Prof. André Olimpio                                         |
+| 📧 Contato     | [andre.olimpio@fatec.sp.gov.br](mailto:andre.olimpio@fatec.sp.gov.br) |
+| 📅 Início      | 16/09/2025                                                          |
+| 📊 Status      | Em desenvolvimento                                                  |
+</details>  
 
-```bash
-app/
-├── balcar-campanha/            
-│   ├── csv/                       # Arquivos de dados (CSV) carregados nas tabelas
-│   ├── copy-table.sql             # Script SQL para importar os arquivos CSV para o banco
-│   ├── create-table.sql           # Script SQL para criar a estrutura das tabelas
-│   └── balcar-campanha-modelo.xml # Modelo conceitual do banco, visualizável no DBDesigner
-│  
-├── furnas-campanha/
-│   ├── csv/                       # Arquivos de dados (CSV) carregados nas tabelas
-│   ├── copy-table.sql             # Script SQL para importar os arquivos CSV para o banco
-│   ├── create-table.sql           # Script SQL para criar a estrutura das tabelas
-│   └── furnas-campanha-modelo.xml # Modelo conceitual do banco, visualizável no DBDesigner
-│   
-├── sima/
-│   ├── csv/                       # Arquivos de dados (CSV) específicos do SIMA
-│   ├── copy-table.sql             # Script SQL para importação dos CSV
-│   ├── create-table.sql           # Script SQL para criação das tabelas
-│   └── sima-modelo.xml            # Modelo conceitual do banco SIMA (para DBDesigner)
-│ 
-├── server/
-│   ├── src/                       # Código-fonte da aplicação
-│   │   ├── configs/               # Configurações, como conexão com banco de dados
-│   │   │   └── db.ts
-│   │   ├── controllers/           # Lógica de controle (recebem requisições, chamam serviços)
-│   │   ├── routes/                # Definição das rotas da API
-│   │   └── index.ts               # Arquivo principal que inicializa o servidor
-│   ├── .env                       # Variáveis de ambiente da aplicação
-│   ├── Dockerfile                 # Receita para construção da imagem Docker do servidor
-│   ├── package.json               # Dependências e scripts NPM
-│   ├── package-lock.json          # Controle de versões exatas das dependências
-│   ├── tsconfig.json              # Configurações do compilador TypeScript
-│   ├── tsconfig.eslint.json       # Regras de análise estática específicas para ESLint
-│   ├── eslint.config.mjs          # Configuração de qualidade de código (ESLint)
-│   ├── .prettierrc                # Configuração de formatação automática (Prettier)
-│   └── .prettierignore            # Arquivos/pastas ignorados pelo Prettier
-│
-├── front/                        # Front-end React + Vite + styled-components
-│   ├── src/
-│   │   ├── api/                  # Consumo da API (axios)
-│   │   ├── components/           # Componentes reutilizáveis
-│   │   ├── hooks/                
-│   │   ├── pages/                # Páginas (ex.: SimaPage)
-│   │   ├── styles/               # GlobalStyle + ThemeProvider
-│   │   └── types/               
-│   ├── Dockerfile
-│   ├── vite.config.ts
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── .github/workflows/ci.yml       # Pipeline de Integração Contínua
-├── .gitignore                     # Define arquivos e pastas que não devem ir para o Git
-└── docker-compose.dev.yml         # Definições dos serviços Docker para ambiente de desenvolvimento
+---
+
+## 🚀 Tema do Semestre  
+
+Desenvolver um sistema web para consulta e visualização de dados e gráficos limnológicos do INPE, organizando e otimizando a busca e utilização dos dados já existentes.
+
+---
+
+## 🔍 Desafio  
+
+atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluidos e sem quaisquer maneira de facil visualização e consulta grafica. O sistema proposto visa resolver esse problema, permitindo consultas por topicos, e seleção de parametros e periodos para geração de graficos.
+
+---
+
+<details>
+<summary><b>🔄 Sprint 1 – Planejamento inicial, Infraestrutura e Preparação</b></summary>
+
+### 📅 Período  
+
+- **Início:** 16/09/2025
+- **Término:** 06/10/2025
+- **Review:** 07/10/2025  
+
+### 🎯 Objetivos Principais  
+
+- Implementar as funcionalidades básicas do sistema
+- Desenvolver a interface com base nos protótipos
+- Integrar frontend com backend
+
+<details>  
+<summary>📌 Histórias Selecionadas para a Sprint 1</summary>  
+
+
+## História 1 – Visualizar e Filtrar Dados Limnológicos
+**Como usuário,**  
+Quero visualizar todos os parâmetros limnológicos armazenados,  
+**Para** filtrá-los por instituição, reservatório e período de tempo.
+
+**Tarefas:**
+- Criar endpoint no backend para listar dados com filtros aplicados.  
+- Conectar ao banco PostgreSQL para consulta dos parâmetros.  
+- Implementar filtros no frontend (instituição, reservatório, período).  
+- Criar componente de listagem bruta dos dados.  
+- Validar filtragem com dataset de teste.  
+
+**Prioridade:** Média  
+
+**Critérios de Aceite:**
+- Dados exibidos de forma bruta mas legível.  
+- Filtros funcionando corretamente (instituição, reservatório e período).  
+
+---
+
+## História 2 – Exibir Dados em Tabelas Ordenáveis
+**Como usuário,**  
+Quero visualizar os dados em formato de tabela,  
+**Para** facilitar a análise e ordenação.
+
+**Tarefas:**
+- Criar componente de tabela no React.  
+- Implementar ordenação de colunas (asc/desc).  
+- Integrar tabela com API de dados filtrados.  
+- Garantir responsividade e acessibilidade da tabela.  
+- Realizar testes de usabilidade da ordenação.  
+
+**Prioridade:** Alta  
+
+**Critérios de Aceite:**
+- Dados exibidos corretamente em tabelas.  
+- Ordenação por colunas funcionando.  
+- Interface responsiva e intuitiva.  
+
+---
+
+## História 4 – Configurar Banco PostgreSQL e Integração
+**Como desenvolvedor,**  
+Quero configurar o banco PostgreSQL,  
+**Para** armazenar e disponibilizar os dados limnológicos ao backend.
+
+**Tarefas:**
+- Configurar container Docker com PostgreSQL.  
+- Criar estrutura inicial de tabelas para os parâmetros.  
+- Carregar dataset inicial no banco.  
+- Criar queries otimizadas para consultas filtradas/ordenadas.  
+- Testar integração Node.js ↔ PostgreSQL.  
+
+**Prioridade:** Alta  
+
+**Critérios de Aceite:**
+- Banco de dados PostgreSQL configurado e acessível.  
+- Dados carregados corretamente.  
+- Backend acessando o banco sem erros.  
+
+---
+
+## História 8 – Dockerizar Front, Back e Banco
+**Como desenvolvedor,**  
+Quero separar a aplicação em containers independentes,  
+**Para** garantir modularidade e portabilidade.
+
+**Tarefas:**
+- Criar Dockerfile do backend (Node.js + TypeScript).  
+- Criar Dockerfile do frontend (React + TypeScript).  
+- Criar Dockerfile/configuração do PostgreSQL.  
+- Configurar `docker-compose.yml` para orquestração.  
+- Validar comunicação entre containers.  
+- Testar subida da aplicação completa em ambiente Docker.  
+
+**Prioridade:** Alta  
+
+**Critérios de Aceite:**
+- Containers do front, back e banco sobem sem erros.  
+- Comunicação entre serviços validada (front → back → banco).  
+- Aplicação funcional em ambiente dockerizado.  
   
-```
+</details>  
+
+
+<details>  
+<summary><b>📋 Requisitos da Sprint 1</b></summary>  
+
+**Requisitos Funcionais contemplados:**  
+- **RF01:** Permitir aos usuários visualizar todos os parâmetros armazenados, filtrando por instituição, reservatório e período de tempo.  
+- **RF02:** Consultar e visualizar os dados no formato de tabelas.  
+
+**Requisitos Não Funcionais contemplados:**  
+- **RNF01:** A usabilidade será um requisito crítico, exigindo uma interface intuitiva, clara e de fácil navegação.  
+- **RNF02:** A aplicação deve apresentar desempenho otimizado, garantindo carregamento rápido dos dados.  
+- **RNF03:** A interface deve seguir os padrões institucionais do INPE e a identidade visual definida pelo cliente.  
+- **RP04 (restrição de projeto):** A aplicação deve utilizar containers independentes para o banco de dados, o back-end e o front-end.  
+
+---
+  
+</details> 
+
+<details>  
+<summary><b>📝 Principais Funcionalidades</b></summary>  
+
+- Exibição inicial dos dados limnológicos em formato bruto.  
+- Filtros para refinar os dados por **instituição**, **reservatório** e **período de tempo**.  
+- Tabelas interativas com ordenação por colunas principais (parâmetro, valor, data, instituição).  
+- Banco de dados PostgreSQL configurado e integrado ao backend em Node.js.  
+- Backend e frontend em containers separados, orquestrados junto ao banco via Docker Compose.  
+  
+</details>
+
+
+<details>  
+<summary><b>✅ Critérios de Aceite Gerais da Sprint 1</b></summary>  
+
+- Os dados limnológicos devem ser carregados do banco e exibidos corretamente no frontend.  
+- Os filtros devem retornar os resultados corretos de acordo com as seleções do usuário.  
+- A ordenação em tabelas deve ser funcional, intuitiva e responsiva.  
+- O banco PostgreSQL deve estar configurado em container, acessível pelo backend sem erros.  
+- O backend deve expor endpoints funcionando para o frontend consumir.  
+- Os três containers (front, back e banco) devem subir sem falhas e se comunicar corretamente.  
+- Interface deve atender requisitos de usabilidade mínimos definidos no projeto.  
+  
+</details>
+
+
+
+
+<details>  
+<summary><b>🎨 Design do Site</b></summary>
+
+- 🧭 Objetivo do Protótipo  
+- 📊 Interfaces Principais  
+- 🗂️ Arquitetura de Navegação  
+- 🎨 Design System  
+  - Paleta de Cores  
+- 💡 Diferenciais de UX  
+
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📋 Visão Geral dos Casos de Uso</b></summary>  
+
+- 📝 Principais Funcionalidades  
+- 👥 Atores do Sistema  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📊 Modelo de Dados</b></summary>  
+
+- Diagrama ER  
+- 📝 Principais Classes e Relacionamentos  
+- 🔄 Relacionamentos Principais  
+- Características Técnicas  
+- 💡 Características do Sistema  
+
+  
+</details>  
+
+
+
+<details>  
+<summary><b>🚀 Funcionalidades Implementadas</b></summary>  
+
+- 💻 Visão Geral das Implementações  
+- 🔍 Detalhes das Implementações  
+  - Backend  
+  - Banco de Dados  
+  - Frontend  
+  - Arquitetura e Ferramentas  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📉 Burndown Chart</b></summary>  
+
+- 🖼️ Gráfico de Burndown
+
+<div align="center">
+    <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/inpe-dsm/SCRUM/burndown/Sprint%201/Sprint1_Burndown_Inicial.jpeg" alt="Burndown Chart da Sprint" width="80%">
+</div>
+
+- 📋 Análise do Desempenho  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>🔍 Sprint Retrospective</b></summary>  
+
+- 🎯 Visão Geral da Retrospectiva  
+- ✅ O que funcionou bem  
+- ⚠️ Desafios enfrentados  
+- 🚀 Plano de melhorias  
+  - Processo e comunicação  
+  - Gestão de tarefas  
+  - Planejamento e execução  
+- 📈 Métricas para Sprint 2  
+  
+</details>  
+
+
+
+</details>
 
 ---
 
-### 🔑 Principais Tecnologias e Configurações
+<details>
+<summary><b>🔄 Sprint 2 – Aplicação do Protótipo na Prática</b></summary>
 
-**Back-end (`server/`)**
+### 📅 Período  
 
-- Node.js + Express + TypeScript.
-- Estrutura em camadas (configs, controllers, routes).
-- Conexão com múltiplos bancos via `pg.Pool`.
-- Middlewares: JSON parser, erro global, CORS configurado (apenas GET).
-- ESLint + Prettier para padronização de código.
-- Dockerfile com hot reload (ts-node-dev).
+- **Início:** 16/09/2025
+- **Término:** 06/10/2025
+- **Review:** 07/10/2025  
 
-**Front-end (`front/`)**
+### 🎯 Objetivos Principais  
 
-- React + Vite + TypeScript.
-- styled-components com `ThemeProvider` global (cores, tipografia, espaçamento).
-- GlobalStyle para reset de estilos.
-- Barra Brasil + Menu responsivo com hambúrguer.
-- Estrutura organizada (`api/`, `components/`, `pages/`, `styles/`).
-* Axios configurado com `VITE_SERVER_PORT`.
+- Implementar as funcionalidades básicas do sistema
+- Desenvolver a interface com base nos protótipos
+- Integrar frontend com backend
 
-**Banco de Dados**
+<details>  
+<summary>📌 Histórias Selecionadas para a Sprint 1</summary>  
 
-- PostgreSQL 17 (um container por domínio: furnas-campanha, sima, balcar-campanha).
-- Scripts SQL para `CREATE TABLE` e `COPY FROM CSV`.
-- Volumes persistentes para dados.
-- Cada banco acessível em uma porta distinta (5433, 5434, 5435).
 
-**CI/CD**
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
 
-- GitHub Actions (`.github/workflows/ci.yml`):
-    - O projeto utiliza GitHub Actions para garantir qualidade de código e que a stack Docker esteja sempre saudável.
-    - O pipeline roda automaticamente em **push** e **pull requests** para a branch `main`.
-- Estrutura de Jobs: `server-ci`, `front-ci` e `docker-ci`.
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+  
+</details>  
+
+
+<details>  
+<summary><b>📋 Requisitos da Sprint 1</b></summary>  
+
+**Requisitos Funcionais contemplados:**  
+-  
+- 
+**Requisitos Não Funcionais contemplados:**  
+- 
+- 
+-
+- 
+
+---
+  
+</details> 
+
+<details>  
+<summary><b>📝 Principais Funcionalidades</b></summary>  
+
+- 
+- 
+-  
+-   
+-  
+  
+</details>
+
+
+<details>  
+<summary><b>✅ Critérios de Aceite Gerais da Sprint 1</b></summary>  
+
+-   
+- 
+- 
+- 
+-   
+- 
+- 
+</details>
+
+
+
+
+<details>  
+<summary><b>🎨 Design do Site</b></summary>
+
+- 🧭 Objetivo do Protótipo  
+- 📊 Interfaces Principais  
+- 🗂️ Arquitetura de Navegação  
+- 🎨 Design System  
+  - Paleta de Cores  
+- 💡 Diferenciais de UX  
+
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📋 Visão Geral dos Casos de Uso</b></summary>  
+
+- 📝 Principais Funcionalidades  
+- 👥 Atores do Sistema  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📊 Modelo de Dados</b></summary>  
+
+- Diagrama ER  
+- 📝 Principais Classes e Relacionamentos  
+- 🔄 Relacionamentos Principais  
+- Características Técnicas  
+- 💡 Características do Sistema  
+
+  
+</details>  
+
+
+
+<details>  
+<summary><b>🚀 Funcionalidades Implementadas</b></summary>  
+
+- 💻 Visão Geral das Implementações  
+- 🔍 Detalhes das Implementações  
+  - Backend  
+  - Banco de Dados  
+  - Frontend  
+  - Arquitetura e Ferramentas  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📉 Burndown Chart</b></summary>  
+
+- 🖼️ Gráfico de Burndown  
+- 📋 Análise do Desempenho  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>🔍 Sprint Retrospective</b></summary>  
+
+- 🎯 Visão Geral da Retrospectiva  
+- ✅ O que funcionou bem  
+- ⚠️ Desafios enfrentados  
+- 🚀 Plano de melhorias  
+  - Processo e comunicação  
+  - Gestão de tarefas  
+  - Planejamento e execução  
+- 📈 Métricas para Sprint 2  
+  
+</details>  
+
+
+
+</details>
 
 ---
 
-### B🚀 Como rodar o projeto localmente (sem Docker)
+<details>
+<summary><b>🔄 Sprint 3 – Refinamento e Entrega Final</b></summary>
 
-**Back-end**
-```bash
-cd server
-npm install
-npm run dev
-```
-API disponível em: http://localhost:3001
+### 📅 Período  
 
-**Front-end**
-```bash
-cd front
-npm install
-npm run dev
-```
-App disponível em: http://localhost:3002
+- **Início:** 16/09/2025
+- **Término:** 06/10/2025
+- **Review:** 07/10/2025  
+
+### 🎯 Objetivos Principais  
+
+- Implementar as funcionalidades básicas do sistema
+- Desenvolver a interface com base nos protótipos
+- Integrar frontend com backend
+
+<details>  
+<summary>📌 Histórias Selecionadas para a Sprint 1</summary>  
 
 
---- 
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
 
-### 🌐 Acessando a Aplicação
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
 
-- Front-end (React): http://localhost:3002
+**Prioridade:** 
 
-- Back-end (API Node): http://localhost:3001
-    - Exemplo: http://localhost:3001/sima/sima/all?page=1&limit=20
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+
+## História  – 
+**Como usuário,**  
+ 
+**Para** 
+
+**Tarefas:**
+- 
+-   
+- 
+- 
+- 
+
+**Prioridade:** 
+
+**Critérios de Aceite:**
+- 
+-
+---
+  
+</details>  
+
+
+<details>  
+<summary><b>📋 Requisitos da Sprint 1</b></summary>  
+
+**Requisitos Funcionais contemplados:**  
+-  
+- 
+**Requisitos Não Funcionais contemplados:**  
+- 
+- 
+-
+- 
+
+---
+  
+</details> 
+
+<details>  
+<summary><b>📝 Principais Funcionalidades</b></summary>  
+
+- 
+- 
+-  
+-   
+-  
+  
+</details>
+
+
+<details>  
+<summary><b>✅ Critérios de Aceite Gerais da Sprint 1</b></summary>  
+
+-   
+- 
+- 
+- 
+-   
+- 
+- 
+</details>
+
+
+
+
+<details>  
+<summary><b>🎨 Design do Site</b></summary>
+
+- 🧭 Objetivo do Protótipo  
+- 📊 Interfaces Principais  
+- 🗂️ Arquitetura de Navegação  
+- 🎨 Design System  
+  - Paleta de Cores  
+- 💡 Diferenciais de UX  
+
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📋 Visão Geral dos Casos de Uso</b></summary>  
+
+- 📝 Principais Funcionalidades  
+- 👥 Atores do Sistema  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📊 Modelo de Dados</b></summary>  
+
+- Diagrama ER  
+- 📝 Principais Classes e Relacionamentos  
+- 🔄 Relacionamentos Principais  
+- Características Técnicas  
+- 💡 Características do Sistema  
+
+  
+</details>  
+
+
+
+<details>  
+<summary><b>🚀 Funcionalidades Implementadas</b></summary>  
+
+- 💻 Visão Geral das Implementações  
+- 🔍 Detalhes das Implementações  
+  - Backend  
+  - Banco de Dados  
+  - Frontend  
+  - Arquitetura e Ferramentas  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>📉 Burndown Chart</b></summary>  
+
+- 🖼️ Gráfico de Burndown  
+- 📋 Análise do Desempenho  
+  
+</details>  
+
+
+
+<details>  
+<summary><b>🔍 Sprint Retrospective</b></summary>  
+
+- 🎯 Visão Geral da Retrospectiva  
+- ✅ O que funcionou bem  
+- ⚠️ Desafios enfrentados  
+- 🚀 Plano de melhorias  
+  - Processo e comunicação  
+  - Gestão de tarefas  
+  - Planejamento e execução  
+- 📈 Métricas para Sprint 2  
+  
+</details>  
+
+
+
+</details>
 
 ---
 
-### 🛠️ Boas práticas aplicadas
 
-- Separação clara de camadas (DB / API / Front).
-- Containers independentes para cada banco.
-- Hot reload para server e front em dev.
-- ESLint + Prettier (garantindo padronização de código).
-- CI no GitHub Actions.
+## 👥 Nossa Equipe  
+
+<div align="center">
+    <table>
+        <tr>
+            <td align="center"><b>Gestão</b></td>
+            <td align="center"><b>Desenvolvimento</b></td>
+        </tr>
+        <tr>
+            <td align="center">
+                <table>
+                    <tr>
+                        <td align="center">
+                            <b>Caio Araujo</b><br>
+                            <i>Product Owner</i><br>
+                            <a href="https://github.com/Caiuuutecnologico">
+                                <img src="https://img.shields.io/badge/GitHub-333?style=flat-square&logo=github"/>
+                            </a>
+                            <a href="https://www.linkedin.com/in/caio-arauj/">
+                                <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white"/>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <b>Felipe Ferreira Pacheco</b><br>
+                            <i>Scrum Master</i><br>
+                            <a href="https://github.com/FelipePacheco30">
+                                <img src="https://img.shields.io/badge/GitHub-333?style=flat-square&logo=github"/>
+                            </a>
+                            <a href="https://www.linkedin.com/in/felipe-ferreira-pacheco-621443347/">
+                                <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white"/>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td align="center">
+                <table>
+                    <tr>
+                        <td align="center">
+                            <b>Tiago Jardel Costa</b><br>
+                            <a href="https://github.com/Tiago199516">
+                                <img src="https://img.shields.io/badge/GitHub-333?style=flat-square&logo=github"/>
+                            </a>
+                            <a href="https://www.linkedin.com/in/tiago-jardel-da-costa-0b595bba/">
+                                <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white"/>
+                            </a>
+                        </td>
+                        <td align="center">
+                            <b>Aline</b><br>
+                            <a href="https://github.com/TIALICIA">
+                                <img src="https://img.shields.io/badge/GitHub-333?style=flat-square&logo=github"/>
+                            </a>
+                            <a href="#">
+                                <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white"/>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <b>Carlos Eduardo Espirito Santo</b><br>
+                            <a href="https://github.com/PromptdComando">
+                                <img src="https://img.shields.io/badge/GitHub-333?style=flat-square&logo=github"/>
+                            </a>
+                            <a href="https://www.linkedin.com/in/carlos-eduardo-espirito-santo/">
+                                <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white"/>
+                            </a>
+                        </td>
+                        <td align="center">
+                            <b>Arthur Facchinetti Peixoto</b><br>
+                            <a href="https://github.com/ArthurFacchinetti">
+                                <img src="https://img.shields.io/badge/GitHub-333?style=flat-square&logo=github"/>
+                            </a>
+                            <a href="https://www.linkedin.com/in/arthur-facchinetti-669a6a2a7/">
+                                <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white"/>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+
+## 👨‍🏫 Coordenação e Orientação  
+
+<div align="center">
+    <table>
+        <tr>
+            <td align="center"><b>Professor</b></td>
+        </tr>
+        <tr>
+            <td align="center">
+                <table>
+                    <tr>
+                        <td align="center">
+                            <b>Prof. André Olimpio</b><br>
+                            <i>Focal Point</i><br>
+                            <a href="https://github.com/marcelosudo">
+                                <img src="https://img.shields.io/badge/GitHub-333?style=flat-square&logo=github"/>
+                            </a>
+                            <a href="https://www.linkedin.com/in/marcelo-sudo/">
+                                <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white"/>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+
+
+
+## 📜 Licença
+
+<div align="center">
+    <a href="https://github.com/ErrorSquad-ABP/ABP2-Documentacao/blob/main/LICENSE">
+        <img src="https://img.shields.io/badge/📄_Licença-MIT-4a90e2?style=for-the-badge"/>
+    </a>
+</div>
+
+<div align="center">
+    <img src="https://capsule-render.vercel.app/api?type=waving&color=4a90e2&height=100&section=footer" width="100%"/>
+</div>
+
