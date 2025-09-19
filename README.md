@@ -37,10 +37,17 @@ Desenvolver um sistema web para consulta e visualização de dados e gráficos l
 
 ## 🔍 Desafio  
 
-atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluidos e sem quaisquer maneira de facil visualização e consulta grafica. O sistema proposto visa resolver esse problema, permitindo consultas por topicos, e seleção de parametros e periodos para geração de graficos.
+Atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluidos e sem quaisquer maneira de facil visualização e consulta grafica. O sistema proposto visa resolver esse problema, permitindo consultas por topicos, e seleção de parametros e periodos para geração de graficos.
 
 ---
 
+## 📈 Diagramas UML
+
+Para melhor estruturação do projeto, modelamos os principais diagramas da Uml antes de partir para a fase de implementação. São eles:
+
+#### Diagrama de Casos de Uso
+
+![Casos de Uso](./readme-assets/UseCases.png)
 
 ### Estrutura de pastas
 
