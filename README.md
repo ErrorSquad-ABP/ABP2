@@ -12,9 +12,9 @@
 
 
 ---
+<details>
+  <summary><b>📋 Sobre o Projeto </b></summary>
 
-## 📋 Sobre o Projeto  
-<details>  
 <summary><b>ℹ️ Informações do Projeto</b></summary> 
 
 | Categoria      | Detalhes                                                            |
@@ -26,7 +26,6 @@
 | 📧 Contato     | [andre.olimpio@fatec.sp.gov.br](mailto:andre.olimpio@fatec.sp.gov.br) |
 | 📅 Início      | 16/09/2025                                                          |
 | 📊 Status      | Em desenvolvimento                                                  |
-</details>  
 
 ---
 
@@ -42,6 +41,168 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
 
 ---
 
+
+### Estrutura de pastas
+
+``` bash
+app/
+├── balcar-campanha/
+│   ├── csv/
+│   │   ├── tbcampanha.csv
+│   │   ├── tbfluxoinpe.csv
+│   │   ├── tbinstituicao.csv
+│   │   ├── tbreservatorio.csv
+│   │   ├── tbsitio.csv
+│   │   └── tbtabelacampo.csv
+│   ├── balcar-campanha-modelo.xml
+│   ├── copy-table.sql
+│   └── create-table.sql
+│
+├── furnas-campanha/
+│   ├── csv/
+│   │   ├── tbabioticocoluna.csv
+│   │   ├── tbabioticosuperficie.csv
+│   │   ├── tbaguamateriaorganicasedimento.csv
+│   │   ├── tbbioticocoluna.csv
+│   │   ├── tbbioticosuperficie.csv
+│   │   ├── tbbolhas.csv
+│   │   ├── tbcamarasolo.csv
+│   │   ├── tbcampanha.csv
+│   │   ├── tbcampanhaportabela.csv
+│   │   ├── tbcampoportabela.csv
+│   │   ├── tbcarbono.csv
+│   │   ├── tbconcentracaogasagua.csv
+│   │   ├── tbconcentracaogassedimento.csv
+│   │   ├── tbdadosprecipitacao.csv
+│   │   ├── tbdadosrepresa.csv
+│   │   ├── tbdifusao.csv
+│   │   ├── tbdupladessorcaoagua.csv
+│   │   ├── tbfluxobolhasinpe.csv
+│   │   ├── tbfluxocarbono.csv
+│   │   ├── tbfluxodifusivo.csv
+│   │   ├── tbfluxodifusivoinpe.csv
+│   │   ├── tbgasesembolhas.csv
+│   │   ├── tbhoriba.csv
+│   │   ├── tbinstituicao.csv
+│   │   ├── tbionsnaaguaintersticialdosedimento.csv
+│   │   ├── tbmedidacampocoluna.csv
+│   │   ├── tbmedidacamposuperficie.csv
+│   │   ├── tbnutrientessedimento.csv
+│   │   ├── tbparametrosbiologicosfisicosagua.csv
+│   │   ├── tbpfq.csv
+│   │   ├── tbreservatorio.csv
+│   │   ├── tbsitio.csv
+│   │   ├── tbtabela.csv
+│   │   ├── tbtc.csv
+│   │   └── tbvariaveisfisicasquimicasdaagua.csv
+│   ├── furnas-campanha-modelo.xml
+│   ├── copy-table.sql
+│   └── create-table.sql
+│
+├── sima/
+│   ├── csv/
+│   │   ├── tbcampotabela.csv
+│   │   ├── tbestacao.csv
+│   │   ├── tbsensor.csv
+│   │   ├── tbsima.csv
+│   │   └── tbsimaoffline.csv
+│   ├── sima-modelo.xml
+│   ├── copy-table.sql
+│   └── create-table.sql
+│
+├── server/
+│   ├── src/
+│   │   ├── configs/
+│   │   │   ├── corsConfig.ts
+│   │   │   ├── db.ts
+│   │   │   └── logger.ts
+│   │   ├── controllers/
+│   │   │   ├── balcar/
+│   │   │   │   └── fluxoinpe.controller.ts
+│   │   │   ├── furnas/
+│   │   │   │   ├── abioticocoluna.controller.ts
+│   │   │   │   ├── campanha.controller.ts
+│   │   │   │   ├── instituicao.controller.ts
+│   │   │   │   ├── reservatorio.controller.ts
+│   │   │   │   └── sitio.controller.ts
+│   │   │   └── sima/
+│   │   │       ├── sima.controller.ts
+│   │   │       └── simaoffline.controller.ts
+│   │   ├── middlewares/
+│   │   │   └── errorHandler.ts
+│   │   ├── routes/
+│   │   │   ├── balcar/
+│   │   │   │   └── fluxoinpe.routes.ts
+│   │   │   ├── furnas/
+│   │   │   │   ├── abioticocoluna.routes.ts
+│   │   │   │   ├── campanha.routes.ts
+│   │   │   │   ├── instituicao.routes.ts
+│   │   │   │   ├── reservatorio.routes.ts
+│   │   │   │   └── sitio.routes.ts
+│   │   │   └── sima/
+│   │   │       ├── sima.routes.ts
+│   │   │       └── simaoffline.routes.ts
+│   │   └── index.ts
+│   ├── .env
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig.json
+│   ├── tsconfig.eslint.json
+│   ├── eslint.config.mjs
+│   ├── .prettierrc
+│   └── .prettierignore
+│
+├── front/
+│   ├── src/
+│   │   ├── api/
+│   │   │   └── simaApi.ts
+│   │   ├── assets/
+│   │   │   └── react.svg
+│   │   ├── components/
+│   │   │   ├── BarraBrasil.tsx
+│   │   │   ├── MenuBar.tsx
+│   │   │   └── SimaTable.tsx
+│   │   ├── hooks/
+│   │   │   └── useSima.ts
+│   │   ├── pages/
+│   │   │   └── SimaPage.tsx
+│   │   ├── styles/
+│   │   │   ├── GlobalStyle.ts
+│   │   │   ├── styled.d.ts
+│   │   │   └── theme.ts
+│   │   ├── types/
+│   │   │   └── sima.ts
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   └── vite-env.d.ts
+│   ├── public/
+│   │   └── favicon.ico
+│   ├── Dockerfile
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   ├── vite.config.ts
+│   ├── .prettierrc
+│   └── .prettierignore
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── .gitignore
+├── LICENSE
+├── README.md
+└── docker-compose.dev.yml
+
+```
+
+</details>  
+
+
 <details>
 <summary><b>🔄 Sprint 1 – Planejamento inicial, Infraestrutura e Preparação</b></summary>
 
@@ -56,6 +217,7 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
 - Implementar as funcionalidades básicas do sistema
 - Desenvolver a interface com base nos protótipos
 - Integrar frontend com backend
+
 
 <details>  
 <summary>📌 Histórias Selecionadas para a Sprint 1</summary>  
