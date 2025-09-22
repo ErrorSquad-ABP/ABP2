@@ -1,13 +1,3 @@
-
-
-// front/src/pages/TablesPage.tsx
-// ------------------------------
-// Página para: /tables/:slug
-// Esta página é um esqueleto funcional que você deverá ligar à API:
-// - GET /api/categories/:slug/tables -> lista de tabelas
-// - GET /api/tables/:table/columns -> lista de colunas (schema)
-// - GET /api/tables/:table/data?filters... -> dados para gráficos / export
-
 import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
@@ -159,13 +149,4 @@ const Columns = styled.div`display:flex;flex-direction:column;gap:8px;max-height
 const ColumnItem = styled.div`display:flex;align-items:center;gap:8px;font-size:14px;color:#0b2b59`;
 const Actions = styled.div`display:flex;flex-direction:column;gap:12px;button{background:#2563eb;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;}&button:disabled{opacity:0.6}
 `;
-
-/*
-  Instruções de integração:
-  - Copie o primeiro bloco para: front/src/pages/HomePage.tsx
-  - Copie o segundo bloco (TablesPage) para: front/src/pages/TablesPage.tsx
-  - Adicione a rota no App.tsx: <Route path="/tables/:slug" element={<TablesPage />} />
-  - Substitua as chamadas MOCK_* por requisições reais à sua API (axios/fetch).  
-*/
-     
 

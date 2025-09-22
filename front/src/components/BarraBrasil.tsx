@@ -1,4 +1,3 @@
-// src/components/BarraBrasil.tsx
 import { useEffect } from "react";
 
 const BarraBrasil = () => {
@@ -10,7 +9,6 @@ const BarraBrasil = () => {
     document.body.appendChild(script);
 
     return () => {
-      // limpa script ao desmontar, evitando múltiplos carregamentos
       document.body.removeChild(script);
     };
   }, []);

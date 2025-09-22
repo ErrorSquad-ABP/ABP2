@@ -1,8 +1,7 @@
-// front/src/components/MenuBar.tsx
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import styled from "styled-components";
+import { Link } from "react-router-dom";
 
 const Nav = styled.nav`
   background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.primaryDark} 100%);
@@ -26,50 +25,35 @@ const Brand = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none;
 `;
 
 const Logo = styled.div`
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   color: #fff;
   box-shadow: 0 6px 18px rgba(7, 42, 89, 0.14);
+  overflow: hidden;
 `;
+
+const LogoImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+`;
+
 
 const Title = styled.div`
   font-size: ${({ theme }) => theme.fonts.size.large};
   font-weight: ${({ theme }) => theme.fonts.weight.bold};
   color: #fff;
-`;
-
-const DesktopMenu = styled.div`
-  display: none;
-
-  @media (min-width: 768px) {
-    display: flex;
-    gap: ${({ theme }) => theme.spacing(6)};
-    align-items: center;
-  }
-`;
-
-const StyledLink = styled(Link)`
-  padding: ${({ theme }) => `${theme.spacing(1)} ${theme.spacing(3)}`};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  transition: background 0.12s ease, transform 0.12s ease;
-  color: rgba(255,255,255,0.95);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-
-  &:hover {
-    background: rgba(255,255,255,0.08);
-    transform: translateY(-2px);
-  }
 `;
 
 const MobileButton = styled.button`
@@ -85,34 +69,16 @@ const MobileButton = styled.button`
   }
 `;
 
-const MobileMenu = styled.div`
-  background: ${({ theme }) => theme.colors.primaryDark};
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 6px 18px rgba(7, 42, 89, 0.12);
-`;
-
-const MobileLink = styled(Link)`
-  padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(4)}`};
-  transition: background 0.12s;
-  color: #fff;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-
-  &:hover {
-    background-color: rgba(255,255,255,0.06);
-  }
-`;
-
 function MenuBar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Nav>
       <Container>
-        <Brand>
-          <Logo><img src="../../public/DBIcon.png" alt="BD" /></Logo>
+        <Brand as={Link} to="/">
+          <Logo>
+            <LogoImg src="/DBIcon.png" alt="BDLimnologico" />
+          </Logo>
           <Title>BDLimnologico</Title>
         </Brand>
 

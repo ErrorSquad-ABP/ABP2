@@ -1,4 +1,3 @@
-// front/src/pages/HomePage.tsx
 import React from "react";
 import styled from "styled-components";
 
@@ -6,8 +5,8 @@ type Category = {
   id: string;
   title: string;
   description: string;
-  icon: string; // emoji or URL
-  href: string; // destino (abrir em nova guia)
+  icon: string; 
+  href: string; 
 };
 
 const CATEGORIES: Category[] = [
