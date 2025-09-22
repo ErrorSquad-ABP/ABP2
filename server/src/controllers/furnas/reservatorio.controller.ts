@@ -19,7 +19,6 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
         lat,
         lng
       FROM tbreservatorio
-      ORDER BY nome
       LIMIT $1 OFFSET $2
       `,
       [limit, offset],
@@ -35,7 +34,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
       limit,
       total,
       totalPages: Math.ceil(total / limit),
-      data: result.rows,
+      data: result.rows, 
     });
   } catch (error: any) {
     logger.error("Erro ao consultar tbreservatorio", {
