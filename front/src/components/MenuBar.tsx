@@ -1,10 +1,11 @@
+// front/src/components/MenuBar.tsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import styled from "styled-components";
 
 const Nav = styled.nav`
-  background-color: ${({ theme }) => theme.colors.primary};
+  background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.primaryDark} 100%);
   color: ${({ theme }) => theme.colors.text.inverse};
   width: 100%;
   box-shadow: ${({ theme }) => theme.shadows.small};
@@ -14,14 +15,36 @@ const Container = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 3rem;
+  height: 64px;
   width: 100%;
   padding: 0 ${({ theme }) => theme.spacing(4)};
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const Brand = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const Logo = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(7, 42, 89, 0.14);
 `;
 
 const Title = styled.div`
   font-size: ${({ theme }) => theme.fonts.size.large};
   font-weight: ${({ theme }) => theme.fonts.weight.bold};
+  color: #fff;
 `;
 
 const DesktopMenu = styled.div`
@@ -30,16 +53,22 @@ const DesktopMenu = styled.div`
   @media (min-width: 768px) {
     display: flex;
     gap: ${({ theme }) => theme.spacing(6)};
+    align-items: center;
   }
 `;
 
 const StyledLink = styled(Link)`
   padding: ${({ theme }) => `${theme.spacing(1)} ${theme.spacing(3)}`};
   border-radius: ${({ theme }) => theme.borderRadius};
-  transition: background 0.2s;
+  transition: background 0.12s ease, transform 0.12s ease;
+  color: rgba(255,255,255,0.95);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryDark};
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
   }
 `;
 
@@ -49,6 +78,7 @@ const MobileButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
+  color: #fff;
 
   @media (min-width: 768px) {
     display: none;
@@ -56,18 +86,22 @@ const MobileButton = styled.button`
 `;
 
 const MobileMenu = styled.div`
-  background-color: ${({ theme }) => theme.colors.primaryDark};
+  background: ${({ theme }) => theme.colors.primaryDark};
   width: 100%;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 6px 18px rgba(7, 42, 89, 0.12);
 `;
 
 const MobileLink = styled(Link)`
   padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(4)}`};
-  transition: background 0.2s;
+  transition: background 0.12s;
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primary};
+    background-color: rgba(255,255,255,0.06);
   }
 `;
 
@@ -77,35 +111,16 @@ function MenuBar() {
   return (
     <Nav>
       <Container>
-        <Title>Meu Projeto</Title>
-
-        {/* Menu desktop */}
-        <DesktopMenu>
-          <StyledLink to="/sima">Sima</StyledLink>
-          <StyledLink to="/about">Sobre</StyledLink>
-          <StyledLink to="/contact">Contato</StyledLink>
-        </DesktopMenu>
+        <Brand>
+          <Logo><img src="" alt="BD" /></Logo>
+          <Title>BDLimnologico</Title>
+        </Brand>
 
         {/* Botão hambúrguer */}
-        <MobileButton onClick={() => setIsOpen(!isOpen)}>
+        <MobileButton onClick={() => setIsOpen(!isOpen)} aria-label="Abrir menu">
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </MobileButton>
       </Container>
-
-      {/* Menu mobile */}
-      {isOpen && (
-        <MobileMenu>
-          <MobileLink to="/sima" onClick={() => setIsOpen(false)}>
-            Sima
-          </MobileLink>
-          <MobileLink to="/about" onClick={() => setIsOpen(false)}>
-            Sobre
-          </MobileLink>
-          <MobileLink to="/contact" onClick={() => setIsOpen(false)}>
-            Contato
-          </MobileLink>
-        </MobileMenu>
-      )}
     </Nav>
   );
 }
