@@ -1,4 +1,4 @@
-import { IReservatorio } from "./Reservatorio";
+import { IReservatorio } from "./reservatorio.ts";
 
 export interface IInstituicao {
   id: number;
