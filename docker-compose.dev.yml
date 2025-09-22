@@ -91,8 +91,9 @@ services:
       LOG_LEVEL: debug
       CORS_ORIGIN: http://localhost:3002
     volumes:
-      - ./server:/usr/src/app
-      - ./logs:/usr/src/app/logs
+    - ./server:/usr/src/app
+    - /usr/src/app/node_modules
+    - ./logs:/usr/src/app/logs
     command: npm run dev
     ports:
       - "3001:3000"
