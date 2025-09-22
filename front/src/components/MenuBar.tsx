@@ -112,7 +112,7 @@ function MenuBar() {
     <Nav>
       <Container>
         <Brand>
-          <Logo><img src="" alt="BD" /></Logo>
+          <Logo><img src="../../public/DBIcon.png" alt="BD" /></Logo>
           <Title>BDLimnologico</Title>
         </Brand>
 
