@@ -167,3 +167,5 @@ const Actions = styled.div`display:flex;flex-direction:column;gap:12px;button{ba
   - Adicione a rota no App.tsx: <Route path="/tables/:slug" element={<TablesPage />} />
   - Substitua as chamadas MOCK_* por requisições reais à sua API (axios/fetch).  
 */
+     
+
