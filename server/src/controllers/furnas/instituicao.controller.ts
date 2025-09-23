@@ -7,58 +7,35 @@ const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
 // GET todas as instituições (com paginação e filtro opcional)
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || PAGE_SIZE;
-    const offset = (page - 1) * limit;
-    const { nome } = req.query;
-
-    const conditions: string[] = [];
-    const values: any[] = [];
-
-    if (nome) {
-      values.push(`%${nome}%`);
-      conditions.push(`nome ILIKE $${values.length}`);
-    }
-
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-
-    const query = `
+    // consulta com paginação
+    const result = await furnasPool.query(
+      `
       SELECT 
         idinstituicao,
         nome
       FROM tbinstituicao
-      ${whereClause}
-      ORDER BY nome
-      LIMIT $${values.length + 1} OFFSET $${values.length + 2}
-    `;
+      ` 
+    );
 
-    values.push(limit, offset);
-
-    const result = await furnasPool.query(query, values);
-
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM tbinstituicao
-      ${whereClause}
-    `;
-    const countResult = await furnasPool.query(countQuery, values.slice(0, values.length - 2));
-    const total = Number(countResult.rows[0].total);
+    // consulta total de registros
+    const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbinstituicao");
+    const total = Number(countResult.rows[0].count);
 
     res.status(200).json({
       success: true,
-      page,
-      limit,
       total,
-      totalPages: Math.ceil(total / limit),
-      data: result.rows,
+      data: result.rows, 
     });
   } catch (error: any) {
-    console.error("Erro no getAll:", error);
     logger.error("Erro ao consultar tbinstituicao", {
       message: error.message,
       stack: error.stack,
     });
-    res.status(500).json({ success: false, error: "Erro ao realizar a operação." });
+
+    res.status(500).json({
+      success: false,
+      error: "Erro ao realizar a operação.",
+    });
   }
 };
 
@@ -85,6 +62,56 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
   } catch (error: any) {
     console.error("Erro no getById:", error);
     logger.error("Erro ao consultar instituição específica", {
+      message: error.message,
+      stack: error.stack,
+    });
+    res.status(500).json({ success: false, error: "Erro ao realizar a operação." });
+  }
+};
+
+export const getByPage = async (req: Request, res: Response): Promise<void> => {
+  try {
+
+    const page = Number(req.params.pagina) || 1;
+    const limit = Number(req.query.limit) || PAGE_SIZE;
+    const offset = (page - 1) * limit;
+
+    if (isNaN(page)) {
+      res.status(400).json({ success: false, error: "Página inválido" });
+      return;
+    }
+
+    const result = await furnasPool.query(
+       `
+      SELECT 
+        idinstituicao,
+        nome
+      FROM tbinstituicao
+      LIMIT $1 OFFSET $2
+      `,
+      [limit, offset]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({ success: false, error: "Instituição não encontrada" });
+      return;
+    }
+
+     // consulta total de registros
+    const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbinstituicao");
+    const total = Number(countResult.rows[0].count);
+
+     res.status(200).json({
+      success: true,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      data:  result.rows
+    });
+  } catch (error: any) {
+    console.error("Erro no getByPage:", error);
+    logger.error("Erro ao consultar instituição por paginação", {
       message: error.message,
       stack: error.stack,
     });
