@@ -44,11 +44,7 @@ export function normalizeDate(value: string): string | null {
  */
 function buildISODate(y: number, m: number, d: number): string | null {
   const date = new Date(y, m - 1, d);
-  if (
-    date.getFullYear() === y &&
-    date.getMonth() === m - 1 &&
-    date.getDate() === d
-  ) {
+  if (date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d) {
     return date.toISOString().slice(0, 10);
   }
   return null;

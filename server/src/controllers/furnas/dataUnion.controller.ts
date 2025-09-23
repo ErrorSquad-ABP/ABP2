@@ -16,15 +16,7 @@ const allowedTables: Record<string, string[]> = {
     "delta13c",
     "delta15n",
   ],
-  tbabioticosuperficie: [
-    "datamedida",
-    "horamedida",
-    "dic",
-    "nt",
-    "pt",
-    "delta13c",
-    "delta15n",
-  ],
+  tbabioticosuperficie: ["datamedida", "horamedida", "dic", "nt", "pt", "delta13c", "delta15n"],
   // Adicionar outras tabelas compatíveis aqui...
 };
 
@@ -47,7 +39,9 @@ export const getUnionData = async (req: Request, res: Response): Promise<void> =
       return;
     }
     if (!startDate || !endDate) {
-      res.status(400).json({ success: false, error: "Período (startDate, endDate) é obrigatório." });
+      res
+        .status(400)
+        .json({ success: false, error: "Período (startDate, endDate) é obrigatório." });
       return;
     }
     if (!responsavelId) {
@@ -62,9 +56,7 @@ export const getUnionData = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const requestedColumns = columnsParam
-      ? columnsParam.split(",").map((c) => c.trim())
-      : [];
+    const requestedColumns = columnsParam ? columnsParam.split(",").map((c) => c.trim()) : [];
 
     // Verifica se todas as colunas estão na whitelist
     const selectColumnsByTable = validTables.map((table) => {
@@ -83,7 +75,8 @@ export const getUnionData = async (req: Request, res: Response): Promise<void> =
               WHERE datamedida BETWEEN $1 AND $2`;
     });
 
-    const unionSQL = selectColumnsByTable.join(" UNION ALL ") + ` ORDER BY datamedida DESC LIMIT $3 OFFSET $4`;
+    const unionSQL =
+      selectColumnsByTable.join(" UNION ALL ") + ` ORDER BY datamedida DESC LIMIT $3 OFFSET $4`;
 
     const result = await furnasPool.query(unionSQL, [startDate, endDate, limit, offset]);
 

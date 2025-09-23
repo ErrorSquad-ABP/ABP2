@@ -15,22 +15,22 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
         lat,
         lng
       FROM tbreservatorio
-      ` 
+      `,
     );
 
     // consulta total de registros
     const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbreservatorio");
     const total = Number(countResult.rows[0].count);
 
-    const resultComInstituicao = result.rows.map(item => ({
-     ...item,
-     instituicao: "FURNAS"
+    const resultComInstituicao = result.rows.map((item) => ({
+      ...item,
+      instituicao: "FURNAS",
     }));
 
     res.status(200).json({
       success: true,
       total,
-      data: resultComInstituicao, 
+      data: resultComInstituicao,
     });
   } catch (error: any) {
     logger.error("Erro ao consultar tbreservatorio", {
@@ -45,7 +45,6 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-
 // GET instituição específica por ID
 export const getById = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -57,7 +56,7 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
 
     const result = await furnasPool.query(
       "SELECT idreservatorio, nome, lat, lng  FROM tbreservatorio WHERE idreservatorio = $1",
-      [id]
+      [id],
     );
 
     if (result.rows.length === 0) {
@@ -65,9 +64,9 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-     const resultComInstituicao = result.rows.map(item => ({
-     ...item,
-     instituicao: "FURNAS"
+    const resultComInstituicao = result.rows.map((item) => ({
+      ...item,
+      instituicao: "FURNAS",
     }));
 
     res.status(200).json({ success: true, data: resultComInstituicao[0] });
@@ -83,7 +82,6 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
 
 export const getByPage = async (req: Request, res: Response): Promise<void> => {
   try {
-
     const page = Number(req.params.pagina) || 1;
     const limit = Number(req.query.limit) || PAGE_SIZE;
     const offset = (page - 1) * limit;
@@ -94,7 +92,7 @@ export const getByPage = async (req: Request, res: Response): Promise<void> => {
     }
 
     const result = await furnasPool.query(
-       `
+      `
       SELECT 
         idreservatorio,
         nome,
@@ -103,7 +101,7 @@ export const getByPage = async (req: Request, res: Response): Promise<void> => {
       FROM tbreservatorio
       LIMIT $1 OFFSET $2
       `,
-      [limit, offset]
+      [limit, offset],
     );
 
     if (result.rows.length === 0) {
@@ -111,22 +109,22 @@ export const getByPage = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-     // consulta total de registros
+    // consulta total de registros
     const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbreservatorio");
     const total = Number(countResult.rows[0].count);
 
-    const resultComInstituicao = result.rows.map(item => ({
-     ...item,
-     instituicao: "FURNAS"
+    const resultComInstituicao = result.rows.map((item) => ({
+      ...item,
+      instituicao: "FURNAS",
     }));
 
-     res.status(200).json({
+    res.status(200).json({
       success: true,
       page,
       limit,
       total,
       totalPages: Math.ceil(total / limit),
-      data:  resultComInstituicao
+      data: resultComInstituicao,
     });
   } catch (error: any) {
     console.error("Erro no getByPage:", error);

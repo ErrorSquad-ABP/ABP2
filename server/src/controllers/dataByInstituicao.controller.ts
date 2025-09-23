@@ -15,7 +15,8 @@ export const getDataByInstituicao = async (req: Request, res: Response) => {
     const offset = (Number(page) - 1) * Number(limit);
 
     // Colunas selecionadas
-    const selectCols = Array.isArray(columns) && columns.length > 0 ? (columns as string[]).join(", ") : "*";
+    const selectCols =
+      Array.isArray(columns) && columns.length > 0 ? (columns as string[]).join(", ") : "*";
 
     // Monta query
     const query = `
@@ -28,7 +29,9 @@ export const getDataByInstituicao = async (req: Request, res: Response) => {
       LIMIT $4 OFFSET $5
     `;
 
-    const values: any[] = [instituicao_id, start, end, Number(limit), offset].filter(v => v !== undefined);
+    const values: any[] = [instituicao_id, start, end, Number(limit), offset].filter(
+      (v) => v !== undefined,
+    );
 
     const result = await furnasPool.query(query, values);
 
@@ -53,7 +56,10 @@ export const getDataByInstituicao = async (req: Request, res: Response) => {
       data: result.rows,
     });
   } catch (error: any) {
-    logger.error("Erro em GET /tables/:table/data/by-instituicao", { message: error.message, stack: error.stack });
+    logger.error("Erro em GET /tables/:table/data/by-instituicao", {
+      message: error.message,
+      stack: error.stack,
+    });
     res.status(500).json({ success: false, error: "Erro interno ao consultar dados" });
   }
 };

@@ -33,7 +33,7 @@ export class Instituicao implements IInstituicao {
   }
 
   removeReservatorioById(id: number): boolean {
-    const index = this.reservatorios.findIndex(r => r.id === id);
+    const index = this.reservatorios.findIndex((r) => r.id === id);
     if (index !== -1) {
       this.reservatorios.splice(index, 1);
       return true;
@@ -42,7 +42,7 @@ export class Instituicao implements IInstituicao {
   }
 
   findReservatorio(id: number): IReservatorio | undefined {
-    return this.reservatorios.find(r => r.id === id);
+    return this.reservatorios.find((r) => r.id === id);
   }
 
   // Serialização

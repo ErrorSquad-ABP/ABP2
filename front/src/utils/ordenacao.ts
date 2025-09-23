@@ -2,7 +2,7 @@ export function sortBy<T>(
   items: T[],
   field: keyof T,
   order: "asc" | "desc" = "asc",
-  parser?: (v: any) => any
+  parser?: (v: any) => any,
 ): T[] {
   return items.slice().sort((a, b) => {
     let valA: any = a[field];

@@ -15,12 +15,7 @@ export class Reservatorio implements IReservatorio {
   lat: number;
   long: number;
 
-  constructor(
-    id: number,
-    nome: string,
-    lat: number,
-    long: number
-  ) {
+  constructor(id: number, nome: string, lat: number, long: number) {
     this.id = id;
     this.nome = nome;
     this.lat = lat;
