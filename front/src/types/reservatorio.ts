@@ -1,14 +1,15 @@
-
 // src/types/reservatorio.ts
 
 // Interface de tipagem — ideal para props, estados, dados de API
-export interface IInstituicao {
+export interface IReservatorio {
   id: number;
   nome: string;
+  instituicaoId?: number;
+  instituicaoNome?: string;
 }
 
 // Classe de modelo — usada quando precisamos de comportamento extra
-export class Instituicao implements IInstituicao {
+export class Reservatorio implements IReservatorio {
   id: number;
   nome: string;
   instituicaoId?: number;
@@ -17,9 +18,13 @@ export class Instituicao implements IInstituicao {
   constructor(
     id: number,
     nome: string,
+    instituicaoId?: number,
+    instituicaoNome?: string
   ) {
     this.id = id;
     this.nome = nome;
+    this.instituicaoId = instituicaoId;
+    this.instituicaoNome = instituicaoNome;
   }
 
   // Getters
@@ -36,10 +41,12 @@ export class Instituicao implements IInstituicao {
   }
 
   // Serialização leve (para enviar em requisições, localStorage etc.)
-  toJSON(): IInstituicao {
+  toJSON(): IReservatorio {
     return {
       id: this.id,
       nome: this.nome,
+      instituicaoId: this.instituicaoId,
+      instituicaoNome: this.instituicaoNome,
     };
   }
 
@@ -49,16 +56,7 @@ export class Instituicao implements IInstituicao {
   }
 
   // Comparação entre objetos
-  equals(other: Instituicao): boolean {
+  equals(other: Reservatorio): boolean {
     return this.id === other.id;
   }
-}
-=======
-import { IReservatorio } from "./reservatorio.ts";
-
-export interface IInstituicao {
-  id: number;
-  nome: string;
-  sigla?: string;
-  reservatorios?: IReservatorio[];
 }
