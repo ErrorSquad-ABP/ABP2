@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAll, getById, getByPage } from "../../controllers/furnas/instituicao.controller";
+import { getAll, getByPage, getById } from "../../controllers/balcar/reservatorio.controller";
 
 const router = Router();
 
