@@ -22,10 +22,15 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
     const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbreservatorio");
     const total = Number(countResult.rows[0].count);
 
+    const resultComInstituicao = result.rows.map(item => ({
+     ...item,
+     instituicao: "FURNAS"
+    }));
+
     res.status(200).json({
       success: true,
       total,
-      data: result.rows, 
+      data: resultComInstituicao, 
     });
   } catch (error: any) {
     logger.error("Erro ao consultar tbreservatorio", {
@@ -60,7 +65,12 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    res.status(200).json({ success: true, data: result.rows[0] });
+     const resultComInstituicao = result.rows.map(item => ({
+     ...item,
+     instituicao: "FURNAS"
+    }));
+
+    res.status(200).json({ success: true, data: resultComInstituicao[0] });
   } catch (error: any) {
     console.error("Erro no getById:", error);
     logger.error("Erro ao consultar reservatório específico", {
@@ -105,13 +115,18 @@ export const getByPage = async (req: Request, res: Response): Promise<void> => {
     const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbreservatorio");
     const total = Number(countResult.rows[0].count);
 
+    const resultComInstituicao = result.rows.map(item => ({
+     ...item,
+     instituicao: "FURNAS"
+    }));
+
      res.status(200).json({
       success: true,
       page,
       limit,
       total,
       totalPages: Math.ceil(total / limit),
-      data:  result.rows
+      data:  resultComInstituicao
     });
   } catch (error: any) {
     console.error("Erro no getByPage:", error);
