@@ -14,7 +14,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
         idinstituicao,
         nome
       FROM tbinstituicao
-      ` 
+      `,
     );
 
     // consulta total de registros
@@ -24,7 +24,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       success: true,
       total,
-      data: result.rows, 
+      data: result.rows,
     });
   } catch (error: any) {
     logger.error("Erro ao consultar tbinstituicao", {
@@ -50,7 +50,7 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
 
     const result = await furnasPool.query(
       "SELECT idinstituicao, nome FROM tbinstituicao WHERE idinstituicao = $1",
-      [id]
+      [id],
     );
 
     if (result.rows.length === 0) {
@@ -71,7 +71,6 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
 
 export const getByPage = async (req: Request, res: Response): Promise<void> => {
   try {
-
     const page = Number(req.params.pagina) || 1;
     const limit = Number(req.query.limit) || PAGE_SIZE;
     const offset = (page - 1) * limit;
@@ -82,14 +81,14 @@ export const getByPage = async (req: Request, res: Response): Promise<void> => {
     }
 
     const result = await furnasPool.query(
-       `
+      `
       SELECT 
         idinstituicao,
         nome
       FROM tbinstituicao
       LIMIT $1 OFFSET $2
       `,
-      [limit, offset]
+      [limit, offset],
     );
 
     if (result.rows.length === 0) {
@@ -97,17 +96,17 @@ export const getByPage = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-     // consulta total de registros
+    // consulta total de registros
     const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbinstituicao");
     const total = Number(countResult.rows[0].count);
 
-     res.status(200).json({
+    res.status(200).json({
       success: true,
       page,
       limit,
       total,
       totalPages: Math.ceil(total / limit),
-      data:  result.rows
+      data: result.rows,
     });
   } catch (error: any) {
     console.error("Erro no getByPage:", error);

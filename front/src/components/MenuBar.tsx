@@ -4,7 +4,11 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 
 const Nav = styled.nav`
-  background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.primaryDark} 100%);
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors.primary} 0%,
+    ${({ theme }) => theme.colors.primaryDark} 100%
+  );
   color: ${({ theme }) => theme.colors.text.inverse};
   width: 100%;
   box-shadow: ${({ theme }) => theme.shadows.small};
@@ -48,7 +52,6 @@ const LogoImg = styled.img`
   object-fit: contain;
   display: block;
 `;
-
 
 const Title = styled.div`
   font-size: ${({ theme }) => theme.fonts.size.large};

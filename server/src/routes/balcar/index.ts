@@ -7,5 +7,4 @@ const router = express.Router();
 router.use("/fluxoinpe", fluxoinpe);
 router.use("/reservatorio", reservatorio);
 
-
 export default router;

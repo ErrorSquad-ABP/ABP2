@@ -1,4 +1,3 @@
-
 // src/types/reservatorio.ts
 
 // Interface de tipagem — ideal para props, estados, dados de API
@@ -14,10 +13,7 @@ export class Instituicao implements IInstituicao {
   instituicaoId?: number;
   instituicaoNome?: string;
 
-  constructor(
-    id: number,
-    nome: string,
-  ) {
+  constructor(id: number, nome: string) {
     this.id = id;
     this.nome = nome;
   }
@@ -53,7 +49,6 @@ export class Instituicao implements IInstituicao {
     return this.id === other.id;
   }
 }
-=======
 import { IReservatorio } from "./reservatorio.ts";
 
 export interface IInstituicao {

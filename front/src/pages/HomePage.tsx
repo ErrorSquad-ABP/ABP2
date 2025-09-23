@@ -1,24 +1,80 @@
+// front/src/pages/HomePage.tsx
 import React from "react";
 import styled from "styled-components";
+import { useTableMetadata } from "../hooks/useApiHooks";
 
 type Category = {
   id: string;
   title: string;
   description: string;
-  icon: string; 
-  href: string; 
+  icon: string;
+  href: string;
 };
 
 const CATEGORIES: Category[] = [
-  { id: "abioticos", title: "Abióticos", description: "Parâmetros físico-químicos da coluna d'água e superfície.", icon: "🌊", href: "/tables/abioticos" },
-  { id: "bioticos", title: "Bióticos", description: "Parâmetros biológicos amostrados em campanhas.", icon: "🪸", href: "/tables/bioticos" },
-  { id: "aguasedimento", title: "Água & Sedimento", description: "Medições e análises de água e sedimento.", icon: "🧪", href: "/tables/agua-sedimento" },
-  { id: "fluxos", title: "Fluxos & Gases", description: "Medições de fluxos, bolhas e concentrações gasosas.", icon: "💨", href: "/tables/fluxos-gases" },
-  { id: "campomedidas", title: "Campo Medidas", description: "Medidas realizadas em campo (equipamentos, anotações).", icon: "📋", href: "/tables/campo-medidas" },
-  { id: "fisicochimicos", title: "Parâmetros Físico-Químicos", description: "Variáveis físico-químicas da água (pH, condutividade, etc.).", icon: "⚗️", href: "/tables/fisico-quimicos" },
-  { id: "biologicos", title: "Parâmetros Biológicos", description: "Parâmetros biológicos e de comunidades aquáticas.", icon: "🧬", href: "/tables/parametros-biologicos" },
-  { id: "loccamp", title: "Localizações & Campanhas", description: "Sítios, campanhas e reservatórios (metadados).", icon: "📍", href: "/tables/localizacoes-campanhas" },
-  { id: "equip", title: "Equipamentos", description: "Cadastro e histórico de equipamentos e sensores (SIMA).", icon: "🔧", href: "/tables/equipamentos" },
+  {
+    id: "abioticos",
+    title: "Abióticos",
+    description: "Parâmetros físico-químicos da coluna d'água e superfície.",
+    icon: "🌊",
+    href: "/tables/abioticos",
+  },
+  {
+    id: "bioticos",
+    title: "Bióticos",
+    description: "Parâmetros biológicos amostrados em campanhas.",
+    icon: "🪸",
+    href: "/tables/bioticos",
+  },
+  {
+    id: "aguasedimento",
+    title: "Água & Sedimento",
+    description: "Medições e análises de água e sedimento.",
+    icon: "🧪",
+    href: "/tables/agua-sedimento",
+  },
+  {
+    id: "fluxos",
+    title: "Fluxos & Gases",
+    description: "Medições de fluxos, bolhas e concentrações gasosas.",
+    icon: "💨",
+    href: "/tables/fluxos-gases",
+  },
+  {
+    id: "campomedidas",
+    title: "Campo Medidas",
+    description: "Medidas realizadas em campo (equipamentos, anotações).",
+    icon: "📋",
+    href: "/tables/campo-medidas",
+  },
+  {
+    id: "fisicochimicos",
+    title: "Parâmetros Físico-Químicos",
+    description: "Variáveis físico-químicas da água (pH, condutividade, etc.).",
+    icon: "⚗️",
+    href: "/tables/fisico-quimicos",
+  },
+  {
+    id: "biologicos",
+    title: "Parâmetros Biológicos",
+    description: "Parâmetros biológicos e de comunidades aquáticas.",
+    icon: "🧬",
+    href: "/tables/parametros-biologicos",
+  },
+  {
+    id: "loccamp",
+    title: "Localizações & Campanhas",
+    description: "Sítios, campanhas e reservatórios (metadados).",
+    icon: "📍",
+    href: "/tables/localizacoes-campanhas",
+  },
+  {
+    id: "equip",
+    title: "Equipamentos",
+    description: "Cadastro e histórico de equipamentos e sensores (SIMA).",
+    icon: "🔧",
+    href: "/tables/equipamentos",
+  },
 ];
 
 export default function HomePage(): JSX.Element {
@@ -27,22 +83,59 @@ export default function HomePage(): JSX.Element {
       <Hero>
         <HeroInner>
           <h1>Repositório de Dados Limnológicos</h1>
-          <p>Explore os tópicos e acesse as tabelas para visualização, filtragem e exportação dos dados.</p>
+          <p>
+            Explore os tópicos e acesse as tabelas para visualização, filtragem e exportação dos
+            dados.
+          </p>
         </HeroInner>
       </Hero>
 
       <Content>
         <Cards role="list">
-          {CATEGORIES.map((c) => (
-            <CardLink key={c.id} href={c.href} target="_blank" rel="noopener noreferrer">
-              <Card>
-                <Icon>{c.icon}</Icon>
-                <CardTitle>{c.title}</CardTitle>
-                <CardDesc>{c.description}</CardDesc>
-                <CardCTA>Abrir →</CardCTA>
-              </Card>
-            </CardLink>
-          ))}
+          {CATEGORIES.map((c) => {
+            const tableSlug = c.href.replace(/^\/tables\//, "");
+            const { data: meta, loading, error } = useTableMetadata(tableSlug);
+
+            const minDate = meta?.minDate ? new Date(meta.minDate).toLocaleDateString() : null;
+            const maxDate = meta?.maxDate ? new Date(meta.maxDate).toLocaleDateString() : null;
+            const responsaveisCount = meta?.responsaveis ? meta.responsaveis.length : 0;
+            const totalRecords =
+              typeof meta?.totalRecords === "number" ? meta.totalRecords.toLocaleString() : null;
+
+            return (
+              <CardLink key={c.id} href={c.href} target="_blank" rel="noopener noreferrer">
+                <Card>
+                  <Icon aria-hidden>{c.icon}</Icon>
+                  <CardTitle>{c.title}</CardTitle>
+                  <CardDesc>{c.description}</CardDesc>
+
+                  <MetaArea>
+                    {loading && <MetaText>Carregando dados…</MetaText>}
+                    {error && <MetaTextError>Erro ao carregar</MetaTextError>}
+                    {!loading && !error && meta && (
+                      <>
+                        {minDate && maxDate ? (
+                          <MetaText>
+                            {minDate} — {maxDate}
+                          </MetaText>
+                        ) : (
+                          <MetaText>Período: —</MetaText>
+                        )}
+                        {responsaveisCount > 0 && (
+                          <MetaText>
+                            {responsaveisCount} responsável{responsaveisCount > 1 ? "es" : ""}
+                          </MetaText>
+                        )}
+                        {totalRecords !== null && <MetaText>{totalRecords} registros</MetaText>}
+                      </>
+                    )}
+                  </MetaArea>
+
+                  <CardCTA>Abrir →</CardCTA>
+                </Card>
+              </CardLink>
+            );
+          })}
         </Cards>
       </Content>
 
@@ -66,7 +159,7 @@ const Page = styled.div`
   flex-direction: column;
   background: linear-gradient(180deg, #f3f7fb 0%, #eef6ff 100%);
   color: ${({ theme }) => theme.colors.text.default};
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: "Helvetica Neue", Arial, sans-serif;
 `;
 
 const Hero = styled.header`
@@ -132,9 +225,13 @@ const Card = styled.article`
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 18px 40px rgba(9, 30, 66, 0.08), 0 4px 10px rgba(2,6,23,0.03);
+  box-shadow:
+    0 18px 40px rgba(9, 30, 66, 0.08),
+    0 4px 10px rgba(2, 6, 23, 0.03);
   border: 1px solid rgba(2, 6, 23, 0.04);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 
   &:hover {
     transform: translateY(-10px) scale(1.01);
@@ -147,11 +244,11 @@ const Icon = styled.div`
   width: 72px;
   height: 72px;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(37,99,235,0.12), rgba(6,58,128,0.08));
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.12), rgba(6, 58, 128, 0.08));
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 -6px 18px rgba(37,99,235,0.06);
+  box-shadow: inset 0 -6px 18px rgba(37, 99, 235, 0.06);
 `;
 
 const CardTitle = styled.h3`
@@ -169,6 +266,23 @@ const CardDesc = styled.p`
   color: #475569;
   line-height: 1.3;
   max-width: 88%;
+`;
+
+const MetaArea = styled.div`
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+`;
+
+const MetaText = styled.span`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.text.muted};
+`;
+
+const MetaTextError = styled(MetaText)`
+  color: #c84b4b;
 `;
 
 const CardCTA = styled.div`
@@ -200,7 +314,7 @@ const FooterInner = styled.div`
   font-size: 13px;
 
   a {
-    color: rgba(230,240,255,0.95);
+    color: rgba(230, 240, 255, 0.95);
     text-decoration: none;
   }
 

@@ -10,12 +10,28 @@ type TableMeta = {
 
 const MOCK_TABLES: Record<string, TableMeta[]> = {
   abioticos: [
-    { id: "tbabioticocoluna", name: "tbabioticocoluna", description: "Medições na coluna d'água (profundidade, DIC, delta15N, etc.)" },
-    { id: "tbabioticosuperficie", name: "tbabioticosuperficie", description: "Medições na superfície" },
+    {
+      id: "tbabioticocoluna",
+      name: "tbabioticocoluna",
+      description: "Medições na coluna d'água (profundidade, DIC, delta15N, etc.)",
+    },
+    {
+      id: "tbabioticosuperficie",
+      name: "tbabioticosuperficie",
+      description: "Medições na superfície",
+    },
   ],
   bioticos: [
-    { id: "tbbioticocoluna", name: "tbbioticocoluna", description: "Parâmetros biológicos na coluna" },
-    { id: "tbbioticosuperficie", name: "tbbioticosuperficie", description: "Parâmetros biológicos na superfície" },
+    {
+      id: "tbbioticocoluna",
+      name: "tbbioticocoluna",
+      description: "Parâmetros biológicos na coluna",
+    },
+    {
+      id: "tbbioticosuperficie",
+      name: "tbbioticosuperficie",
+      description: "Parâmetros biológicos na superfície",
+    },
   ],
 };
 
@@ -55,7 +71,10 @@ export default function TablesPage(): JSX.Element {
     setSelectedCols(initial);
   }, [selectedTable]);
 
-  const anyColumnSelected = useMemo(() => Object.values(selectedCols).some(Boolean), [selectedCols]);
+  const anyColumnSelected = useMemo(
+    () => Object.values(selectedCols).some(Boolean),
+    [selectedCols],
+  );
 
   const toggleCol = (col: string) => {
     setSelectedCols((s) => ({ ...s, [col]: !s[col] }));
@@ -66,7 +85,10 @@ export default function TablesPage(): JSX.Element {
       <Header>
         <div>
           <h2>{slug ? `Tópico: ${slug}` : "Tabelas"}</h2>
-          <p>Escolha a tabela, selecione o responsável, período e colunas para gerar gráficos ou exportar.</p>
+          <p>
+            Escolha a tabela, selecione o responsável, período e colunas para gerar gráficos ou
+            exportar.
+          </p>
         </div>
       </Header>
 
@@ -77,7 +99,11 @@ export default function TablesPage(): JSX.Element {
             <List>
               {tables.length === 0 && <Empty>Nenhuma tabela cadastrada para este tópico.</Empty>}
               {tables.map((t) => (
-                <ListItem key={t.id} onClick={() => setSelectedTable(t.id)} active={selectedTable === t.id}>
+                <ListItem
+                  key={t.id}
+                  onClick={() => setSelectedTable(t.id)}
+                  active={selectedTable === t.id}
+                >
                   <strong>{t.name}</strong>
                   <small>{t.description}</small>
                 </ListItem>
@@ -112,7 +138,12 @@ export default function TablesPage(): JSX.Element {
             <Columns>
               {columns.map((col) => (
                 <ColumnItem key={col}>
-                  <input id={`col_${col}`} type="checkbox" checked={!!selectedCols[col]} onChange={() => toggleCol(col)} />
+                  <input
+                    id={`col_${col}`}
+                    type="checkbox"
+                    checked={!!selectedCols[col]}
+                    onChange={() => toggleCol(col)}
+                  />
                   <label htmlFor={`col_${col}`}>{col}</label>
                 </ColumnItem>
               ))}
@@ -121,12 +152,19 @@ export default function TablesPage(): JSX.Element {
 
           <Actions>
             <div>
-              <button disabled={!anyColumnSelected || !responsible || !startDate || !endDate}>Gerar gráfico</button>
-              <button disabled={!anyColumnSelected || !responsible || !startDate || !endDate}>Exportar CSV</button>
-              <button disabled={!anyColumnSelected || !responsible || !startDate || !endDate}>Exportar JSON</button>
+              <button disabled={!anyColumnSelected || !responsible || !startDate || !endDate}>
+                Gerar gráfico
+              </button>
+              <button disabled={!anyColumnSelected || !responsible || !startDate || !endDate}>
+                Exportar CSV
+              </button>
+              <button disabled={!anyColumnSelected || !responsible || !startDate || !endDate}>
+                Exportar JSON
+              </button>
             </div>
             <p style={{ marginTop: 8, color: "#6b7280" }}>
-              Observação: filtros obrigatórios — responsável e período. Integre com a API para habilitar a exportação e geração de gráficos.
+              Observação: filtros obrigatórios — responsável e período. Integre com a API para
+              habilitar a exportação e geração de gráficos.
             </p>
           </Actions>
         </Right>
@@ -136,17 +174,106 @@ export default function TablesPage(): JSX.Element {
 }
 
 // ================= Styled (TablesPage) =================
-const Wrap = styled.div`max-width:1100px;margin:24px auto;padding:12px;`;
-const Header = styled.header`display:flex;gap:18px;align-items:flex-start;h2{margin:0;color:#062244}p{margin:4px 0 0;color:#475569}`;
-const Content = styled.div`display:grid;grid-template-columns:340px 1fr;gap:20px;margin-top:18px;@media(max-width:900px){grid-template-columns:1fr;}`;
+const Wrap = styled.div`
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 12px;
+`;
+const Header = styled.header`
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  h2 {
+    margin: 0;
+    color: #062244;
+  }
+  p {
+    margin: 4px 0 0;
+    color: #475569;
+  }
+`;
+const Content = styled.div`
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  margin-top: 18px;
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+`;
 const Left = styled.aside``;
 const Right = styled.section``;
-const Section = styled.div`background:#fff;border:1px solid #e6eef8;padding:14px;border-radius:10px;margin-bottom:12px;label{display:block;font-weight:600;margin-bottom:8px;color:#0b2b59}`;
-const List = styled.ul`list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;`;
-const ListItem = styled.li<{ active?: boolean }>`padding:10px;border-radius:8px;border:1px solid ${({ active }) => (active ? '#c7e0ff' : '#eef4fb')};background:${({ active }) => (active ? '#f0f9ff' : 'transparent')};cursor:pointer;display:flex;flex-direction:column;gap:6px;strong{font-size:14px}small{font-size:12px;color:#6b7280}`;
-const Empty = styled.div`padding:10px;color:#64748b`;
-const Columns = styled.div`display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;padding-top:6px`;
-const ColumnItem = styled.div`display:flex;align-items:center;gap:8px;font-size:14px;color:#0b2b59`;
-const Actions = styled.div`display:flex;flex-direction:column;gap:12px;button{background:#2563eb;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;}&button:disabled{opacity:0.6}
+const Section = styled.div`
+  background: #fff;
+  border: 1px solid #e6eef8;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #0b2b59;
+  }
 `;
-
+const List = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+const ListItem = styled.li<{ active?: boolean }>`
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid ${({ active }) => (active ? "#c7e0ff" : "#eef4fb")};
+  background: ${({ active }) => (active ? "#f0f9ff" : "transparent")};
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  strong {
+    font-size: 14px;
+  }
+  small {
+    font-size: 12px;
+    color: #6b7280;
+  }
+`;
+const Empty = styled.div`
+  padding: 10px;
+  color: #64748b;
+`;
+const Columns = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow: auto;
+  padding-top: 6px;
+`;
+const ColumnItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #0b2b59;
+`;
+const Actions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  button {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  &button:disabled {
+    opacity: 0.6;
+  }
+`;
