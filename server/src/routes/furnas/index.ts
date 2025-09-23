@@ -8,9 +8,7 @@ import dataRoutes from "./data.routes";
 
 const router = express.Router();
 
-
-router.use("/", dataRoutes);
-
+router.use("/data", dataRoutes);
 
 router.use("/abioticocoluna", abioticocoluna);
 router.use("/campanha", campanha);
