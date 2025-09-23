@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.use("/abioticocoluna", abioticocoluna);
 router.use("/campanha", campanha);
-router.use("/instituicoes", instituicao);
+router.use("/instituicao", instituicao);
 router.use("/reservatorio", reservatorio);
 router.use("/sitio", sitio);
 
