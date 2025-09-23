@@ -4,27 +4,27 @@
 export interface IReservatorio {
   id: number;
   nome: string;
-  instituicaoId?: number;
-  instituicaoNome?: string;
+  lat: number;
+  long: number;
 }
 
 // Classe de modelo — usada quando precisamos de comportamento extra
 export class Reservatorio implements IReservatorio {
   id: number;
   nome: string;
-  instituicaoId?: number;
-  instituicaoNome?: string;
+  lat: number;
+  long: number;
 
   constructor(
     id: number,
     nome: string,
-    instituicaoId?: number,
-    instituicaoNome?: string
+    lat: number,
+    long: number
   ) {
     this.id = id;
     this.nome = nome;
-    this.instituicaoId = instituicaoId;
-    this.instituicaoNome = instituicaoNome;
+    this.lat = lat;
+    this.long = long;
   }
 
   // Getters
@@ -36,8 +36,12 @@ export class Reservatorio implements IReservatorio {
     return this.nome;
   }
 
-  getInstituicaoNome(): string | undefined {
-    return this.instituicaoNome;
+  getlat(): number {
+    return this.lat;
+  }
+
+  getlong(): number {
+    return this.long;
   }
 
   // Serialização leve (para enviar em requisições, localStorage etc.)
@@ -45,8 +49,8 @@ export class Reservatorio implements IReservatorio {
     return {
       id: this.id,
       nome: this.nome,
-      instituicaoId: this.instituicaoId,
-      instituicaoNome: this.instituicaoNome,
+      lat: this.lat,
+      long: this.long,
     };
   }
 
