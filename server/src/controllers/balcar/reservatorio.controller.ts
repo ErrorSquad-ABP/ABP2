@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { furnasPool } from "../../configs/db";
+import { balcarPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 
 const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
@@ -7,7 +7,7 @@ const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   try {
     // consulta com paginação
-    const result = await furnasPool.query(
+    const result = await balcarPool.query(
       `
       SELECT 
         idreservatorio,
@@ -19,7 +19,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
     );
 
     // consulta total de registros
-    const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbreservatorio");
+    const countResult = await balcarPool.query("SELECT COUNT(*) FROM tbreservatorio");
     const total = Number(countResult.rows[0].count);
 
     res.status(200).json({
@@ -50,7 +50,7 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const result = await furnasPool.query(
+    const result = await balcarPool.query(
       "SELECT idreservatorio, nome, lat, lng  FROM tbreservatorio WHERE idreservatorio = $1",
       [id]
     );
@@ -83,7 +83,7 @@ export const getByPage = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const result = await furnasPool.query(
+    const result = await balcarPool.query(
        `
       SELECT 
         idreservatorio,
@@ -102,7 +102,7 @@ export const getByPage = async (req: Request, res: Response): Promise<void> => {
     }
 
      // consulta total de registros
-    const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbreservatorio");
+    const countResult = await balcarPool.query("SELECT COUNT(*) FROM tbreservatorio");
     const total = Number(countResult.rows[0].count);
 
      res.status(200).json({
