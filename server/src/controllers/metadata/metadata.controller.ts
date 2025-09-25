@@ -7,12 +7,9 @@ export const getDataFromTable = async (req: Request, res: Response): Promise<voi
   try {
     const result = rawData[req.params.table]
 
-    // resposta formatada
-    const data = JSON.stringify(result)
-
     res.status(200).json({
       success: true,
-      data
+      data: result
     });
   } catch (error: any) {
     logger.error("Erro ao consultar tbfluxoinpe", {
