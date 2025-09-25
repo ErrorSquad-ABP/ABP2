@@ -2,8 +2,8 @@
 
 <div align="center">
 
-[![Site](https://img.shields.io/badge/🌐_Site-Online-000000?style=for-the-badge)]()
-[![Status](https://img.shields.io/badge/⚙️_Status-A_ser_feito-orange?style=for-the-badge)](#-sobre-o-projeto)
+[![Site](https://img.shields.io/badge/🌐_Site-Offline-000000?style=for-the-badge)]()
+[![Status](https://img.shields.io/badge/⚙️_Status-em_progresso-orange?style=for-the-badge)](#-sobre-o-projeto)
 [![Sprint](https://img.shields.io/badge/📅_Sprint-1/3-orange?style=for-the-badge)](#-sprint-3)
 [![Docs](https://img.shields.io/badge/📚_Docs-Wiki-4a90e2?style=for-the-badge)](#documentação)
 
@@ -40,164 +40,6 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
 
 ---
 
-### Estrutura de pastas
-
-```bash
-app/
-├── balcar-campanha/
-│   ├── csv/
-│   │   ├── tbcampanha.csv
-│   │   ├── tbfluxoinpe.csv
-│   │   ├── tbinstituicao.csv
-│   │   ├── tbreservatorio.csv
-│   │   ├── tbsitio.csv
-│   │   └── tbtabelacampo.csv
-│   ├── balcar-campanha-modelo.xml
-│   ├── copy-table.sql
-│   └── create-table.sql
-│
-├── furnas-campanha/
-│   ├── csv/
-│   │   ├── tbabioticocoluna.csv
-│   │   ├── tbabioticosuperficie.csv
-│   │   ├── tbaguamateriaorganicasedimento.csv
-│   │   ├── tbbioticocoluna.csv
-│   │   ├── tbbioticosuperficie.csv
-│   │   ├── tbbolhas.csv
-│   │   ├── tbcamarasolo.csv
-│   │   ├── tbcampanha.csv
-│   │   ├── tbcampanhaportabela.csv
-│   │   ├── tbcampoportabela.csv
-│   │   ├── tbcarbono.csv
-│   │   ├── tbconcentracaogasagua.csv
-│   │   ├── tbconcentracaogassedimento.csv
-│   │   ├── tbdadosprecipitacao.csv
-│   │   ├── tbdadosrepresa.csv
-│   │   ├── tbdifusao.csv
-│   │   ├── tbdupladessorcaoagua.csv
-│   │   ├── tbfluxobolhasinpe.csv
-│   │   ├── tbfluxocarbono.csv
-│   │   ├── tbfluxodifusivo.csv
-│   │   ├── tbfluxodifusivoinpe.csv
-│   │   ├── tbgasesembolhas.csv
-│   │   ├── tbhoriba.csv
-│   │   ├── tbinstituicao.csv
-│   │   ├── tbionsnaaguaintersticialdosedimento.csv
-│   │   ├── tbmedidacampocoluna.csv
-│   │   ├── tbmedidacamposuperficie.csv
-│   │   ├── tbnutrientessedimento.csv
-│   │   ├── tbparametrosbiologicosfisicosagua.csv
-│   │   ├── tbpfq.csv
-│   │   ├── tbreservatorio.csv
-│   │   ├── tbsitio.csv
-│   │   ├── tbtabela.csv
-│   │   ├── tbtc.csv
-│   │   └── tbvariaveisfisicasquimicasdaagua.csv
-│   ├── furnas-campanha-modelo.xml
-│   ├── copy-table.sql
-│   └── create-table.sql
-│
-├── sima/
-│   ├── csv/
-│   │   ├── tbcampotabela.csv
-│   │   ├── tbestacao.csv
-│   │   ├── tbsensor.csv
-│   │   ├── tbsima.csv
-│   │   └── tbsimaoffline.csv
-│   ├── sima-modelo.xml
-│   ├── copy-table.sql
-│   └── create-table.sql
-│
-├── server/
-│   ├── src/
-│   │   ├── configs/
-│   │   │   ├── corsConfig.ts
-│   │   │   ├── db.ts
-│   │   │   └── logger.ts
-│   │   ├── controllers/
-│   │   │   ├── balcar/
-│   │   │   │   └── fluxoinpe.controller.ts
-│   │   │   ├── furnas/
-│   │   │   │   ├── abioticocoluna.controller.ts
-│   │   │   │   ├── campanha.controller.ts
-│   │   │   │   ├── instituicao.controller.ts
-│   │   │   │   ├── reservatorio.controller.ts
-│   │   │   │   └── sitio.controller.ts
-│   │   │   └── sima/
-│   │   │       ├── sima.controller.ts
-│   │   │       └── simaoffline.controller.ts
-│   │   ├── middlewares/
-│   │   │   └── errorHandler.ts
-│   │   ├── routes/
-│   │   │   ├── balcar/
-│   │   │   │   └── fluxoinpe.routes.ts
-│   │   │   ├── furnas/
-│   │   │   │   ├── abioticocoluna.routes.ts
-│   │   │   │   ├── campanha.routes.ts
-│   │   │   │   ├── instituicao.routes.ts
-│   │   │   │   ├── reservatorio.routes.ts
-│   │   │   │   └── sitio.routes.ts
-│   │   │   └── sima/
-│   │   │       ├── sima.routes.ts
-│   │   │       └── simaoffline.routes.ts
-│   │   └── index.ts
-│   ├── .env
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── tsconfig.json
-│   ├── tsconfig.eslint.json
-│   ├── eslint.config.mjs
-│   ├── .prettierrc
-│   └── .prettierignore
-│
-├── front/
-│   ├── src/
-│   │   ├── api/
-│   │   │   └── simaApi.ts
-│   │   ├── assets/
-│   │   │   └── react.svg
-│   │   ├── components/
-│   │   │   ├── BarraBrasil.tsx
-│   │   │   ├── MenuBar.tsx
-│   │   │   └── SimaTable.tsx
-│   │   ├── hooks/
-│   │   │   └── useSima.ts
-│   │   ├── pages/
-│   │   │   └── SimaPage.tsx
-│   │   ├── styles/
-│   │   │   ├── GlobalStyle.ts
-│   │   │   ├── styled.d.ts
-│   │   │   └── theme.ts
-│   │   ├── types/
-│   │   │   └── sima.ts
-│   │   ├── App.tsx
-│   │   ├── main.tsx
-│   │   └── vite-env.d.ts
-│   ├── public/
-│   │   └── favicon.ico
-│   ├── Dockerfile
-│   ├── eslint.config.js
-│   ├── index.html
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── tsconfig.app.json
-│   ├── tsconfig.json
-│   ├── tsconfig.node.json
-│   ├── vite.config.ts
-│   ├── .prettierrc
-│   └── .prettierignore
-│
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── .gitignore
-├── LICENSE
-├── README.md
-└── docker-compose.dev.yml
-
-```
-
 </details>
 
 <details>
@@ -218,99 +60,106 @@ app/
 <details>  
 <summary>📌 Histórias Selecionadas para a Sprint 1</summary>
 
-## História 1 – Visualizar e Filtrar Dados Limnológicos
+## História (Item 1) – Visualizar e Filtrar Todos os Dados
 
 **Como usuário,**  
-Quero visualizar todos os parâmetros limnológicos armazenados,  
-**Para** filtrá-los por instituição, reservatório e período de tempo.
+Quero poder visualizar todos os dados armazenados,  
+**Para** filtrá-los de acordo com minhas necessidades.
 
 **Tarefas:**
+- Criar endpoint no backend para listar todos os dados (com suporte a query params de filtro).
+- Mapear/descritar as tabelas e colunas disponíveis (endpoint de schema).
+- Implementar componente de listagem no frontend para exibição bruta legível.
+- Implementar controles de filtragem no frontend (instituição, reservatório, período e filtros livres).
+- Validar filtragem com dataset de teste e criar testes automatizados básicos.
 
-- Criar endpoint no backend para listar dados com filtros aplicados.
-- Conectar ao banco PostgreSQL para consulta dos parâmetros.
-- Implementar filtros no frontend (instituição, reservatório, período).
-- Criar componente de listagem bruta dos dados.
-- Validar filtragem com dataset de teste.
-
-**Prioridade:** Média
+**Prioridade:** Média (3)
 
 **Critérios de Aceite:**
+- Exibição de todos os dados do banco de forma bruta, legível.
+- Sistema de filtragem de dados funcional (filtros aplicáveis retornam resultados corretos).
 
-- Dados exibidos de forma bruta mas legível.
-- Filtros funcionando corretamente (instituição, reservatório e período).
 
----
-
-## História 2 – Exibir Dados em Tabelas Ordenáveis
+## História (Item 2) – Exibir Dados em Tabelas Ordenáveis
 
 **Como usuário,**  
-Quero visualizar os dados em formato de tabela,  
-**Para** facilitar a análise e ordenação.
+Quero ordenar e visualizar os dados em forma de tabelas,  
+**Para** melhorar a organização e usabilidade.
 
 **Tarefas:**
+- Criar componente de tabela reusável no frontend (React) com colunas configuráveis.
+- Implementar funcionalidade de ordenação por coluna (asc/desc) e paginação.
+- Permitir seleção/exibição das colunas (mostrar/ocultar) mantendo legibilidade.
+- Integrar a tabela com a API de dados filtrados/ordenados.
+- Garantir responsividade e acessibilidade; realizar testes de usabilidade.
 
-- Criar componente de tabela no React.
-- Implementar ordenação de colunas (asc/desc).
-- Integrar tabela com API de dados filtrados.
-- Garantir responsividade e acessibilidade da tabela.
-- Realizar testes de usabilidade da ordenação.
-
-**Prioridade:** Alta
+**Prioridade:** Alta (5)
 
 **Critérios de Aceite:**
+- Exibição de todas as colunas das tabelas de forma legível.
+- Colunas são selecionáveis (mostrar/ocultar) e ordenáveis.
 
-- Dados exibidos corretamente em tabelas.
-- Ordenação por colunas funcionando.
-- Interface responsiva e intuitiva.
 
----
+## História (Item 10) – Selecionar Tabelas por Categoria
 
-## História 4 – Configurar Banco PostgreSQL e Integração
-
-**Como desenvolvedor,**  
-Quero configurar o banco PostgreSQL,  
-**Para** armazenar e disponibilizar os dados limnológicos ao backend.
+**Como usuário,**  
+Quero selecionar diferentes tabelas dentro de cada categoria de dados,  
+**Para** realizar análises específicas por tabela.
 
 **Tarefas:**
+- No card de cada categoria, implementar controle (dropdown/list) para escolher a tabela associada.
+- Ao escolher uma tabela, exibir o esquema/colunas da tabela (nomes das colunas, sem dados).
+- Implementar frontend para marcar filtros obrigatórios e validar seleção antes da consulta.
+- Criar endpoints no backend para retornar lista de tabelas por categoria e esquema de cada tabela.
+- Testar fluxo de seleção e validação de filtros.
 
-- Configurar container Docker com PostgreSQL.
-- Criar estrutura inicial de tabelas para os parâmetros.
-- Carregar dataset inicial no banco.
-- Criar queries otimizadas para consultas filtradas/ordenadas.
-- Testar integração Node.js ↔ PostgreSQL.
-
-**Prioridade:** Alta
+**Prioridade:** Alta (5)
 
 **Critérios de Aceite:**
+- Interface permite escolher tabela dentro do card de categoria.
+- Todas as colunas da tabela são exibidas (nomes, sem dados).
+- É possível definir e exigir seleção de filtros obrigatórios antes da execução da consulta.
 
-- Banco de dados PostgreSQL configurado e acessível.
-- Dados carregados corretamente.
-- Backend acessando o banco sem erros.
 
----
+## História (Item 12) – Acesso Detalhado a Bancos e Portais via Navegação
 
-## História 8 – Dockerizar Front, Back e Banco
-
-**Como desenvolvedor,**  
-Quero separar a aplicação em containers independentes,  
-**Para** garantir modularidade e portabilidade.
+**Como usuário,**  
+Quero acessar informações de cada banco de dados e portais em páginas detalhadas, através de botões na barra de navegação,  
+**Para** consultar detalhes dos projetos/portais de forma rápida.
 
 **Tarefas:**
+- Adicionar botões/links na barra de navegação para cada banco/portal relevante.
+- Criar páginas detalhadas para projetos/portais (layout limpo com campos chave e metadados).
+- Implementar roteamento no frontend e endpoints backend para dados detalhados.
+- Garantir design limpo, responsivo e compatível com dispositivos móveis.
+- Testar navegação e carregamento das páginas detalhadas.
 
-- Criar Dockerfile do backend (Node.js + TypeScript).
-- Criar Dockerfile do frontend (React + TypeScript).
-- Criar Dockerfile/configuração do PostgreSQL.
-- Configurar `docker-compose.yml` para orquestração.
-- Validar comunicação entre containers.
-- Testar subida da aplicação completa em ambiente Docker.
-
-**Prioridade:** Alta
+**Prioridade:** Alta (5)
 
 **Critérios de Aceite:**
+- Botões na barra de navegação levam para páginas detalhadas dos projetos/portais.
+- Interface limpa e responsiva nas páginas detalhadas.
 
-- Containers do front, back e banco sobem sem erros.
-- Comunicação entre serviços validada (front → back → banco).
-- Aplicação funcional em ambiente dockerizado.
+
+## História (Item 13) – Filtros Combinados em Múltiplas Colunas
+
+**Como usuário,**  
+Quero aplicar filtros combinados em múltiplas colunas,  
+**Para** realizar análises mais específicas (ex.: reservatório + data + coluna específica).
+
+**Tarefas:**
+- Projetar e implementar UI de filtros combinados (múltiplos campos, operadores e lógica AND/OR).
+- Implementar suporte no backend para receber e aplicar filtros compostos de forma eficiente.
+- Implementar atualização dinâmica da visualização (fetch assíncrono, debounce) sem reload de página.
+- Garantir performance das queries e criar testes de integração para combinações de filtros.
+- Validar resultados com casos de uso reais e dataset de teste.
+
+**Prioridade:** Alta (5)
+
+**Critérios de Aceite:**
+- Suporte a filtros combinados (ex.: reservatório + data + coluna específica).
+- Atualização dinâmica da visualização sem recarregar a página.
+
 
 </details>
 
