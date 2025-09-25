@@ -1,9 +1,29 @@
-import express from "express";
-import metadata from "./metadata.routes";
+import { Router } from "express";
+import {getDataFromTable} from "../../controllers/metadata/metadata.controller"
 
-const router = express.Router();
+/*
+Criar rotas para devolver as colunas de determinada tabela
 
-/* router.use("/sima", sima);
-router.use("/simaoffline", simaoffline); */
+===============================================================
+
+Rotas para retornar quais tabelas fazem parte de cada card
+
+abioticos: [  <-- Card
+    {
+      id: "tbabioticocoluna", <-- Tabela 1
+      name: "tbabioticocoluna",
+      description: "Medições na coluna d'água (profundidade, DIC, delta15N, etc.)",
+    },
+    {
+      id: "tbabioticosuperficie", <-- Tabela 2
+      name: "tbabioticosuperficie",
+      description: "Medições na superfície",
+    },
+  ],
+*/
+
+const router = Router();
+
+router.get("/:table", getDataFromTable);
 
 export default router;
