@@ -4,6 +4,7 @@ import campanha from "./campanha.routes";
 import instituicao from "./instituicao.routes";
 import reservatorio from "./reservatorio.routes";
 import sitio from "./sitio.routes";
+import data from "./data.routes";
 
 const router = express.Router();
 
@@ -12,5 +13,6 @@ router.use("/campanha", campanha);
 router.use("/instituicao", instituicao);
 router.use("/reservatorio", reservatorio);
 router.use("/sitio", sitio);
+router.use("/tables", data);
 
 export default router;
