@@ -92,3 +92,6 @@ export const getUnionData = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ success: false, error: "Erro ao processar requisição." });
   }
 };
+
+//Rota pra teste
+//http://localhost:3001/furnas/data/union?tables=tbabioticocoluna&tables=tbabioticosuperficie&columns=datamedida,dic,delta15n&startDate=2003-11-18&endDate=2004-03-18&responsavelId=1302&page=1&limit=50
