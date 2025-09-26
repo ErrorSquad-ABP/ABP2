@@ -40,6 +40,15 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
 
 ---
 
+## 📈 Diagramas UML
+
+Para melhor estruturação do projeto, modelamos os principais diagramas da Uml antes de partir para a fase de implementação. São eles:
+
+#### Diagrama de Casos de Uso
+
+![Casos de Uso](./SCRUM/diagramas/DIAGRAMA_CASOS_DE_USO.png)
+
+
 </details>
 
 <details>
