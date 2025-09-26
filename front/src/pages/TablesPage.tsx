@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
+import MapBrazil from "../components/MapBrazil";
 
 /**
  * TablesPage
@@ -783,14 +784,16 @@ export default function TablesPage(): JSX.Element {
                 </div>
 
                 <MapPlaceholder>
-                  {normalizedMarkers.length ? (
-                    normalizedMarkers.map((m, idx) => (
-                      <Marker key={idx} left={m.left} top={m.top} />
-                    ))
+                  {latLonPoints.length ? (
+                    <div style={{ padding: 12, width: "100%", height: "100%" }}>
+                      <MapBrazil
+                        points={latLonPoints.map((p) => ({ id: p.id, lat: p.lat, lon: p.lon, label: `Ponto ${p.id}` }))}
+                        height={520}
+                      />
+                    </div>
                   ) : (
                     <div style={{ padding: 16, color: "#334155" }}>
-                      Não há coordenadas disponíveis. Gere o gráfico com colunas contendo{" "}
-                      <code>latitude</code> / <code>longitude</code>.
+                      Não há coordenadas disponíveis. Gere o gráfico com colunas contendo <code>latitude</code> / <code>longitude</code>.
                     </div>
                   )}
                 </MapPlaceholder>
