@@ -39,7 +39,14 @@ export const getMetadata = async (req: Request, res: Response): Promise<void> =>
     const columnNames = cols.map((c) => c.name.toLowerCase());
 
     // detecta coluna de data
-    const preferredDateCols = ["datamedida", "data", "datacoleta", "datainicio", "datamedicao", "date"];
+    const preferredDateCols = [
+      "datamedida",
+      "data",
+      "datacoleta",
+      "datainicio",
+      "datamedicao",
+      "date",
+    ];
     let dateColumn: string | null = null;
     for (const candidate of preferredDateCols) {
       const found = cols.find((c) => c.name.toLowerCase() === candidate);
@@ -50,12 +57,16 @@ export const getMetadata = async (req: Request, res: Response): Promise<void> =>
     }
     if (!dateColumn) {
       const dateTypeCols = cols.filter((c) =>
-        ["date", "timestamp without time zone", "timestamp with time zone", "timestamp"].includes(c.type),
+        ["date", "timestamp without time zone", "timestamp with time zone", "timestamp"].includes(
+          c.type,
+        ),
       );
       if (dateTypeCols.length > 0) dateColumn = dateTypeCols[0].name;
     }
     if (!dateColumn) {
-      res.status(400).json({ success: false, error: "Nenhuma coluna de data encontrada nesta tabela." });
+      res
+        .status(400)
+        .json({ success: false, error: "Nenhuma coluna de data encontrada nesta tabela." });
       return;
     }
 
@@ -71,7 +82,8 @@ export const getMetadata = async (req: Request, res: Response): Promise<void> =>
     const totalRows = Number(metaRes.rows[0].total || 0);
     const minDateRaw = metaRes.rows[0].min_date;
     const maxDateRaw = metaRes.rows[0].max_date;
-    const formatDate = (d: any) => (d ? (d instanceof Date ? d.toISOString().slice(0, 10) : d.toString().slice(0, 10)) : null);
+    const formatDate = (d: any) =>
+      d ? (d instanceof Date ? d.toISOString().slice(0, 10) : d.toString().slice(0, 10)) : null;
 
     const responsibles: any = {};
 
@@ -103,8 +115,12 @@ export const getMetadata = async (req: Request, res: Response): Promise<void> =>
         }));
 
         // coletar ids de reservatorio e instituicao para retornar listas únicas
-        const reservatorioIds = Array.from(new Set(campanhasRes.rows.map((r: any) => r.idreservatorio).filter(Boolean)));
-        const instituicaoIds = Array.from(new Set(campanhasRes.rows.map((r: any) => r.idinstituicao).filter(Boolean)));
+        const reservatorioIds = Array.from(
+          new Set(campanhasRes.rows.map((r: any) => r.idreservatorio).filter(Boolean)),
+        );
+        const instituicaoIds = Array.from(
+          new Set(campanhasRes.rows.map((r: any) => r.idinstituicao).filter(Boolean)),
+        );
 
         if (reservatorioIds.length > 0) {
           const resReserv = await furnasPool.query(
@@ -156,11 +172,28 @@ export const getMetadata = async (req: Request, res: Response): Promise<void> =>
       }
     } else {
       // --- Fallback: verificar manualmente FKs (campanha, sitio, reservatorio, instituicao)
-      const responsibleMap: { [key: string]: { fk: string; refTable: string; refId: string; refName: string } } = {
-        campanha: { fk: "idcampanha", refTable: "tbcampanha", refId: "idcampanha", refName: "nrocampanha" },
+      const responsibleMap: {
+        [key: string]: { fk: string; refTable: string; refId: string; refName: string };
+      } = {
+        campanha: {
+          fk: "idcampanha",
+          refTable: "tbcampanha",
+          refId: "idcampanha",
+          refName: "nrocampanha",
+        },
         sitio: { fk: "idsitio", refTable: "tbsitio", refId: "idsitio", refName: "nome" },
-        reservatorio: { fk: "idreservatorio", refTable: "tbreservatorio", refId: "idreservatorio", refName: "nome" },
-        instituicao: { fk: "idinstituicao", refTable: "tbinstituicao", refId: "idinstituicao", refName: "nome" },
+        reservatorio: {
+          fk: "idreservatorio",
+          refTable: "tbreservatorio",
+          refId: "idreservatorio",
+          refName: "nome",
+        },
+        instituicao: {
+          fk: "idinstituicao",
+          refTable: "tbinstituicao",
+          refId: "idinstituicao",
+          refName: "nome",
+        },
       };
 
       for (const [key, info] of Object.entries(responsibleMap)) {
@@ -168,7 +201,9 @@ export const getMetadata = async (req: Request, res: Response): Promise<void> =>
           responsibles[key] = [];
           continue;
         }
-        const fkValuesRes = await furnasPool.query(`SELECT DISTINCT ${info.fk} AS fk FROM public.${table} WHERE ${info.fk} IS NOT NULL`);
+        const fkValuesRes = await furnasPool.query(
+          `SELECT DISTINCT ${info.fk} AS fk FROM public.${table} WHERE ${info.fk} IS NOT NULL`,
+        );
         const fkValues = fkValuesRes.rows.map((r: any) => r.fk).filter((v: any) => v != null);
         if (fkValues.length === 0) {
           responsibles[key] = [];
@@ -190,15 +225,6 @@ export const getMetadata = async (req: Request, res: Response): Promise<void> =>
       responsibles,
       totalRows,
     });
-
-
-
-
-
-
-
-
-    
   } catch (error: any) {
     logger.error("Erro ao obter metadata da tabela", {
       table,

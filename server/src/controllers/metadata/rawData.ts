@@ -2,7 +2,7 @@ type TableMeta = {
   id: string;
   name: string;
   description?: string;
-  colunas: Array<string>
+  colunas: Array<string>;
 };
 
 const rawData: Record<string, TableMeta[]> = {
@@ -17,7 +17,18 @@ const rawData: Record<string, TableMeta[]> = {
       id: "tbabioticosuperficie",
       name: "tbabioticosuperficie",
       description: "Medições na superfície",
-      colunas: ["idAbioticoSuperficie","idCampanha","idSitio","dataMedida","horaMedida","dic","nt","pt","delta13c","delta15n"],
+      colunas: [
+        "idAbioticoSuperficie",
+        "idCampanha",
+        "idSitio",
+        "dataMedida",
+        "horaMedida",
+        "dic",
+        "nt",
+        "pt",
+        "delta13c",
+        "delta15n",
+      ],
     },
   ],
 
