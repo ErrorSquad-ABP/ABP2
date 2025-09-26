@@ -11,7 +11,8 @@ export function recursiveSort<T>(data: T[], key: keyof T): T[] {
 
 function merge<T>(left: T[], right: T[], key: keyof T): T[] {
   const result: T[] = [];
-  let i = 0, j = 0;
+  let i = 0,
+    j = 0;
 
   while (i < left.length && j < right.length) {
     const lv = left[i][key] as any;
