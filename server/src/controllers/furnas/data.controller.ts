@@ -110,7 +110,7 @@ const TABLE_WHITELIST: Record<string, string[]> = {
         "idcampanha",
         "idreservatorio",
         "idinstituicao",
-        "nrodacampanha",
+        "nrocampanha",
         "datainicio",
         "datafim"
     ],
@@ -398,7 +398,6 @@ export const getData = async (req: Request, res: Response): Promise<void> => {
             columns,
             limit,
             page,
-            sort,
         } = req.query as Record<string, string>;
 
         // validação da tabela
@@ -430,13 +429,13 @@ export const getData = async (req: Request, res: Response): Promise<void> => {
         const offset = (pageNum - 1) * pageSize;
 
         // ordenação
-        let orderBy = "datamedida DESC";
+        /*let orderBy = "datamedida DESC";
         if (sort) {
             const [col, dir] = sort.split(":");
             if (allowedColumns.includes(col) && ["asc", "desc"].includes(dir?.toLowerCase())) {
                 orderBy = `${col} ${dir.toUpperCase()}`;
             }
-        }
+        }*/
 
         // filtros
         const conditions: string[] = [];
@@ -465,7 +464,7 @@ export const getData = async (req: Request, res: Response): Promise<void> => {
       SELECT ${selectedColumns.join(", ")}
       FROM ${table}
       ${whereClause}
-      ORDER BY ${orderBy}
+      
       LIMIT $${idx++} OFFSET $${idx++};
     `;
 
