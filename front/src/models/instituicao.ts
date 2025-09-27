@@ -1,5 +1,5 @@
-import { IInstituicao } from "../types/instituicao.ts";
-import { IReservatorio } from "../types/reservatorio";
+import type { IInstituicao } from "../types/instituicao.ts";
+import type { IReservatorio } from "../types/reservatorio";
 
 export class Instituicao implements IInstituicao {
   id: number;
