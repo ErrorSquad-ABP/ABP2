@@ -86,7 +86,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
 export const getAllSortedById = async (req: Request, res: Response): Promise<void> => {
   try {
     // limita a 10 registros por página
-    const limit = 10;
+    const limit = 440018;
     const page = Number(req.query.page) || 1;
     const offset = (page - 1) * limit;
 
