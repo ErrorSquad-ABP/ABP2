@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { simaPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
+import { recursiveSort } from "../../utils/recursiveSort";
 
 const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
 
@@ -71,6 +72,50 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error: any) {
     logger.error("Erro ao consultar tbsima", {
+      message: error.message,
+      stack: error.stack,
+    });
+
+    res.status(500).json({
+      success: false,
+      error: "Erro ao realizar a operação.",
+    });
+  }
+};
+
+export const getAllSortedById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // limita a 10 registros por página
+    const limit = 440018;
+    const page = Number(req.query.page) || 1;
+    const offset = (page - 1) * limit;
+
+    // consulta apenas as colunas essenciais
+    const result = await simaPool.query(
+      `
+      SELECT idsima, datahora
+      FROM tbsima
+      ORDER BY idsima DESC
+      LIMIT $1 OFFSET $2
+      `,
+      [limit, offset],
+    );
+
+    // aplica a ordenação recursiva (mesmo com limit)
+    const sortedData = recursiveSort(
+      result.rows.map((r) => ({ ...r, idsima: Number(r.idsima) })),
+      "idsima",
+    );
+
+    res.status(200).json({
+      success: true,
+      page,
+      limit,
+      total: result.rows.length,
+      data: sortedData,
+    });
+  } catch (error: any) {
+    logger.error("Erro ao consultar tbsima (sorted route)", {
       message: error.message,
       stack: error.stack,
     });

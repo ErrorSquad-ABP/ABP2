@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
+import MapBrazil from "../components/MapBrazil";
 
 /**
  * TablesPage
@@ -75,7 +76,7 @@ const Page = styled.div`
   flex-direction: column;
   background: linear-gradient(180deg, #f6fbff 0%, #eef6ff 100%);
   color: ${({ theme }) => theme.colors.text.default};
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: "Helvetica Neue", Arial, sans-serif;
 `;
 
 const Container = styled.div`
@@ -235,7 +236,7 @@ const ChartMain = styled.div`
   padding: 8px;
   border-radius: 8px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: inset 0 4px 14px rgba(2,6,23,0.02);
+  box-shadow: inset 0 4px 14px rgba(2, 6, 23, 0.02);
 `;
 
 const ChartSide = styled.div`
@@ -279,14 +280,18 @@ export default function TablesPage(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
   const topicSlug = slug || "abioticos";
 
-  const [startDate, setStartDate] = useState<string>(() => isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)));
+  const [startDate, setStartDate] = useState<string>(() =>
+    isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)),
+  );
   const [endDate, setEndDate] = useState<string>(() => isoDate(new Date()));
   const [table, setTable] = useState<string>(() => topicSlug);
   const [responsavel, setResponsavel] = useState<string>("");
 
   // sensible defaults
   const [columns, setColumns] = useState<ColumnMeta[]>(mockColumns);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>(() => mockColumns.slice(0, 3).map((c) => c.name));
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(() =>
+    mockColumns.slice(0, 3).map((c) => c.name),
+  );
   const [metadata, setMetadata] = useState<TableMetadata | null>(mockMetadata);
 
   const [view, setView] = useState<"chart" | "map">("chart");
@@ -401,7 +406,10 @@ export default function TablesPage(): JSX.Element {
     }
     const headers = ["id", "datamedida", ...selectedColumns];
     const rows = chartData.map((r) => headers.map((h) => (r[h] === undefined ? "" : `${r[h]}`)));
-    const csv = [headers.join(","), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
+    const csv = [
+      headers.join(","),
+      ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")),
+    ].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -470,7 +478,8 @@ export default function TablesPage(): JSX.Element {
 
   /* Multi-series SVG chart: plots all selected numeric columns on the same coordinate system */
   function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
-    if (!rows || !rows.length || !columns || !columns.length) return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
+    if (!rows || !rows.length || !columns || !columns.length)
+      return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
 
     const height = 340;
     const viewBoxWidth = 820;
@@ -479,10 +488,12 @@ export default function TablesPage(): JSX.Element {
     const xFor = (i: number) => (i / (count - 1 || 1)) * (viewBoxWidth - 60) + 30;
 
     // build value arrays for each column
-    const seriesValues = columns.map((col) => rows.map((r) => {
-      const v = Number(r[col]);
-      return Number.isFinite(v) ? v : NaN;
-    }));
+    const seriesValues = columns.map((col) =>
+      rows.map((r) => {
+        const v = Number(r[col]);
+        return Number.isFinite(v) ? v : NaN;
+      }),
+    );
 
     // compute global min/max across series ignoring NaN
     const allNumbers = seriesValues.flat().filter((v) => !Number.isNaN(v));
@@ -492,47 +503,87 @@ export default function TablesPage(): JSX.Element {
     const yFor = (v: number) => ((max - v) / range) * (height - 40) + 20;
 
     return (
-      <svg viewBox={`0 0 ${viewBoxWidth} ${height}`} width="100%" height={height} preserveAspectRatio="xMidYMid meet">
+      <svg
+        viewBox={`0 0 ${viewBoxWidth} ${height}`}
+        width="100%"
+        height={height}
+        preserveAspectRatio="xMidYMid meet"
+      >
         {/* grid lines */}
         {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-          <line key={i} x1={30} x2={viewBoxWidth - 30} y1={20 + t * (height - 40)} y2={20 + t * (height - 40)} stroke="#e6eefb" strokeWidth={1} />
+          <line
+            key={i}
+            x1={30}
+            x2={viewBoxWidth - 30}
+            y1={20 + t * (height - 40)}
+            y2={20 + t * (height - 40)}
+            stroke="#e6eefb"
+            strokeWidth={1}
+          />
         ))}
 
         {/* series */}
         {seriesValues.map((vals, sIdx) => {
-          const points = vals.map((v, i) => {
-            if (Number.isNaN(v)) return null;
-            return `${xFor(i)},${yFor(v)}`;
-          }).filter(Boolean) as string[];
+          const points = vals
+            .map((v, i) => {
+              if (Number.isNaN(v)) return null;
+              return `${xFor(i)},${yFor(v)}`;
+            })
+            .filter(Boolean) as string[];
           if (!points.length) return null;
           const stroke = SERIES_COLORS[sIdx % SERIES_COLORS.length];
           return (
             <g key={sIdx}>
-              <polyline points={points.join(" ")} fill="none" stroke={stroke} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+              <polyline
+                points={points.join(" ")}
+                fill="none"
+                stroke={stroke}
+                strokeWidth={2.2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
               {points.map((pt, i) => {
                 const [xStr, yStr] = pt.split(",");
-                return <circle key={i} cx={+xStr} cy={+yStr} r={3.5} fill={stroke} stroke="#fff" strokeWidth={0.8} />;
+                return (
+                  <circle
+                    key={i}
+                    cx={+xStr}
+                    cy={+yStr}
+                    r={3.5}
+                    fill={stroke}
+                    stroke="#fff"
+                    strokeWidth={0.8}
+                  />
+                );
               })}
             </g>
           );
         })}
 
         {/* labels: left axis min/max */}
-        <text x="8" y={18} fontSize="11" fill="#5b6b7a">{max}</text>
-        <text x="8" y={height - 2} fontSize="11" fill="#5b6b7a">{min}</text>
+        <text x="8" y={18} fontSize="11" fill="#5b6b7a">
+          {max}
+        </text>
+        <text x="8" y={height - 2} fontSize="11" fill="#5b6b7a">
+          {min}
+        </text>
 
         {/* legend */}
         {columns.map((c, i) => (
           <g key={c} transform={`translate(${viewBoxWidth - 200}, ${20 + i * 18})`}>
             <rect width="12" height="10" rx="2" fill={SERIES_COLORS[i % SERIES_COLORS.length]} />
-            <text x="18" y="9" fontSize="12" fill="#0b2740">{c}</text>
+            <text x="18" y="9" fontSize="12" fill="#0b2740">
+              {c}
+            </text>
           </g>
         ))}
       </svg>
     );
   }
 
-  const numericColumns = columns.filter((c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name));
+  const numericColumns = columns.filter(
+    (c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name),
+  );
   // selected numeric columns to plot (prefer numeric ones)
   const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.name === s));
   const plottedColumns = plotColumns.length ? plotColumns : [selectedColumns[0]].filter(Boolean);
@@ -558,7 +609,9 @@ export default function TablesPage(): JSX.Element {
                 <option value={topicSlug}>{topicSlug}</option>
                 <option value={`${topicSlug}-extra`}>{topicSlug} - extra</option>
               </Select>
-              <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>* Obrigatório selecionar tabela</div>
+              <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>
+                * Obrigatório selecionar tabela
+              </div>
             </Row>
 
             <Row>
@@ -574,7 +627,9 @@ export default function TablesPage(): JSX.Element {
 
             <div style={{ fontSize: 13, color: "#475569", marginTop: 6 }}>
               <strong>Colunas disponíveis</strong>
-              <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>Marque as colunas que deseja incluir no gráfico / export.</div>
+              <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
+                Marque as colunas que deseja incluir no gráfico / export.
+              </div>
             </div>
           </Controls>
 
@@ -599,40 +654,72 @@ export default function TablesPage(): JSX.Element {
         <RightPanel>
           <ControlsTopRight>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <Button primary onClick={handleGenerate}>Gerar Gráfico</Button>
+              <Button primary onClick={handleGenerate}>
+                Gerar Gráfico
+              </Button>
 
               {/* Export button shares the same styling */}
               <div style={{ position: "relative" }}>
                 <Button onClick={() => setShowExportOptions((s) => !s)}>Exportar ▾</Button>
                 {showExportOptions && (
-                  <div style={{
-                    position: "absolute",
-                    right: 0,
-                    marginTop: 8,
-                    background: "#fff",
-                    boxShadow: "0 6px 18px rgba(2,6,23,0.12)",
-                    borderRadius: 8,
-                    padding: 8,
-                    zIndex: 40
-                  }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      marginTop: 8,
+                      background: "#fff",
+                      boxShadow: "0 6px 18px rgba(2,6,23,0.12)",
+                      borderRadius: 8,
+                      padding: 8,
+                      zIndex: 40,
+                    }}
+                  >
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <button style={{ padding: 8, borderRadius: 6, border: "none", cursor: "pointer" }} onClick={() => { downloadCSV(); setShowExportOptions(false); }}>CSV</button>
-                      <button style={{ padding: 8, borderRadius: 6, border: "none", cursor: "pointer" }} onClick={() => { exportPDF(); setShowExportOptions(false); }}>PDF</button>
+                      <button
+                        style={{ padding: 8, borderRadius: 6, border: "none", cursor: "pointer" }}
+                        onClick={() => {
+                          downloadCSV();
+                          setShowExportOptions(false);
+                        }}
+                      >
+                        CSV
+                      </button>
+                      <button
+                        style={{ padding: 8, borderRadius: 6, border: "none", cursor: "pointer" }}
+                        onClick={() => {
+                          exportPDF();
+                          setShowExportOptions(false);
+                        }}
+                      >
+                        PDF
+                      </button>
                     </div>
                   </div>
                 )}
               </div>
 
-              <Button onClick={() => setView((v) => (v === "chart" ? "map" : "chart"))}>{view === "chart" ? "Ver mapa" : "Ver gráfico"}</Button>
+              <Button onClick={() => setView((v) => (v === "chart" ? "map" : "chart"))}>
+                {view === "chart" ? "Ver mapa" : "Ver gráfico"}
+              </Button>
             </div>
           </ControlsTopRight>
 
           <Panel ref={chartRef}>
             {view === "chart" ? (
               <>
-                <div style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
                   <div style={{ fontWeight: 800, color: "#0b2740" }}>Visualização — {table}</div>
-                  <div style={{ color: "#475569", fontSize: 13 }}>{chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}</div>
+                  <div style={{ color: "#475569", fontSize: 13 }}>
+                    {chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}
+                  </div>
                 </div>
 
                 <ChartWrapper>
@@ -643,7 +730,8 @@ export default function TablesPage(): JSX.Element {
                       </div>
                     ) : (
                       <div style={{ padding: 16, color: "#64748b" }}>
-                        Clique em <strong>Gerar Gráfico</strong> para criar uma visualização (protótipo).
+                        Clique em <strong>Gerar Gráfico</strong> para criar uma visualização
+                        (protótipo).
                       </div>
                     )}
                   </ChartMain>
@@ -651,12 +739,30 @@ export default function TablesPage(): JSX.Element {
                   <ChartSide>
                     {/* show small stats for selected columns */}
                     {selectedColumns.slice(0, 3).map((col) => {
-                      const values = (chartData || []).map((r) => Number(r[col])).filter((v) => Number.isFinite(v));
-                      const avg = values.length ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : "—";
+                      const values = (chartData || [])
+                        .map((r) => Number(r[col]))
+                        .filter((v) => Number.isFinite(v));
+                      const avg = values.length
+                        ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
+                        : "—";
                       return (
-                        <div key={col} style={{ background: "#f8fafc", borderRadius: 8, padding: 12 }}>
-                          <div style={{ fontSize: 13, color: "#334155", marginBottom: 6, fontWeight: 800 }}>{col}</div>
-                          <div style={{ fontSize: 12, color: "#475569" }}>média: <strong style={{ color: "#0b2740" }}>{avg}</strong></div>
+                        <div
+                          key={col}
+                          style={{ background: "#f8fafc", borderRadius: 8, padding: 12 }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 13,
+                              color: "#334155",
+                              marginBottom: 6,
+                              fontWeight: 800,
+                            }}
+                          >
+                            {col}
+                          </div>
+                          <div style={{ fontSize: 12, color: "#475569" }}>
+                            média: <strong style={{ color: "#0b2740" }}>{avg}</strong>
+                          </div>
                         </div>
                       );
                     })}
@@ -665,14 +771,26 @@ export default function TablesPage(): JSX.Element {
               </>
             ) : (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 8,
+                  }}
+                >
                   <div style={{ fontWeight: 800, color: "#0b2740" }}>Mapa — pontos de coleta</div>
                   <div style={{ color: "#475569", fontSize: 13 }}>{latLonPoints.length} pontos</div>
                 </div>
 
                 <MapPlaceholder>
-                  {normalizedMarkers.length ? (
-                    normalizedMarkers.map((m, idx) => <Marker key={idx} left={m.left} top={m.top} />)
+                  {latLonPoints.length ? (
+                    <div style={{ padding: 12, width: "100%", height: "100%" }}>
+                      <MapBrazil
+                        points={latLonPoints.map((p) => ({ id: p.id, lat: p.lat, lon: p.lon, label: `Ponto ${p.id}` }))}
+                        height={520}
+                      />
+                    </div>
                   ) : (
                     <div style={{ padding: 16, color: "#334155" }}>
                       Não há coordenadas disponíveis. Gere o gráfico com colunas contendo <code>latitude</code> / <code>longitude</code>.

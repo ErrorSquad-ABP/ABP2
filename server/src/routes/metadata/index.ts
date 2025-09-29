@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {getDataFromTable} from "../../controllers/metadata/metadata.controller"
+import { getDataFromTable } from "../../controllers/metadata/metadata.controller";
 
 /*
 Criar rotas para devolver as colunas de determinada tabela

@@ -49,7 +49,7 @@ export class Instituicao implements IInstituicao {
     return this.id === other.id;
   }
 }
-import { IReservatorio } from "./reservatorio.ts";
+import type { IReservatorio } from "./reservatorio.ts";
 
 export interface IInstituicao {
   id: number;
