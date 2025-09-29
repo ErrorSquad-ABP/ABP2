@@ -27,3 +27,4 @@ const router = Router();
 router.get("/:table", getDataFromTable);
 
 export default router;
+
