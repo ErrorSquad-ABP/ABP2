@@ -215,15 +215,102 @@ Quero aplicar filtros combinados em múltiplas colunas,
 
 </details>
 
-<details>  
+<details>
 <summary><b>🎨 Design do Site</b></summary>
 
-- 🧭 Objetivo do Protótipo
-- 📊 Interfaces Principais
-- 🗂️ Arquitetura de Navegação
-- 🎨 Design System
-  - Paleta de Cores
-- 💡 Diferenciais de UX
+## 🧭 Objetivo do Protótipo
+Criar um front-end responsivo e moderno para o **Repositório de Dados Limnológicos** que permita explorar conjuntos de dados por tópico, selecionar tabelas, filtrar por período / responsável / colunas e gerar visualizações (gráficos e mapa). O protótipo prioriza fluxo direto para gerar gráficos a partir de seleções do usuário, com exportação (CSV/PDF) e uma visualização geoespacial do Brasil (polígonos de estados).
+
+---
+
+## 📊 Interfaces Principais
+1. **Home (tópicos em cards)**  
+   - Grade de cards (3 por linha em desktop).  
+   - Cada card abre `/tables/:slug` relativo ao tópico (ex.: `abioticos`, `bioticos`).
+2. **TablesPage (/tables/:slug)**  
+   - Painel esquerdo: controles — data início/fim, seleção de tabela (obrigatória), dropdown de responsável, lista de colunas (checkboxes).  
+   - Painel direito: topo com botões `Gerar Gráfico`, `Exportar ▾` (CSV/PDF) e `Ver mapa`.  
+   - Área principal: **único gráfico multi-série** que plota as colunas selecionadas.  
+   - Alternativa de visualização: **mapa do Brasil** com polígonos de estados como pano de fundo e marcadores/polígonos dos pontos de coleta.
+3. **SimaPage / outras páginas institucionais**  
+   - Páginas específicas (SIMA, FURNAS, BALCAR) acessíveis pelos logos na topbar.
+4. **Topbar (MenuBar)**  
+   - Logo e título alinhados à esquerda (BDLimnologico).  
+   - Grupo de 3 logos à direita prontos para linkar SIMAS / FURNAS / BALCAR.  
+   - Mobile: botão hambúrguer com menu.
+
+---
+
+## 🗂️ Arquitetura de Navegação
+- `/` → Home (cards de tópico)
+- `/tables/:slug` → Page de seleção / visualização / mapa (principal fluxo de análise)
+- `/sima`, `/furnas`, `/balcar` → páginas institucionais (placeholders para logos)
+- Rotas internas auxiliares: `/sima/*`, `/tables/:slug/*` para modais e subviews
+
+**Fluxo de interação (resumido):**
+1. Usuário clica no card do tópico.
+2. Em `/tables/:slug` seleciona Tabela (obrigatório) + período + responsável + colunas.
+3. Clica `Gerar Gráfico` → front tenta `GET /tables/:table/aggregate` (fallback para mock).
+4. Visualiza gráfico; pode alternar para mapa (`Ver mapa`) que carrega polígonos do Brasil e plota coletas.
+5. Exportar via CSV ou PDF.
+
+---
+
+## 🎨 Design System (resumo prático)
+**Paleta principal**
+- `--color-primary` : `#2563EB` (azul vibrante)
+- `--color-primary-dark` : `#063A80` (azul profundo)
+- `--color-accent` : `#06B6D4` (teal/ciano)
+- `--color-bg-top` : gradient `#f3f7fb → #eef6ff`
+- `--color-card-bg` : `#ffffff`
+- `--color-text-muted` : `#475569`
+- `--color-text-default` : `#0b2740`
+- `--color-inverse-text` : `#ffffff`
+
+**Tipografia**
+- Família: `Helvetica Neue, Arial, sans-serif`
+- Hierarquia: h1 32px, h2 22–26px, base 14–15px
+- Peso: regular 400, semibold 600–700 para labels/CTAs
+
+**Espaçamento & layout**
+- spacing tokens: `4, 8, 12, 16, 24, 32, 40`
+- container max-width: `1200–1400px`
+- border-radius: `8–16px` (cards maiores: 16px)
+- sombras: suave (ex.: `0 12px 36px rgba(9,30,66,0.06)`)
+
+**Componentes reutilizáveis**
+- `Button (primary / secondary)` — pequeno, com micro-anim.
+- `Select`, `Input`, `Checkbox` — estado focado acessível.
+- `Card` — elevação suave; hover eleva e aumenta sombra.
+- `MapBrazil` — componente que aceita `polygons` e `points`.
+- `MultiSeriesSVG` — gráfico SVG responsivo protótipo.
+
+---
+
+## 💡 Diferenciais de UX
+- **Seleção obrigatória de tabela** claramente indicada no painel, para reduzir erros de geração de gráfico.  
+- **Foco em seleção**: colunas aparecem como checkboxes com labels fortes e microdescrições.  
+- **Fallbacks inteligentes**: ao não encontrar dados no backend, o protótipo gera séries mock para permitir teste de UI.  
+- **Export simples**: CSV ou PDF a partir do conteúdo do painel com preview.  
+- **Mapa contextual**: polígonos do Brasil em fundo estilizado (sem rótulos) para destacar coletas, mantendo privacidade/legibilidade.  
+- **Acessibilidade básica**: cores com contraste adequado para CTAs; inputs e botões com `:focus` visíveis.  
+- **Mobile-first**: grade de cards reflow para 1 coluna; controles empilham verticalmente no mobile; mobile menu com links rápidos.
+
+---
+
+## 🧭 Integração rápida com API (resumo)
+Endpoints principais usados no front:
+- `GET /tables/:table/columns` → metadados colunas
+- `GET /tables/:table/metadata` → intervalo de datas e responsáveis
+- `GET /tables/:table/aggregate?start=YYYY-MM-DD&end=YYYY-MM-DD&cols=a,b,c&responsavel=X` → dados agregados/serie temporal
+- `GET /tables/:table/map?start=...` → pontos/geojson para mapa
+- `POST /export` → gerar CSV / PDF (server-side opcional)
+
+**Exemplo de chamada (frontend)**
+``ts
+const params = new URLSearchParams({ start, end, cols: selectedColumns.join(","), responsavel });
+const res = await fetch(`${API_BASE}/tables/${encodeURIComponent(table)}/aggregate?${params.toString()}`);
+const data = await res.json();
 
 </details>
 
