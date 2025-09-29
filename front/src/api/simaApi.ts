@@ -14,3 +14,8 @@ export const getSima = async (
   );
   return response.data;
 };
+
+export const getReservatorios = async () => {
+  const response = await axios.get(`${API_URL}/furnas/reservatorio/all`);
+  return response.data.data; // assumindo que o backend retorna { data: [...] }
+};
