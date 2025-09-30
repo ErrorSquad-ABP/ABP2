@@ -234,3 +234,70 @@ export const getMetadata = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ success: false, error: "Erro ao obter metadados da tabela." });
   }
 };
+
+/**
+ * GET /tables/:table/columns
+ * Retorna metadados das colunas de uma tabela
+ */
+export const getColumns = async (req: Request, res: Response): Promise<void> => {
+  const table = String(req.params.table || "").trim();
+
+  try {
+    if (!/^[a-z0-9_]+$/.test(table)) {
+      res.status(400).json({ success: false, error: "Nome de tabela inválido." });
+      return;
+    }
+
+    // verifica se a tabela existe
+    const tableExistsResult = await furnasPool.query(
+      `SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = $1 LIMIT 1`,
+      [table],
+    );
+    if (tableExistsResult.rowCount === 0) {
+      res.status(404).json({ success: false, error: "Tabela não encontrada." });
+      return;
+    }
+
+    // busca colunas
+    const colsRes = await furnasPool.query(
+      `SELECT column_name, data_type
+       FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = $1`,
+      [table],
+    );
+
+    // formata resposta
+    const columns = colsRes.rows.map((r: any) => {
+      const isTime =
+        ["date", "timestamp", "timestamp without time zone", "timestamp with time zone"].includes(
+          r.data_type,
+        );
+
+      return {
+        name: r.column_name,
+        type: isTime
+          ? "date"
+          : r.data_type.includes("int") || r.data_type.includes("numeric")
+          ? "number"
+          : "string",
+        label: formatLabel(r.column_name),
+        is_time: isTime,
+      };
+    });
+
+    res.status(200).json({ success: true, table, columns });
+  } catch (error: any) {
+    logger.error("Erro ao obter colunas da tabela", {
+      table,
+      message: error.message,
+      stack: error.stack,
+    });
+    res.status(500).json({ success: false, error: "Erro ao obter colunas da tabela." });
+  }
+};
+
+function formatLabel(name: string): string {
+  return name
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
