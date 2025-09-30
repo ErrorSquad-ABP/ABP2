@@ -11,7 +11,7 @@ const rawData: Record<string, TableMeta[]> = {
   abioticos: [
     {
       id: "tbabioticocoluna",
-      name: "tbabioticocoluna",
+      name: "Abióticos Coluna",
       description: "Medições na coluna d'água (profundidade, DIC, delta15N, etc.)",
       colunas: [{nome:"nomedacoluna", label:"Nome Formatado", type:"tipodacoluna"}],
     },
@@ -19,18 +19,7 @@ const rawData: Record<string, TableMeta[]> = {
       id: "tbabioticosuperficie",
       name: "tbabioticosuperficie",
       description: "Medições na superfície",
-      colunas: [
-        "idAbioticoSuperficie",
-        "idCampanha",
-        "idSitio",
-        "dataMedida",
-        "horaMedida",
-        "dic",
-        "nt",
-        "pt",
-        "delta13c",
-        "delta15n",
-      ],
+      colunas: [],
     },
   ],
 
