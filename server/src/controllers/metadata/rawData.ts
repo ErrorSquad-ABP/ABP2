@@ -19,18 +19,7 @@ const rawData: Record<string, TableMeta[]> = {
       id: "tbabioticosuperficie",
       name: "tbabioticosuperficie",
       description: "Medições na superfície",
-      colunas: [
-        "idAbioticoSuperficie",
-        "idCampanha",
-        "idSitio",
-        "dataMedida",
-        "horaMedida",
-        "dic",
-        "nt",
-        "pt",
-        "delta13c",
-        "delta15n",
-      ],
+      colunas: [],
     },
   ],
 
@@ -231,3 +220,4 @@ const rawData: Record<string, TableMeta[]> = {
 };
 
 export default rawData;
+
