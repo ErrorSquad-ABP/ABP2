@@ -309,7 +309,7 @@ export default function TablesPage(): JSX.Element {
   // sensible defaults
   const [columns, setColumns] = useState<ColumnMeta[]>(mockColumns);
   const [selectedColumns, setSelectedColumns] = useState<string[]>(() =>
-    mockColumns.slice(0, 3).map((c) => c.name),
+    mockColumns.slice(0, 3).map((c) => c.nome),
   );
   const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
@@ -606,10 +606,10 @@ useEffect(() => {
   }
 
   const numericColumns = columns.filter(
-    (c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name),
+    (c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.nome),
   );
   // selected numeric columns to plot (prefer numeric ones)
-  const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.name === s));
+  const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.nome === s));
   const plottedColumns = plotColumns.length ? plotColumns : [selectedColumns[0]].filter(Boolean);
 
   return (
@@ -658,15 +658,16 @@ useEffect(() => {
 
           <ColumnsBox aria-label="Lista de colunas">
             {columns.map((c) => (
-              <ColumnItem key={c.name}>
+              <ColumnItem key={c.nome}>
+                {console.log(c.nome)}
                 <input
                   type="checkbox"
-                  checked={selectedColumns.includes(c.name)}
-                  onChange={() => toggleColumn(c.name)}
-                  id={`col-${c.name}`}
+                  checked={selectedColumns.includes(c.nome)}
+                  onChange={() => toggleColumn(c.nome)}
+                  id={`col-${c.nome}`}
                 />
                 <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontWeight: 700 }}>{c.label || c.name}</span>
+                  <span style={{ fontWeight: 700 }}>{c.label || c.nome}</span>
                   <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
                 </div>
               </ColumnItem>
