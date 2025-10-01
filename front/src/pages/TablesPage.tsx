@@ -30,13 +30,28 @@ function isoDate(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
+/* helper: produce month range inclusive in YYYY-MM-DD format (use first day of month) */
+function monthsBetweenDatesISO(startISO: string, endISO: string) {
+  const start = new Date(startISO + "T00:00:00");
+  const end = new Date(endISO + "T00:00:00");
+  const res: string[] = [];
+  const s = new Date(start.getFullYear(), start.getMonth(), 1);
+  const e = new Date(end.getFullYear(), end.getMonth(), 1);
+  for (let dt = new Date(s); dt <= e; dt.setMonth(dt.getMonth() + 1)) {
+    const y = dt.getFullYear();
+    const m = (dt.getMonth() + 1).toString().padStart(2, "0");
+    const d = "01";
+    res.push(`${y}/${m}/${d}`); // ano/mes/dia format requested
+  }
+  return res;
+}
+
+/* ================= Mock / Defaults ================= */
+/* NOTE: datamedida removed from selectable columns as requested */
 const mockColumns: ColumnMeta[] = [
-  { name: "datamedida", label: "Data", type: "date" },
   { name: "dic", label: "DIC (mg/L)", type: "number" },
   { name: "ph", label: "pH", type: "number" },
   { name: "profundidade", label: "Profundidade (m)", type: "number" },
-  { name: "latitude", label: "Latitude", type: "number" },
-  { name: "longitude", label: "Longitude", type: "number" },
 ];
 
 const mockMetadata: TableMetadata = {
@@ -45,28 +60,11 @@ const mockMetadata: TableMetadata = {
   responsaveis: ["Dr. Silva", "Equipe A", "Equipe B"],
 };
 
-function simpleRange(startISO: string, endISO: string, n = 12) {
-  const start = new Date(startISO);
-  const end = new Date(endISO);
-  const arr: string[] = [];
-  for (let i = 0; i < n; i++) {
-    const t = start.getTime() + ((end.getTime() - start.getTime()) * i) / (n - 1 || 1);
-    arr.push(new Date(t).toISOString().slice(0, 10));
-  }
-  return arr;
-}
+const MOCK_INSTITUTIONS = ["INPE", "FURNAS", "BALCAR", "UFRJ", "USP"];
 
-function makeMockMeasurements(dates: string[]) {
-  return dates.map((d, i) => ({
-    id: i + 1,
-    datamedida: d,
-    dic: +(5 + Math.sin(i / 2) * 2 + Math.random() * 0.6).toFixed(2),
-    ph: +(6 + Math.cos(i / 3) * 0.4 + Math.random() * 0.1).toFixed(2),
-    profundidade: +(Math.abs(Math.sin(i / 2)) * 10).toFixed(2),
-    latitude: -10 + Math.random() * 5,
-    longitude: -50 + Math.random() * 5,
-  }));
-}
+/* simple color palette for multiple series */
+const SERIES_COLORS = ["#0b5394", "#2563EB", "#06B6D4", "#F59E0B", "#EF4444", "#10B981"];
+const INSTITUTION_FILL_COLORS = ["#ffd6d6", "#fff0d6", "#d6ffe8", "#dff4ff", "#f0e6ff", "#fff8d6"];
 
 /* ================= Styled ================= */
 
@@ -87,11 +85,21 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: minmax(300px, 460px) minmax(0, 1fr);
   gap: 24px;
+  align-items: stretch; /* ensure both columns stretch to same height */
+  min-height: 640px;
 
   @media (max-width: 1100px) {
     grid-template-columns: 1fr;
     padding: 0 18px;
   }
+`;
+
+/* left column wrapper so controls + columns share the same full height */
+const LeftColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
 `;
 
 const Controls = styled.div`
@@ -102,6 +110,7 @@ const Controls = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 0 0 auto;
 `;
 
 const Row = styled.div`
@@ -148,8 +157,8 @@ const ColumnsBox = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: calc(100vh - 240px);
   overflow: auto;
+  flex: 1 1 auto; /* take remaining height so left column matches right */
 `;
 
 const ColumnItem = styled.label`
@@ -209,7 +218,8 @@ const Panel = styled.div`
   background: #fff;
   padding: 20px;
   border-radius: 12px;
-  min-height: 480px; /* increased to make visualization area larger */
+  /* make panel stretch to full left column height */
+  height: 100%;
   box-shadow: 0 12px 36px rgba(9, 30, 66, 0.06);
   display: flex;
   flex-direction: column;
@@ -231,48 +241,81 @@ const ChartMain = styled.div`
   flex: 1 1 0;
   min-width: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* align top so legend (if any) lines up */
   justify-content: center;
-  padding: 8px;
+  padding: 12px;
   border-radius: 8px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   box-shadow: inset 0 4px 14px rgba(2, 6, 23, 0.02);
+  position: relative; /* for tooltip placement */
+  overflow: auto;
+  min-height: 440px;
 `;
 
-const ChartSide = styled.div`
-  width: 260px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* tooltip */
+const Tooltip = styled.div<{ left: number; top: number; color: string }>`
+  position: absolute;
+  left: ${(p) => p.left}px;
+  top: ${(p) => p.top}px;
+  transform: translate(-8px, -100%);
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(2, 6, 23, 0.12);
+  padding: 8px 10px;
+  z-index: 60;
+  min-width: 160px;
+  font-size: 13px;
+  pointer-events: none;
 
-  @media (max-width: 900px) {
-    width: 100%;
+  .color {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: ${(p) => p.color};
+    margin-right: 8px;
+    vertical-align: middle;
+    border: 1px solid rgba(0, 0, 0, 0.06);
   }
+
+  .title {
+    font-weight: 800;
+    color: #0b2740;
+  }
+
+  .meta {
+    color: #475569;
+    margin-top: 6px;
+    font-size: 12px;
+  }
+`;
+
+/* legend container */
+const Legend = styled.div`
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  align-items: center;
+`;
+
+const LegendItem = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 14px;
+  color: #0b2740;
 `;
 
 const MapPlaceholder = styled.div`
   position: relative;
   flex: 1;
-  background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%);
+  background: linear-gradient(180deg, #0b2340 0%, #082033 100%); /* darker backdrop */
   border-radius: 8px;
   overflow: hidden;
   min-height: 260px;
+  padding: 12px;
 `;
-
-const Marker = styled.div<{ left: number; top: number }>`
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: rgba(220, 38, 38, 0.95);
-  left: ${(p) => p.left}%;
-  top: ${(p) => p.top}%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 4px 10px rgba(2, 6, 23, 0.2);
-`;
-
-/* simple color palette for multiple series */
-const SERIES_COLORS = ["#0b5394", "#2563EB", "#06B6D4", "#F59E0B", "#EF4444", "#10B981"];
 
 /* ================= Component ================= */
 
@@ -280,24 +323,30 @@ export default function TablesPage(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
   const topicSlug = slug || "abioticos";
 
-  const [startDate, setStartDate] = useState<string>(() =>
-    isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)),
-  );
+  const [startDate, setStartDate] = useState<string>(() => isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)));
   const [endDate, setEndDate] = useState<string>(() => isoDate(new Date()));
   const [table, setTable] = useState<string>(() => topicSlug);
-  const [responsavel, setResponsavel] = useState<string>("");
 
-  // sensible defaults
+  // sensible defaults (latitude/longitude/datamedida removed from selectable)
   const [columns, setColumns] = useState<ColumnMeta[]>(mockColumns);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>(() =>
-    mockColumns.slice(0, 3).map((c) => c.name),
-  );
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(() => mockColumns.slice(0, 3).map((c) => c.name));
   const [metadata, setMetadata] = useState<TableMetadata | null>(mockMetadata);
 
   const [view, setView] = useState<"chart" | "map">("chart");
   const [chartData, setChartData] = useState<any[] | null>(null);
   const chartRef = useRef<HTMLDivElement | null>(null);
+  const chartMainRef = useRef<HTMLDivElement | null>(null);
   const [showExportOptions, setShowExportOptions] = useState(false);
+
+  // tooltip state
+  const [tooltip, setTooltip] = useState<{
+    visible: boolean;
+    left: number;
+    top: number;
+    instituicao?: string;
+    reservatorio?: string;
+    color?: string;
+  }>({ visible: false, left: 0, top: 0 });
 
   useEffect(() => {
     let mounted = true;
@@ -312,11 +361,15 @@ export default function TablesPage(): JSX.Element {
         if (colsRes.ok) {
           const data = await colsRes.json();
           const cols = Array.isArray(data) ? data : data?.columns || mockColumns;
-          if (Array.isArray(cols) && cols.length) {
-            setColumns(cols);
+          // remove datamedida, latitude and longitude from selectable list
+          const filtered = (Array.isArray(cols) ? cols : mockColumns).filter(
+            (c: ColumnMeta) => c.name !== "latitude" && c.name !== "longitude" && c.name !== "datamedida",
+          );
+          if (Array.isArray(filtered) && filtered.length) {
+            setColumns(filtered);
             setSelectedColumns((prev) => {
-              const keep = prev.filter((p) => cols.some((c) => c.name === p));
-              return keep.length ? keep : cols.slice(0, 3).map((c) => c.name);
+              const keep = prev.filter((p) => filtered.some((c) => c.name === p));
+              return keep.length ? keep : filtered.filter((c) => c.type === "number").slice(0, 3).map((c) => c.name);
             });
           } else {
             setColumns(mockColumns);
@@ -330,22 +383,13 @@ export default function TablesPage(): JSX.Element {
         if (metaRes.ok) {
           const m = await metaRes.json();
           setMetadata((prev) => ({ ...prev, ...(m || {}) }));
-          if (!responsavel && m?.responsaveis && m.responsaveis.length) {
-            setResponsavel(m.responsaveis[0]);
-          }
         } else {
           setMetadata(mockMetadata);
-          if (!responsavel && mockMetadata.responsaveis && mockMetadata.responsaveis.length) {
-            setResponsavel(mockMetadata.responsaveis[0]);
-          }
         }
       } catch (err) {
         setColumns(mockColumns);
         setMetadata(mockMetadata);
         setSelectedColumns(mockColumns.slice(0, 3).map((c) => c.name));
-        if (!responsavel && mockMetadata.responsaveis && mockMetadata.responsaveis.length) {
-          setResponsavel(mockMetadata.responsaveis[0]);
-        }
       }
     }
 
@@ -367,12 +411,14 @@ export default function TablesPage(): JSX.Element {
       return;
     }
 
+    // use month range as x-axis sampling
+    const months = monthsBetweenDatesISO(startDate, endDate);
     try {
       const params = new URLSearchParams();
       params.set("start", startDate);
       params.set("end", endDate);
-      if (responsavel) params.set("responsavel", responsavel);
       params.set("cols", selectedColumns.join(","));
+      params.set("aggregate_by", "month");
 
       const url = `${API_BASE}/tables/${encodeURIComponent(table)}/aggregate?${params.toString()}`;
       const res = await fetch(url);
@@ -383,16 +429,14 @@ export default function TablesPage(): JSX.Element {
         if (Array.isArray(rows) && rows.length) {
           setChartData(rows);
         } else {
-          const dates = simpleRange(startDate, endDate, 20);
-          setChartData(makeMockMeasurements(dates));
+          // fallback: produce one row per month
+          setChartData(makeMockMeasurementsForMonths(months));
         }
       } else {
-        const dates = simpleRange(startDate, endDate, 20);
-        setChartData(makeMockMeasurements(dates));
+        setChartData(makeMockMeasurementsForMonths(months));
       }
     } catch (err) {
-      const dates = simpleRange(startDate, endDate, 20);
-      setChartData(makeMockMeasurements(dates));
+      setChartData(makeMockMeasurementsForMonths(months));
     }
 
     setView("chart");
@@ -476,20 +520,46 @@ export default function TablesPage(): JSX.Element {
 
   const normalizedMarkers = useMemo(() => normalizePoints(latLonPoints), [latLonPoints]);
 
-  /* Multi-series SVG chart: plots all selected numeric columns on the same coordinate system */
+  /* Multi-series SVG chart: plots all selected numeric columns on the same coordinate system
+     and shows colored points per institution with tooltip on hover.
+     X axis now uses monthsBetweenDatesISO(start,end) so we always show every month label in YYYY/MM/DD. */
   function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
     if (!rows || !rows.length || !columns || !columns.length)
       return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
 
-    const height = 340;
-    const viewBoxWidth = 820;
-    // prepare x positions
-    const count = rows.length;
-    const xFor = (i: number) => (i / (count - 1 || 1)) * (viewBoxWidth - 60) + 30;
+    // derive months from rows if datamedida exists or fallback to monthsBetweenDatesISO
+    const months = (() => {
+      const found = rows.map((r) => {
+        if (!r.datamedida) return "";
+        const d = new Date(r.datamedida);
+        if (!isNaN(d.getTime())) return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/01`;
+        const s = String(r.datamedida).slice(0, 10).replace(/-/g, "/");
+        return s.length ? s : "";
+      });
+      if (found.every((m) => m)) return found;
+      return monthsBetweenDatesISO(startDate, endDate);
+    })();
 
-    // build value arrays for each column
+    const height = 520; // bigger chart
+    const viewBoxWidth = Math.max(1000, months.length * 100);
+    const count = months.length;
+    const xFor = (i: number) => (i / (count - 1 || 1)) * (viewBoxWidth - 100) + 50;
+
+    // build rowsByMonth aligned to months (first matching row per month)
+    const rowsByMonth = months.map((m, i) => {
+      const ymd = m.replace(/\//g, "-").slice(0, 7); // YYYY-MM
+      const found = rows.find((r) => {
+        if (!r.datamedida) return false;
+        const d = new Date(r.datamedida);
+        if (isNaN(d.getTime())) return false;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        return key === ymd;
+      });
+      return found || rows[Math.min(rows.length - 1, i)] || rows[0];
+    });
+
     const seriesValues = columns.map((col) =>
-      rows.map((r) => {
+      rowsByMonth.map((r) => {
         const v = Number(r[col]);
         return Number.isFinite(v) ? v : NaN;
       }),
@@ -500,98 +570,138 @@ export default function TablesPage(): JSX.Element {
     const max = allNumbers.length ? Math.max(...allNumbers) : 1;
     const min = allNumbers.length ? Math.min(...allNumbers) : 0;
     const range = max - min || 1;
-    const yFor = (v: number) => ((max - v) / range) * (height - 40) + 20;
+    const yFor = (v: number) => ((max - v) / range) * (height - 80) + 40;
+
+    // institution -> color mapping (fill)
+    const uniqueInsts = Array.from(new Set(rows.map((r) => r.instituicao || "—")));
+    const instColorMap: Record<string, string> = {};
+    uniqueInsts.forEach((inst, idx) => {
+      instColorMap[inst] = INSTITUTION_FILL_COLORS[idx % INSTITUTION_FILL_COLORS.length];
+    });
 
     return (
-      <svg
-        viewBox={`0 0 ${viewBoxWidth} ${height}`}
-        width="100%"
-        height={height}
-        preserveAspectRatio="xMidYMid meet"
-      >
-        {/* grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-          <line
-            key={i}
-            x1={30}
-            x2={viewBoxWidth - 30}
-            y1={20 + t * (height - 40)}
-            y2={20 + t * (height - 40)}
-            stroke="#e6eefb"
-            strokeWidth={1}
-          />
-        ))}
+      <div style={{ width: "100%", position: "relative" }}>
+        <svg
+          viewBox={`0 0 ${viewBoxWidth} ${height}`}
+          width="100%"
+          height={height}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {/* grid lines */}
+          {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
+            <line
+              key={i}
+              x1={50}
+              x2={viewBoxWidth - 50}
+              y1={40 + t * (height - 80)}
+              y2={40 + t * (height - 80)}
+              stroke="#e6eefb"
+              strokeWidth={1}
+            />
+          ))}
 
-        {/* series */}
-        {seriesValues.map((vals, sIdx) => {
-          const points = vals
-            .map((v, i) => {
-              if (Number.isNaN(v)) return null;
-              return `${xFor(i)},${yFor(v)}`;
-            })
-            .filter(Boolean) as string[];
-          if (!points.length) return null;
-          const stroke = SERIES_COLORS[sIdx % SERIES_COLORS.length];
-          return (
-            <g key={sIdx}>
-              <polyline
-                points={points.join(" ")}
-                fill="none"
-                stroke={stroke}
-                strokeWidth={2.2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              {points.map((pt, i) => {
-                const [xStr, yStr] = pt.split(",");
-                return (
-                  <circle
-                    key={i}
-                    cx={+xStr}
-                    cy={+yStr}
-                    r={3.5}
-                    fill={stroke}
-                    stroke="#fff"
-                    strokeWidth={0.8}
-                  />
-                );
-              })}
-            </g>
-          );
-        })}
+          {/* series lines */}
+          {seriesValues.map((vals, sIdx) => {
+            const points = vals
+              .map((v, i) => {
+                if (Number.isNaN(v)) return null;
+                return `${xFor(i)},${yFor(v)}`;
+              })
+              .filter(Boolean) as string[];
+            if (!points.length) return null;
+            const stroke = SERIES_COLORS[sIdx % SERIES_COLORS.length];
+            return (
+              <g key={sIdx}>
+                <polyline
+                  points={points.join(" ")}
+                  fill="none"
+                  stroke={stroke}
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {points.map((pt, i) => {
+                  const [xStr, yStr] = pt.split(",");
+                  const repRow = rowsByMonth[i] || {};
+                  return (
+                    <circle
+                      key={i}
+                      cx={+xStr}
+                      cy={+yStr}
+                      r={6}
+                      fill={instColorMap[repRow.instituicao || "—"] || "#fff"}
+                      stroke={stroke}
+                      strokeWidth={2}
+                      style={{ cursor: "pointer" }}
+                      onMouseEnter={(ev) => {
+                        const rect = (chartMainRef.current && chartMainRef.current.getBoundingClientRect()) || {
+                          left: 0,
+                          top: 0,
+                        };
+                        setTooltip({
+                          visible: true,
+                          left: ev.clientX - rect.left,
+                          top: ev.clientY - rect.top,
+                          instituicao: repRow.instituicao,
+                          reservatorio: repRow.reservatorio,
+                          color: instColorMap[repRow.instituicao || "—"],
+                        });
+                      }}
+                      onMouseMove={(ev) => {
+                        const rect = (chartMainRef.current && chartMainRef.current.getBoundingClientRect()) || {
+                          left: 0,
+                          top: 0,
+                        };
+                        setTooltip((t) => ({ ...t, left: ev.clientX - rect.left, top: ev.clientY - rect.top }));
+                      }}
+                      onMouseLeave={() => setTooltip({ visible: false, left: 0, top: 0 })}
+                    />
+                  );
+                })}
+              </g>
+            );
+          })}
 
-        {/* labels: left axis min/max */}
-        <text x="8" y={18} fontSize="11" fill="#5b6b7a">
-          {max}
-        </text>
-        <text x="8" y={height - 2} fontSize="11" fill="#5b6b7a">
-          {min}
-        </text>
-
-        {/* legend */}
-        {columns.map((c, i) => (
-          <g key={c} transform={`translate(${viewBoxWidth - 200}, ${20 + i * 18})`}>
-            <rect width="12" height="10" rx="2" fill={SERIES_COLORS[i % SERIES_COLORS.length]} />
-            <text x="18" y="9" fontSize="12" fill="#0b2740">
-              {c}
+          {/* x axis labels: show every month label (YYYY/MM/DD) */}
+          {months.map((m, i) => (
+            <text key={`lbl-${i}`} x={xFor(i)} y={height - 10} fontSize="12" fill="#5b6b7a" textAnchor="middle">
+              {m}
             </text>
-          </g>
-        ))}
-      </svg>
+          ))}
+
+          {/* left axis labels */}
+          <text x="14" y={34} fontSize="13" fill="#5b6b7a">
+            {max}
+          </text>
+          <text x="14" y={height - 22} fontSize="13" fill="#5b6b7a">
+            {min}
+          </text>
+        </svg>
+
+        {/* tooltip rendered over SVG using absolute positioning - only while hovered */}
+        {tooltip.visible && tooltip.instituicao && (
+          <Tooltip left={tooltip.left} top={tooltip.top} color={tooltip.color || "#ccc"}>
+            <div className="title">
+              <span className="color" />
+              {tooltip.instituicao}
+            </div>
+            <div className="meta">
+              Reservatório: <strong>{tooltip.reservatorio || "—"}</strong>
+            </div>
+          </Tooltip>
+        )}
+      </div>
     );
   }
 
-  const numericColumns = columns.filter(
-    (c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name),
-  );
-  // selected numeric columns to plot (prefer numeric ones)
+  const numericColumns = columns.filter((c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name));
   const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.name === s));
   const plottedColumns = plotColumns.length ? plotColumns : [selectedColumns[0]].filter(Boolean);
 
   return (
     <Page>
       <Container>
-        <div>
+        <LeftColumn>
           <Controls>
             <Row>
               <Label>Data início</Label>
@@ -609,26 +719,13 @@ export default function TablesPage(): JSX.Element {
                 <option value={topicSlug}>{topicSlug}</option>
                 <option value={`${topicSlug}-extra`}>{topicSlug} - extra</option>
               </Select>
-              <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>
-                * Obrigatório selecionar tabela
-              </div>
-            </Row>
-
-            <Row>
-              <Label>Responsável</Label>
-              <Select value={responsavel} onChange={(e) => setResponsavel(e.target.value)}>
-                {(metadata?.responsaveis || mockMetadata.responsaveis).map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </Select>
+              <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>* Obrigatório selecionar tabela</div>
             </Row>
 
             <div style={{ fontSize: 13, color: "#475569", marginTop: 6 }}>
               <strong>Colunas disponíveis</strong>
               <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                Marque as colunas que deseja incluir no gráfico / export.
+                Marque as colunas que deseja incluir no gráfico / export. (latitude / longitude / data removidos)
               </div>
             </div>
           </Controls>
@@ -649,7 +746,7 @@ export default function TablesPage(): JSX.Element {
               </ColumnItem>
             ))}
           </ColumnsBox>
-        </div>
+        </LeftColumn>
 
         <RightPanel>
           <ControlsTopRight>
@@ -658,7 +755,6 @@ export default function TablesPage(): JSX.Element {
                 Gerar Gráfico
               </Button>
 
-              {/* Export button shares the same styling */}
               <div style={{ position: "relative" }}>
                 <Button onClick={() => setShowExportOptions((s) => !s)}>Exportar ▾</Button>
                 {showExportOptions && (
@@ -716,69 +812,42 @@ export default function TablesPage(): JSX.Element {
                     marginBottom: 8,
                   }}
                 >
-                  <div style={{ fontWeight: 800, color: "#0b2740" }}>Visualização — {table}</div>
-                  <div style={{ color: "#475569", fontSize: 13 }}>
-                    {chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}
-                  </div>
+                  <div style={{ fontWeight: 800, color: "#0b2740", fontSize: 16 }}>Visualização — {table}</div>
+                  <div style={{ color: "#475569", fontSize: 13 }}>{chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}</div>
                 </div>
 
                 <ChartWrapper>
-                  <ChartMain>
+                  <ChartMain
+                    ref={chartMainRef}
+                    onMouseLeave={() => {
+                      // ensure tooltip hides when mouse leaves chart area
+                      setTooltip({ visible: false, left: 0, top: 0 });
+                    }}
+                  >
                     {chartData && chartData.length && plottedColumns.length ? (
                       <div style={{ width: "100%" }}>
                         <MultiSeriesSVG rows={chartData} columns={plottedColumns} />
+                        {/* legend placed under SVG */}
+                        <Legend aria-hidden>
+                          {plottedColumns.map((col, i) => (
+                            <LegendItem key={col}>
+                              <div style={{ width: 14, height: 14, borderRadius: 3, background: SERIES_COLORS[i % SERIES_COLORS.length], border: "1px solid rgba(0,0,0,0.06)" }} />
+                              <div>{col}</div>
+                            </LegendItem>
+                          ))}
+                        </Legend>
                       </div>
                     ) : (
                       <div style={{ padding: 16, color: "#64748b" }}>
-                        Clique em <strong>Gerar Gráfico</strong> para criar uma visualização
-                        (protótipo).
+                        Clique em <strong>Gerar Gráfico</strong> para criar uma visualização (protótipo).
                       </div>
                     )}
                   </ChartMain>
-
-                  <ChartSide>
-                    {/* show small stats for selected columns */}
-                    {selectedColumns.slice(0, 3).map((col) => {
-                      const values = (chartData || [])
-                        .map((r) => Number(r[col]))
-                        .filter((v) => Number.isFinite(v));
-                      const avg = values.length
-                        ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
-                        : "—";
-                      return (
-                        <div
-                          key={col}
-                          style={{ background: "#f8fafc", borderRadius: 8, padding: 12 }}
-                        >
-                          <div
-                            style={{
-                              fontSize: 13,
-                              color: "#334155",
-                              marginBottom: 6,
-                              fontWeight: 800,
-                            }}
-                          >
-                            {col}
-                          </div>
-                          <div style={{ fontSize: 12, color: "#475569" }}>
-                            média: <strong style={{ color: "#0b2740" }}>{avg}</strong>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </ChartSide>
                 </ChartWrapper>
               </>
             ) : (
               <>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 8,
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <div style={{ fontWeight: 800, color: "#0b2740" }}>Mapa — pontos de coleta</div>
                   <div style={{ color: "#475569", fontSize: 13 }}>{latLonPoints.length} pontos</div>
                 </div>
@@ -789,6 +858,7 @@ export default function TablesPage(): JSX.Element {
                       <MapBrazil
                         points={latLonPoints.map((p) => ({ id: p.id, lat: p.lat, lon: p.lon, label: `Ponto ${p.id}` }))}
                         height={520}
+                        showPolygons={true}
                       />
                     </div>
                   ) : (
@@ -804,4 +874,26 @@ export default function TablesPage(): JSX.Element {
       </Container>
     </Page>
   );
+}
+
+/* ================= helpers (mock) ================= */
+
+function makeMockMeasurementsForMonths(months: string[]) {
+  return months.map((m, i) => {
+    const inst = MOCK_INSTITUTIONS[i % MOCK_INSTITUTIONS.length];
+    const reserv = `Represa ${String.fromCharCode(65 + (i % 6))}`;
+    // produce a datamedida as first day of month in ISO-ish
+    const datamedida = m.replace(/\//g, "-").slice(0, 10);
+    return {
+      id: i + 1,
+      datamedida,
+      dic: +(5 + Math.sin(i / 2) * 2 + Math.random() * 0.6).toFixed(2),
+      ph: +(6 + Math.cos(i / 3) * 0.4 + Math.random() * 0.1).toFixed(2),
+      profundidade: +(Math.abs(Math.sin(i / 2)) * 10).toFixed(2),
+      latitude: -10 + Math.random() * 5,
+      longitude: -50 + Math.random() * 5,
+      instituicao: inst,
+      reservatorio: reserv,
+    };
+  });
 }
