@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import sima1 from "../assets/sima1.png";
+import sima2 from "../assets/sima2.png";
+import sima3 from "../assets/sima3.png";
+import sonda from "../assets/sonda.png";
 
 // ================= Styled Components =================
 const PageContainer = styled.div`
@@ -105,6 +109,17 @@ const Footer = styled.div`
   color: #222;
 `;
 
+const ImageRow = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+
+  img {
+    height: 199px;
+    object-fit: cover;
+  }
+`;
+
 // ================= Conteúdo das páginas =================
 const HomeContent = () => (
   <TwoColumnContainer>
@@ -154,6 +169,10 @@ const HomeContent = () => (
           existe uma torre onde são afixados os painéis solares, sensores meteorológicos e antena.
           No vão central um compartimento abriga a eletrônica do sistema, baterias e transmissor de
           satélite. Os sensores submersos são conectados a eletrônica por cabos.
+          <ImageRow>
+            <img src={sima1} alt="Plataforma esquerda" />
+            <img src={sima2} alt="Plataforma direita" />
+          </ImageRow>
         </BlockText>
       </Block>
 
@@ -168,6 +187,7 @@ const HomeContent = () => (
             <li>Distribuição dos dados: este portal é usado para a consulta e visualização dos dados armazenados;</li>
             <li>Armazenamento interno: alguns SIMAs possuem a capacidade de armazenar as coletas para posterior download por um técnico <span style={{ fontStyle: "italic" }}>in situ</span>, ou seja, estes dados não são transmitidos por satélite. Neste caso as coletas são realizadas a cada 10 minutos.</li>
           </ul>
+          <img src={sima3} alt="Modo de funcionamento" />
         </BlockText>
       </Block>
 
@@ -190,6 +210,7 @@ const HomeContent = () => (
             <li>Sensores: por características específicas de alguns ambientes aquáticos, os sensores podem se degradar rapidamente, tornando os dados inválidos. Veja como exemplo a foto abaixo tirada da sonda do SIMA fundeado no reservatório de Funil, no momento de uma atividade de calibração;</li>
             <li>Satélite: o SIMA faz uma leitura de parâmetros a cada hora, ou seja, 24 leituras por dia. Acontece que nem sempre são recebidas todas as leituras, pois o sistema necessita de satélites para completar a transmissão e por questão de posicionamento da constelação de satélites, algumas localidades terrestres não são atendidas com a frequência necessária para completar todas as transmissões.</li>
           </ul>
+          <img src={sonda} alt="Sonda do SIMA" />
         </BlockText>
       </Block>
 
