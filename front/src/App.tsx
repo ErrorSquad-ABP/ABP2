@@ -7,6 +7,7 @@ import BarraBrasil from "./components/BarraBrasil";
 import MenuBar from "./components/MenuBar";
 import HomePage from "./pages/HomePage";
 import TablesPage from "./pages/TablesPage";
+import TestePage from "./pages/TestePage";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/sima" element={<SimaPage />} />
+              <Route path="/teste" element={<TestePage />} />
               <Route path="/tables/:slug" element={<TablesPage />} />
               <Route path="*" element={<HomePage />} />
             </Routes>
