@@ -357,12 +357,16 @@ useEffect(() => {
     console.log("Tfm atualizado: ", tablesFromMetadata)
     if(columnsFromMetadata) {
     console.log("Meta columns atualizado: ", Object.keys(columnsFromMetadata))
-    console.log("Meta columns atualizado: ", columnsFromMetadata["tbabioticocoluna"])
+    console.log("Meta columns atualizado: ", columnsFromMetadata[table])
     }
   }, [metadata, tablesFromMetadata, columnsFromMetadata])
 
   useEffect(() => {
-    console.log(columnsFromMetadata)
+        if(columnsFromMetadata) {
+
+    console.log(columnsFromMetadata[table])
+    setColumns(columnsFromMetadata[table])
+        }
     // setColumns(columnsFromMetadata[table])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table]);
