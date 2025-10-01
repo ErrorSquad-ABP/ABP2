@@ -355,34 +355,15 @@ useEffect(() => {
   useEffect(() => {
     console.log("Metadata atualizado: ", metadata)
     console.log("Tfm atualizado: ", tablesFromMetadata)
-        console.log("Meta columns atualizado: ", columnsFromMetadata)
-
-
+    if(columnsFromMetadata) {
+    console.log("Meta columns atualizado: ", Object.keys(columnsFromMetadata))
+    console.log("Meta columns atualizado: ", columnsFromMetadata["tbabioticocoluna"])
+    }
   }, [metadata, tablesFromMetadata, columnsFromMetadata])
 
   useEffect(() => {
-    let mounted = true;
-
-    async function load() {
-      try {
-        if (colsRes.ok) {
-          const data = await colsRes.json();
-          const cols = Array.isArray(data) ? data : data?.columns || mockColumns;
-          if (Array.isArray(cols) && cols.length) {
-           
-          } else {
-          }
-        } else {
-        }
-      } catch (err) {
-        
-      }
-    }
-
-    load();
-    return () => {
-      mounted = false;
-    };
+    console.log(columnsFromMetadata)
+    // setColumns(columnsFromMetadata[table])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table]);
 
@@ -391,6 +372,7 @@ useEffect(() => {
     meta.forEach((tb:any) => {
      clms[tb.name] = tb.colunas; // Chave dinâmica e valor
     });
+    console.log("CLMS: ", clms)
     return clms
   }
 
