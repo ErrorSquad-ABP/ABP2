@@ -21,9 +21,11 @@ type ColumnMeta = {
 };
 
 type TableMetadata = {
-  minDate?: string;
-  maxDate?: string;
-  responsaveis?: string[];
+  id: string;
+  name: string;
+  description?: string;
+  colunas: Array<object>
+
 };
 
 function isoDate(date: Date) {
@@ -39,11 +41,28 @@ const mockColumns: ColumnMeta[] = [
   { name: "longitude", label: "Longitude", type: "number" },
 ];
 
-const mockMetadata: TableMetadata = {
-  minDate: isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 365)),
-  maxDate: isoDate(new Date()),
-  responsaveis: ["Dr. Silva", "Equipe A", "Equipe B"],
-};
+const mockMetadata: any = 
+   [
+    {
+      id: "tbabioticocoluna",
+      name: "tbabioticocoluna",
+      description: "Medições na coluna d'água (profundidade, DIC, delta15N, etc.)",
+      colunas: [
+        {
+          nome: "nomedacoluna",
+          label: "Nome Formatado",
+          type: "tipodacoluna"
+        }
+      ]
+    },
+    {
+      id: "tbabioticosuperficie",
+      name: "tbabioticosuperficie",
+      description: "Medições na superfície",
+      colunas: []
+    }
+  ]
+;
 
 function simpleRange(startISO: string, endISO: string, n = 12) {
   const start = new Date(startISO);
@@ -292,9 +311,9 @@ export default function TablesPage(): JSX.Element {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(() =>
     mockColumns.slice(0, 3).map((c) => c.name),
   );
-  const [metadata, setMetadata] = useState<TableMetadata | null>(mockMetadata);
+  const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
-
+  const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
 
   const [view, setView] = useState<"chart" | "map">("chart");
   const [chartData, setChartData] = useState<any[] | null>(null);
@@ -326,37 +345,34 @@ export default function TablesPage(): JSX.Element {
     };
   },[])
 
+
+useEffect(() => {
+  if (metadata) {
+    setColumnsFromMetadata(getColumnsFromMetadata(metadata)); 
+  }
+}, [metadata]); 
+
   useEffect(() => {
     console.log("Metadata atualizado: ", metadata)
     console.log("Tfm atualizado: ", tablesFromMetadata)
+        console.log("Meta columns atualizado: ", columnsFromMetadata)
 
-  }, [metadata, tablesFromMetadata])
+
+  }, [metadata, tablesFromMetadata, columnsFromMetadata])
 
   useEffect(() => {
     let mounted = true;
 
     async function load() {
       try {
-        const colsRes = await fetch(`${API_BASE}/tables/${encodeURIComponent(table)}/columns`);
-
-        if (!mounted) return;
-
         if (colsRes.ok) {
           const data = await colsRes.json();
           const cols = Array.isArray(data) ? data : data?.columns || mockColumns;
           if (Array.isArray(cols) && cols.length) {
-            setColumns(cols);
-            setSelectedColumns((prev) => {
-              const keep = prev.filter((p) => cols.some((c) => c.name === p));
-              return keep.length ? keep : cols.slice(0, 3).map((c) => c.name);
-            });
+           
           } else {
-            setColumns(mockColumns);
-            setSelectedColumns(mockColumns.slice(0, 3).map((c) => c.name));
           }
         } else {
-          setColumns(mockColumns);
-          setSelectedColumns(mockColumns.slice(0, 3).map((c) => c.name));
         }
       } catch (err) {
         
@@ -369,6 +385,14 @@ export default function TablesPage(): JSX.Element {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table]);
+
+  function getColumnsFromMetadata(meta:any){
+    const clms: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
+    meta.forEach((tb:any) => {
+     clms[tb.name] = tb.colunas; // Chave dinâmica e valor
+    });
+    return clms
+  }
 
   function toggleColumn(name: string) {
     setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
@@ -620,7 +644,7 @@ export default function TablesPage(): JSX.Element {
             <Row>
               <Label>Tabela</Label>
               <Select value={table} onChange={(e) => setTable(e.target.value)}>
-                {tablesFromMetadata && tablesFromMetadata != 0 ? tablesFromMetadata.map((tableName) => <option value={tableName}>{tableName}</option>) : <option value={null}>Carregando tabelas...</option>}
+                {tablesFromMetadata && tablesFromMetadata != 0 ? tablesFromMetadata.map((tableName) => <option key={tableName} value={tableName}>{tableName}</option>) : <option value={null}>Carregando tabelas...</option>}
               </Select>
               <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>
                 * Obrigatório selecionar tabela
@@ -630,7 +654,7 @@ export default function TablesPage(): JSX.Element {
             <Row>
               <Label>Responsável</Label>
               <Select value={responsavel} onChange={(e) => setResponsavel(e.target.value)}>
-                {(metadata?.responsaveis || mockMetadata.responsaveis).map((r) => (
+                {(metadata?.responsaveis || ["a","b"]).map((r) => (
                   <option key={r} value={r}>
                     {r}
                   </option>
