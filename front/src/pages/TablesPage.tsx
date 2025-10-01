@@ -293,11 +293,44 @@ export default function TablesPage(): JSX.Element {
     mockColumns.slice(0, 3).map((c) => c.name),
   );
   const [metadata, setMetadata] = useState<TableMetadata | null>(mockMetadata);
+  const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
+
 
   const [view, setView] = useState<"chart" | "map">("chart");
   const [chartData, setChartData] = useState<any[] | null>(null);
   const chartRef = useRef<HTMLDivElement | null>(null);
   const [showExportOptions, setShowExportOptions] = useState(false);
+
+  useEffect(() => { //Get metadata useEffect
+    let mounted = true;
+
+    async function load() {
+      try {
+        const metaRes = await fetch(`${API_BASE}/metadata/${encodeURIComponent(table)}`);
+
+        if (metaRes.ok) {
+          const m = await metaRes.json();
+          const data = m.data;
+          setMetadata(data)
+
+          const tfm = data.map((item:any) => item.name);
+          setTablesFromMetadata(tfm)
+        }
+      } catch (err) {
+        console.log("Erro ao adicionar metadata: ", err)
+      }
+    }
+    load();
+     return () => {
+      mounted = false;
+    };
+  },[])
+
+  useEffect(() => {
+    console.log("Metadata atualizado: ", metadata)
+    console.log("Tfm atualizado: ", tablesFromMetadata)
+
+  }, [metadata, tablesFromMetadata])
 
   useEffect(() => {
     let mounted = true;
@@ -305,7 +338,6 @@ export default function TablesPage(): JSX.Element {
     async function load() {
       try {
         const colsRes = await fetch(`${API_BASE}/tables/${encodeURIComponent(table)}/columns`);
-        const metaRes = await fetch(`${API_BASE}/tables/${encodeURIComponent(table)}/metadata`);
 
         if (!mounted) return;
 
@@ -326,26 +358,8 @@ export default function TablesPage(): JSX.Element {
           setColumns(mockColumns);
           setSelectedColumns(mockColumns.slice(0, 3).map((c) => c.name));
         }
-
-        if (metaRes.ok) {
-          const m = await metaRes.json();
-          setMetadata((prev) => ({ ...prev, ...(m || {}) }));
-          if (!responsavel && m?.responsaveis && m.responsaveis.length) {
-            setResponsavel(m.responsaveis[0]);
-          }
-        } else {
-          setMetadata(mockMetadata);
-          if (!responsavel && mockMetadata.responsaveis && mockMetadata.responsaveis.length) {
-            setResponsavel(mockMetadata.responsaveis[0]);
-          }
-        }
       } catch (err) {
-        setColumns(mockColumns);
-        setMetadata(mockMetadata);
-        setSelectedColumns(mockColumns.slice(0, 3).map((c) => c.name));
-        if (!responsavel && mockMetadata.responsaveis && mockMetadata.responsaveis.length) {
-          setResponsavel(mockMetadata.responsaveis[0]);
-        }
+        
       }
     }
 
@@ -606,8 +620,7 @@ export default function TablesPage(): JSX.Element {
             <Row>
               <Label>Tabela</Label>
               <Select value={table} onChange={(e) => setTable(e.target.value)}>
-                <option value={topicSlug}>{topicSlug}</option>
-                <option value={`${topicSlug}-extra`}>{topicSlug} - extra</option>
+                {tablesFromMetadata && tablesFromMetadata != 0 ? tablesFromMetadata.map((tableName) => <option value={tableName}>{tableName}</option>) : <option value={null}>Carregando tabelas...</option>}
               </Select>
               <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>
                 * Obrigatório selecionar tabela
