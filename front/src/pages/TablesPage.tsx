@@ -41,6 +41,8 @@ const mockColumns: ColumnMeta[] = [
   { name: "longitude", label: "Longitude", type: "number" },
 ];
 
+//ARRUMAR MOCK / TIRAR O QUE USA
+
 const mockMetadata: any = 
    [
     {
@@ -303,13 +305,12 @@ export default function TablesPage(): JSX.Element {
     isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)),
   );
   const [endDate, setEndDate] = useState<string>(() => isoDate(new Date()));
-  const [table, setTable] = useState<string>(() => topicSlug);
+  const [table, setTable] = useState<string>();
   const [responsavel, setResponsavel] = useState<string>("");
 
-  // sensible defaults
   const [columns, setColumns] = useState<ColumnMeta[]>(mockColumns);
   const [selectedColumns, setSelectedColumns] = useState<string[]>(() =>
-    mockColumns.slice(0, 3).map((c) => c.nome),
+    mockColumns.slice(0, 3).map((c) => c.name),
   );
   const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
@@ -320,56 +321,58 @@ export default function TablesPage(): JSX.Element {
   const chartRef = useRef<HTMLDivElement | null>(null);
   const [showExportOptions, setShowExportOptions] = useState(false);
 
-  useEffect(() => { //Get metadata useEffect
-    let mounted = true;
-
+//useEffect para fecth dos metadados
+  useEffect(() => {
     async function load() {
       try {
-        const metaRes = await fetch(`${API_BASE}/metadata/${encodeURIComponent(table)}`);
+        const metaRes = await fetch(`${API_BASE}/metadata/${encodeURIComponent(topicSlug)}`);
 
         if (metaRes.ok) {
           const m = await metaRes.json();
           const data = m.data;
-          setMetadata(data)
-
-          const tfm = data.map((item:any) => item.name);
-          setTablesFromMetadata(tfm)
+          setMetadata(data);
+          const tfm = data.map((item: any) => item.name);
+          setTablesFromMetadata(tfm);
         }
       } catch (err) {
-        console.log("Erro ao adicionar metadata: ", err)
+        console.log("Error fetching metadata: ", err);
       }
     }
+
     load();
-     return () => {
-      mounted = false;
-    };
-  },[])
+  }, []); 
 
-
-useEffect(() => {
-  if (metadata) {
-    setColumnsFromMetadata(getColumnsFromMetadata(metadata)); 
-  }
-}, [metadata]); 
 
   useEffect(() => {
-    console.log("Metadata atualizado: ", metadata)
-    console.log("Tfm atualizado: ", tablesFromMetadata)
-    if(columnsFromMetadata) {
-    console.log("Meta columns atualizado: ", Object.keys(columnsFromMetadata))
-    console.log("Meta columns atualizado: ", columnsFromMetadata[table])
+    if (metadata) {
+          console.log('Metadata: ',metadata)
+          const newColumns = getColumnsFromMetadata(metadata);
+          setColumnsFromMetadata(newColumns);
+          setTable()
+    } else {
+      console.log('Sem metadata')
     }
-  }, [metadata, tablesFromMetadata, columnsFromMetadata])
+  }, [metadata])
 
   useEffect(() => {
-        if(columnsFromMetadata) {
-
-    console.log(columnsFromMetadata[table])
-    setColumns(columnsFromMetadata[table])
+        if (columnsFromMetadata) {
+          console.log('Colunas from metadata: ', columnsFromMetadata);
+          const firstItem = Object.keys(columnsFromMetadata)[0];
+          console.log('Primeira tabela', firstItem)
+          setTable(firstItem)
+        } else {
+          console.log('Sem colums from metadata')
         }
-    // setColumns(columnsFromMetadata[table])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [table]);
+  }, [columnsFromMetadata])
+
+    useEffect(() => {
+        if (table) {
+          console.log('Tabela atual: ', table)
+          setColumns(columnsFromMetadata[table])
+        } else {
+          console.log('Nova table não existe')
+        }
+  }, [table])
 
   function getColumnsFromMetadata(meta:any){
     const clms: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
@@ -659,7 +662,6 @@ useEffect(() => {
           <ColumnsBox aria-label="Lista de colunas">
             {columns.map((c) => (
               <ColumnItem key={c.nome}>
-                {console.log(c.nome)}
                 <input
                   type="checkbox"
                   checked={selectedColumns.includes(c.nome)}
