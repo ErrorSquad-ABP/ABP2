@@ -345,32 +345,22 @@ export default function TablesPage(): JSX.Element {
 
   useEffect(() => {
     if (metadata) {
-          console.log('Metadata: ',metadata)
           const newColumns = getColumnsFromMetadata(metadata);
           setColumnsFromMetadata(newColumns);
           setTable()
-    } else {
-      console.log('Sem metadata')
     }
   }, [metadata])
 
   useEffect(() => {
         if (columnsFromMetadata) {
-          console.log('Colunas from metadata: ', columnsFromMetadata);
           const firstItem = Object.keys(columnsFromMetadata)[0];
-          console.log('Primeira tabela', firstItem)
           setTable(firstItem)
-        } else {
-          console.log('Sem colums from metadata')
-        }
+        } 
   }, [columnsFromMetadata])
 
     useEffect(() => {
         if (table) {
-          console.log('Tabela atual: ', table)
           setColumns(columnsFromMetadata[table])
-        } else {
-          console.log('Nova table não existe')
         }
   }, [table])
 
@@ -379,7 +369,6 @@ export default function TablesPage(): JSX.Element {
     meta.forEach((tb:any) => {
      clms[tb.name] = tb.colunas; // Chave dinâmica e valor
     });
-    console.log("CLMS: ", clms)
     return clms
   }
 
@@ -660,9 +649,10 @@ export default function TablesPage(): JSX.Element {
           </Controls>
 
           <ColumnsBox aria-label="Lista de colunas">
-            {columns.map((c) => (
+            {columns.map((c:any) => (
               <ColumnItem key={c.nome}>
                 <input
+                key={c.nome}
                   type="checkbox"
                   checked={selectedColumns.includes(c.nome)}
                   onChange={() => toggleColumn(c.nome)}
