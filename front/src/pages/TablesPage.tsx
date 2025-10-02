@@ -746,23 +746,10 @@ export default function TablesPage(): JSX.Element {
                 * Obrigatório selecionar tabela
               </div>
             </Row>
-
-            <Row>
-              <Label>Responsável</Label>
-              <Select value={responsavel} onChange={(e) => setResponsavel(e.target.value)}>
-                {(metadata?.responsaveis || ["a","b"]).map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </Select>
-              <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>* Obrigatório selecionar tabela</div>
-            </Row>
-
             <div style={{ fontSize: 13, color: "#475569", marginTop: 6 }}>
               <strong>Colunas disponíveis</strong>
               <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                Marque as colunas que deseja incluir no gráfico / export. (latitude / longitude / data removidos)
+                Marque as colunas que deseja incluir no gráfico
               </div>
             </div>
           </Controls>
