@@ -21,9 +21,11 @@ type ColumnMeta = {
 };
 
 type TableMetadata = {
-  minDate?: string;
-  maxDate?: string;
-  responsaveis?: string[];
+  id: string;
+  name: string;
+  description?: string;
+  colunas: Array<object>
+
 };
 
 function isoDate(date: Date) {
@@ -54,11 +56,30 @@ const mockColumns: ColumnMeta[] = [
   { name: "profundidade", label: "Profundidade (m)", type: "number" },
 ];
 
-const mockMetadata: TableMetadata = {
-  minDate: isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 365)),
-  maxDate: isoDate(new Date()),
-  responsaveis: ["Dr. Silva", "Equipe A", "Equipe B"],
-};
+//ARRUMAR MOCK / TIRAR O QUE USA
+
+const mockMetadata: any = 
+   [
+    {
+      id: "tbabioticocoluna",
+      name: "tbabioticocoluna",
+      description: "Medições na coluna d'água (profundidade, DIC, delta15N, etc.)",
+      colunas: [
+        {
+          nome: "nomedacoluna",
+          label: "Nome Formatado",
+          type: "tipodacoluna"
+        }
+      ]
+    },
+    {
+      id: "tbabioticosuperficie",
+      name: "tbabioticosuperficie",
+      description: "Medições na superfície",
+      colunas: []
+    }
+  ]
+;
 
 const MOCK_INSTITUTIONS = ["INPE", "FURNAS", "BALCAR", "UFRJ", "USP"];
 
@@ -325,12 +346,16 @@ export default function TablesPage(): JSX.Element {
 
   const [startDate, setStartDate] = useState<string>(() => isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)));
   const [endDate, setEndDate] = useState<string>(() => isoDate(new Date()));
-  const [table, setTable] = useState<string>(() => topicSlug);
+  const [table, setTable] = useState<string>();
 
-  // sensible defaults (latitude/longitude/datamedida removed from selectable)
   const [columns, setColumns] = useState<ColumnMeta[]>(mockColumns);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>(() => mockColumns.slice(0, 3).map((c) => c.name));
-  const [metadata, setMetadata] = useState<TableMetadata | null>(mockMetadata);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(() =>
+    mockColumns.slice(0, 3).map((c) => c.name),
+  );
+  const [metadata, setMetadata] = useState<TableMetadata | null>();
+  const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
+  const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
+
 
   const [view, setView] = useState<"chart" | "map">("chart");
   const [chartData, setChartData] = useState<any[] | null>(null);
@@ -349,56 +374,54 @@ export default function TablesPage(): JSX.Element {
   }>({ visible: false, left: 0, top: 0 });
 
   useEffect(() => {
-    let mounted = true;
-
     async function load() {
       try {
-        const colsRes = await fetch(`${API_BASE}/tables/${encodeURIComponent(table)}/columns`);
-        const metaRes = await fetch(`${API_BASE}/tables/${encodeURIComponent(table)}/metadata`);
-
-        if (!mounted) return;
-
-        if (colsRes.ok) {
-          const data = await colsRes.json();
-          const cols = Array.isArray(data) ? data : data?.columns || mockColumns;
-          // remove datamedida, latitude and longitude from selectable list
-          const filtered = (Array.isArray(cols) ? cols : mockColumns).filter(
-            (c: ColumnMeta) => c.name !== "latitude" && c.name !== "longitude" && c.name !== "datamedida",
-          );
-          if (Array.isArray(filtered) && filtered.length) {
-            setColumns(filtered);
-            setSelectedColumns((prev) => {
-              const keep = prev.filter((p) => filtered.some((c) => c.name === p));
-              return keep.length ? keep : filtered.filter((c) => c.type === "number").slice(0, 3).map((c) => c.name);
-            });
-          } else {
-            setColumns(mockColumns);
-            setSelectedColumns(mockColumns.slice(0, 3).map((c) => c.name));
-          }
-        } else {
-          setColumns(mockColumns);
-          setSelectedColumns(mockColumns.slice(0, 3).map((c) => c.name));
-        }
+        const metaRes = await fetch(`${API_BASE}/metadata/${encodeURIComponent(topicSlug)}`);
 
         if (metaRes.ok) {
           const m = await metaRes.json();
-          setMetadata((prev) => ({ ...prev, ...(m || {}) }));
-        } else {
-          setMetadata(mockMetadata);
+          const data = m.data;
+          setMetadata(data);
+          const tfm = data.map((item: any) => item.name);
+          setTablesFromMetadata(tfm);
         }
       } catch (err) {
-        setColumns(mockColumns);
-        setMetadata(mockMetadata);
-        setSelectedColumns(mockColumns.slice(0, 3).map((c) => c.name));
+        console.log("Error fetching metadata: ", err);
       }
     }
 
     load();
-    return () => {
-      mounted = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [table]);
+  }, []); 
+
+
+  useEffect(() => {
+    if (metadata) {
+          const newColumns = getColumnsFromMetadata(metadata);
+          setColumnsFromMetadata(newColumns);
+          setTable()
+    }
+  }, [metadata])
+
+  useEffect(() => {
+        if (columnsFromMetadata) {
+          const firstItem = Object.keys(columnsFromMetadata)[0];
+          setTable(firstItem)
+        } 
+  }, [columnsFromMetadata])
+
+    useEffect(() => {
+        if (table) {
+          setColumns(columnsFromMetadata[table])
+        }
+  }, [table])
+
+  function getColumnsFromMetadata(meta:any){
+    const clms: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
+    meta.forEach((tb:any) => {
+     clms[tb.name] = tb.colunas; // Chave dinâmica e valor
+    });
+    return clms
+  }
 
   function toggleColumn(name: string) {
     setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
@@ -694,6 +717,7 @@ export default function TablesPage(): JSX.Element {
     );
   }
 
+
   const numericColumns = columns.filter((c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name));
   const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.name === s));
   const plottedColumns = plotColumns.length ? plotColumns : [selectedColumns[0]].filter(Boolean);
@@ -716,8 +740,21 @@ export default function TablesPage(): JSX.Element {
             <Row>
               <Label>Tabela</Label>
               <Select value={table} onChange={(e) => setTable(e.target.value)}>
-                <option value={topicSlug}>{topicSlug}</option>
-                <option value={`${topicSlug}-extra`}>{topicSlug} - extra</option>
+                {tablesFromMetadata && tablesFromMetadata != 0 ? tablesFromMetadata.map((tableName) => <option key={tableName} value={tableName}>{tableName}</option>) : <option value={null}>Carregando tabelas...</option>}
+              </Select>
+              <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>
+                * Obrigatório selecionar tabela
+              </div>
+            </Row>
+
+            <Row>
+              <Label>Responsável</Label>
+              <Select value={responsavel} onChange={(e) => setResponsavel(e.target.value)}>
+                {(metadata?.responsaveis || ["a","b"]).map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
               </Select>
               <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>* Obrigatório selecionar tabela</div>
             </Row>
@@ -731,16 +768,17 @@ export default function TablesPage(): JSX.Element {
           </Controls>
 
           <ColumnsBox aria-label="Lista de colunas">
-            {columns.map((c) => (
-              <ColumnItem key={c.name}>
+            {columns.map((c:any) => (
+              <ColumnItem key={c.nome}>
                 <input
+                key={c.nome}
                   type="checkbox"
-                  checked={selectedColumns.includes(c.name)}
-                  onChange={() => toggleColumn(c.name)}
-                  id={`col-${c.name}`}
+                  checked={selectedColumns.includes(c.nome)}
+                  onChange={() => toggleColumn(c.nome)}
+                  id={`col-${c.nome}`}
                 />
                 <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontWeight: 700 }}>{c.label || c.name}</span>
+                  <span style={{ fontWeight: 700 }}>{c.label || c.nome}</span>
                   <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
                 </div>
               </ColumnItem>
