@@ -7,226 +7,627 @@ type TableMeta = {
 
 };
 
-const rawData: Record<string, TableMeta[]> = {
-  abioticos: [
+const rawData: Record<string, TableMeta[]> = 
+{
+  "abioticos": [
     {
-      id: "tbabioticocoluna",
-      name: "tbabioticocoluna",
-      description: "Medições na coluna d'água (profundidade, DIC, delta15N, etc.)",
-      colunas: [{nome:"nomedacoluna", label:"Nome Formatado", type:"tipodacoluna"}],
+      "id": "tbabioticocoluna",
+      "name": "Abióticos coluna",
+      "description": "Medições na coluna d'água (profundidade, DIC, δ15N, etc.)",
+      "colunas": [
+        { "nome": "idAbioticoColuna", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "dic", "label": "DIC", "type": "string" },
+        { "nome": "nt", "label": "Nitrogênio Total", "type": "string" },
+        { "nome": "pt", "label": "Fósforo Total", "type": "string" },
+        { "nome": "delta13c", "label": "δ13C", "type": "string" },
+        { "nome": "delta15n", "label": "δ15N", "type": "string" }
+      ]
     },
     {
-      id: "tbabioticosuperficie",
-      name: "tbabioticosuperficie",
-      description: "Medições na superfície",
-      colunas: [],
-    },
+      "id": "tbabioticosuperficie",
+      "name": "Abióticos superfície",
+      "description": "Medições na superfície",
+      "colunas": [
+        { "nome": "idAbioticoSuperficie", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "dic", "label": "DIC", "type": "string" },
+        { "nome": "nt", "label": "Nitrogênio Total", "type": "string" },
+        { "nome": "pt", "label": "Fósforo Total", "type": "string" },
+        { "nome": "delta13c", "label": "δ13C", "type": "string" },
+        { "nome": "delta15n", "label": "δ15N", "type": "string" }
+      ]
+    }
   ],
 
-  bioticos: [
+  "bioticos": [
     {
-      id: "tbbioticocoluna",
-      name: "tbbioticocoluna",
-      description: "Dados bióticos coletados na coluna d'água",
-      colunas: [],
+      "id": "tbbioticocoluna",
+      "name": "Bióticos coluna",
+      "description": "Dados bióticos coletados na coluna d'água",
+      "colunas": [
+        { "nome": "idBioticoColuna", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "doc", "label": "DOC", "type": "string" },
+        { "nome": "toc", "label": "TOC", "type": "string" },
+        { "nome": "poc", "label": "POC", "type": "string" },
+        { "nome": "densidadeBacteria", "label": "Densidade de Bactérias", "type": "string" },
+        { "nome": "biomassaBacteria", "label": "Biomassa de Bactérias", "type": "string" },
+        { "nome": "clorofilaA", "label": "Clorofila A", "type": "string" },
+        { "nome": "biomassaCarbonoTotalFito", "label": "Biomassa C Fitoplâncton", "type": "string" },
+        { "nome": "densidadeTotalFito", "label": "Densidade Fitoplâncton", "type": "string" },
+        { "nome": "biomassaZoo", "label": "Biomassa Zooplâncton", "type": "string" },
+        { "nome": "densidadeTotalZoo", "label": "Densidade Zooplâncton", "type": "string" }
+      ]
     },
     {
-      id: "tbbioticosuperficie",
-      name: "tbbioticosuperficie",
-      description: "Dados bióticos coletados na superfície",
-      colunas: [],
-    },
+      "id": "tbbioticosuperficie",
+      "name": "Bióticos superfície",
+      "description": "Dados bióticos coletados na superfície",
+      "colunas": [
+        { "nome": "idBioticoSuperficie", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "doc", "label": "DOC", "type": "string" },
+        { "nome": "toc", "label": "TOC", "type": "string" },
+        { "nome": "poc", "label": "POC", "type": "string" },
+        { "nome": "densidadeBacteria", "label": "Densidade de Bactérias", "type": "string" },
+        { "nome": "biomassaBacteria", "label": "Biomassa de Bactérias", "type": "string" },
+        { "nome": "clorofilaA", "label": "Clorofila A", "type": "string" },
+        { "nome": "biomassaCarbonoTotalFito", "label": "Biomassa C Fitoplâncton", "type": "string" },
+        { "nome": "densidadeTotalFito", "label": "Densidade Fitoplâncton", "type": "string" },
+        { "nome": "biomassaZoo", "label": "Biomassa Zooplâncton", "type": "string" },
+        { "nome": "densidadeTotalZoo", "label": "Densidade Zooplâncton", "type": "string" }
+      ]
+    }
   ],
 
-  'agua-sedimento': [
+  "agua-sedimento": [
     {
-      id: "tbaguamateriaorganicasedimento",
-      name: "tbaguamateriaorganicasedimento",
-      description: "Medições de matéria orgânica na água e sedimento",
-      colunas: [],
+      "id": "tbaguamateriaorganicasedimento",
+      "name": "Matéria orgânica (água/sedimento)",
+      "description": "Medições de matéria orgânica na água e sedimento",
+      "colunas": [
+        { "nome": "idAguaMateriaOrganicaSedimento", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "batimetria", "label": "Batimetria", "type": "number" },
+        { "nome": "agua", "label": "Água", "type": "number" },
+        { "nome": "materiaOrganica", "label": "Matéria Orgânica", "type": "number" }
+      ]
     },
     {
-      id: "tbconcentracaogasagua",
-      name: "tbconcentracaogasagua",
-      description: "Concentração de gases na água",
-      colunas: [],
+      "id": "tbconcentracaogasagua",
+      "name": "Gases na água",
+      "description": "Concentração de gases na água",
+      "colunas": [
+        { "nome": "idConcentracaoGasAgua", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "batimetria", "label": "Batimetria", "type": "number" },
+        { "nome": "altura", "label": "Altura", "type": "number" },
+        { "nome": "replica", "label": "Réplica", "type": "string" },
+        { "nome": "CH4", "label": "CH4", "type": "number" },
+        { "nome": "CO2", "label": "CO2", "type": "number" }
+      ]
     },
     {
-      id: "tbconcentracaogassedimento",
-      name: "tbconcentracaogassedimento",
-      description: "Concentração de gases no sedimento",
-      colunas: [],
+      "id": "tbconcentracaogassedimento",
+      "name": "Gases no sedimento",
+      "description": "Concentração de gases no sedimento",
+      "colunas": [
+        { "nome": "idConcentracaoGasSedimento", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "batimetria", "label": "Batimetria", "type": "number" },
+        { "nome": "profundidadeDoSedimento", "label": "Profundidade do Sedimento", "type": "number" },
+        { "nome": "replica", "label": "Réplica", "type": "string" },
+        { "nome": "CH4", "label": "CH4", "type": "number" },
+        { "nome": "CO2", "label": "CO2", "type": "number" }
+      ]
     },
     {
-      id: "tbionsnaaguaintersticialdosedimento",
-      name: "tbionsnaaguaintersticialdosedimento",
-      description: "Íons na água intersticial do sedimento",
-      colunas: [],
-    },
+      "id": "tbionsnaaguaintersticialdosedimento",
+      "name": "Íons (água intersticial)",
+      "description": "Íons na água intersticial do sedimento",
+      "colunas": [
+        { "nome": "idIonsNaAguaIntersticialDoSedimento", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "batimetria", "label": "Batimetria", "type": "number" },
+        { "nome": "F", "label": "Flúor", "type": "string" },
+        { "nome": "Cl", "label": "Cloreto", "type": "string" },
+        { "nome": "NO2", "label": "NO2", "type": "string" },
+        { "nome": "Br", "label": "Brometo", "type": "string" },
+        { "nome": "NO3", "label": "NO3", "type": "number" },
+        { "nome": "PO4", "label": "Fosfato", "type": "string" },
+        { "nome": "SO4", "label": "Sulfato", "type": "number" },
+        { "nome": "Na", "label": "Sódio", "type": "string" },
+        { "nome": "NH4", "label": "Amônio", "type": "number" },
+        { "nome": "K", "label": "Potássio", "type": "string" },
+        { "nome": "Mg", "label": "Magnésio", "type": "string" },
+        { "nome": "Ca", "label": "Cálcio", "type": "string" },
+        { "nome": "acetato", "label": "Acetato", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" }
+      ]
+    }
   ],
 
-  'fluxos-gases': [
+  "fluxos-gases": [
     {
-      id: "tbbolhas",
-      name: "tbbolhas",
-      description: "Dados sobre bolhas de gás",
-      colunas: [],
+      "id": "tbbolhas",
+      "name": "Bolhas de gás",
+      "description": "Dados sobre bolhas de gás",
+      "colunas": [
+        { "nome": "idBolhas", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "nroDeFunis", "label": "Nº Funis", "type": "number" },
+        { "nome": "volumeColetado", "label": "Volume Coletado", "type": "number" },
+        { "nome": "CO2", "label": "CO2", "type": "string" },
+        { "nome": "O2", "label": "O2", "type": "number" },
+        { "nome": "N2", "label": "N2", "type": "number" },
+        { "nome": "CH4", "label": "CH4", "type": "number" },
+        { "nome": "N2O", "label": "N2O", "type": "string" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" }
+      ]
     },
     {
-      id: "tbcamarasolo",
-      name: "tbcamarasolo",
-      description: "Medições com câmara de solo",
-      colunas: [],
+      "id": "tbcamarasolo",
+      "name": "Câmara de solo",
+      "description": "Medições com câmara de solo",
+      "colunas": [
+        { "nome": "idCamaraSolo", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "CH4", "label": "CH4", "type": "string" },
+        { "nome": "CO2", "label": "CO2", "type": "string" },
+        { "nome": "N2O", "label": "N2O", "type": "string" },
+        { "nome": "tempAr", "label": "Temperatura Ar", "type": "string" },
+        { "nome": "tempSolo", "label": "Temperatura Solo", "type": "string" },
+        { "nome": "vento", "label": "Vento", "type": "string" },
+        { "nome": "altitude", "label": "Altitude", "type": "string" }
+      ]
     },
     {
-      id: "tbfluxobolhasinpe",
-      name: "tbfluxobolhasinpe",
-      description: "Fluxo de bolhas (dados do INPE)",
-      colunas: [],
+      "id": "tbfluxobolhasinpe",
+      "name": "Fluxo de bolhas (INPE)",
+      "description": "Fluxo de bolhas (dados do INPE)",
+      "colunas": [
+        { "nome": "idFluxoBolhasInpe", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "CH4", "label": "CH4", "type": "number" },
+        { "nome": "CH4_desvioPadrao", "label": "Desvio Padrão CH4", "type": "number" },
+        { "nome": "CH4_amostras", "label": "Amostras CH4", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" }
+      ]
     },
     {
-      id: "tbfluxocarbono",
-      name: "tbfluxocarbono",
-      description: "Fluxo de carbono atmosférico",
-      colunas: [],
+      "id": "tbfluxocarbono",
+      "name": "Fluxo de carbono",
+      "description": "Fluxo de carbono atmosférico",
+      "colunas": [
+        { "nome": "idFluxoCarbono", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "producaoFitoplanctonica", "label": "Produção Fitoplanctônica", "type": "number" },
+        { "nome": "carbonoOrganicoExcretado", "label": "Carbono Orgânico Excretado", "type": "number" },
+        { "nome": "respiracaoFito", "label": "Respiração Fitoplanctônica", "type": "number" },
+        { "nome": "producaoBacteriana", "label": "Produção Bacteriana", "type": "number" },
+        { "nome": "respiracaoBacteriana", "label": "Respiração Bacteriana", "type": "number" },
+        { "nome": "taxaSedimentacao", "label": "Taxa de Sedimentação", "type": "string" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" }
+      ]
     },
     {
-      id: "tbfluxodifusivo",
-      name: "tbfluxodifusivo",
-      description: "Fluxo difusivo de gases",
-      colunas: [],
+      "id": "tbfluxodifusivo",
+      "name": "Fluxo difusivo",
+      "description": "Fluxo difusivo de gases",
+      "colunas": [
+        { "nome": "idFluxoDifusivo", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "batimetria", "label": "Batimetria", "type": "number" },
+        { "nome": "intervalo", "label": "Intervalo", "type": "string" },
+        { "nome": "CH4", "label": "CH4", "type": "number" },
+        { "nome": "CO2", "label": "CO2", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" }
+      ]
     },
     {
-      id: "tbfluxodifusivoinpe",
-      name: "tbfluxodifusivoinpe",
-      description: "Fluxo difusivo (dados do INPE)",
-      colunas: [],
+      "id": "tbfluxodifusivoinpe",
+      "name": "Fluxo difusivo (INPE)",
+      "description": "Fluxo difusivo (dados do INPE)",
+      "colunas": [
+        { "nome": "idFluxoDifusivoInpe", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "CO2", "label": "CO2", "type": "number" },
+        { "nome": "CO2_desvioPadrao", "label": "Desvio Padrão CO2", "type": "number" },
+        { "nome": "CO2_amostras", "label": "Amostras CO2", "type": "number" },
+        { "nome": "CH4", "label": "CH4", "type": "number" },
+        { "nome": "CH4_desvioPadrao", "label": "Desvio Padrão CH4", "type": "number" },
+        { "nome": "CH4_amostras", "label": "Amostras CH4", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" }
+      ]
     },
     {
-      id: "tbgasesembolhas",
-      name: "tbgasesembolhas",
-      description: "Composição de gases em bolhas",
-      colunas: [],
+      "id": "tbgasesembolhas",
+      "name": "Gases em bolhas",
+      "description": "Composição de gases em bolhas",
+      "colunas": [
+        { "nome": "idGasesEmBolhas", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "string" },
+        { "nome": "CO2", "label": "CO2", "type": "string" },
+        { "nome": "O2", "label": "O2", "type": "string" },
+        { "nome": "N2", "label": "N2", "type": "number" },
+        { "nome": "CH4", "label": "CH4", "type": "number" },
+        { "nome": "N2O", "label": "N2O", "type": "string" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" }
+      ]
     },
     {
-      id: "tbdifusao",
-      name: "tbdifusao",
-      description: "Dados de difusão de gases",
-      colunas: [],
+      "id": "tbdifusao",
+      "name": "Difusão de gases",
+      "description": "Dados de difusão de gases",
+      "colunas": [
+        { "nome": "idDifusao", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "CH4", "label": "CH4", "type": "string" },
+        { "nome": "CO2", "label": "CO2", "type": "string" },
+        { "nome": "N2O", "label": "N2O", "type": "string" },
+        { "nome": "pH", "label": "pH", "type": "string" },
+        { "nome": "tempAgua", "label": "Temperatura Água", "type": "string" },
+        { "nome": "tempAr", "label": "Temperatura Ar", "type": "string" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "string" },
+        { "nome": "altitude", "label": "Altitude", "type": "string" },
+        { "nome": "vento", "label": "Vento", "type": "string" }
+      ]
     },
     {
-      id: "tbdupladessorcaoagua",
-      name: "tbdupladessorcaoagua",
-      description: "Medições de dessorção dupla na água",
-      colunas: [],
-    },
+      "id": "tbdupladessorcaoagua",
+      "name": "Dessorção dupla (água)",
+      "description": "Medições de dessorção dupla na água",
+      "colunas": [
+        { "nome": "idDuplaDessorcaoAgua", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "CO2", "label": "CO2", "type": "string" },
+        { "nome": "O2", "label": "O2", "type": "string" },
+        { "nome": "N2", "label": "N2", "type": "string" },
+        { "nome": "CH4", "label": "CH4", "type": "string" },
+        { "nome": "N2O", "label": "N2O", "type": "string" }
+      ]
+    }
   ],
 
-  'campo-medidas': [
+  "campo-medidas": [
     {
-      id: "tbmedidacampocoluna",
-      name: "tbmedidacampocoluna",
-      description: "Medições de campo na coluna d'água",
-      colunas: [],
+      "id": "tbmedidacampocoluna",
+      "name": "Campo coluna d'água",
+      "description": "Medições de campo na coluna d'água",
+      "colunas": [
+        { "nome": "idMedidaCampoColuna", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "secchi", "label": "Disco Secchi", "type": "string" },
+        { "nome": "tempAgua", "label": "Temperatura Água", "type": "string" },
+        { "nome": "condutividade", "label": "Condutividade", "type": "string" },
+        { "nome": "DO", "label": "Oxigênio Dissolvido", "type": "string" },
+        { "nome": "pH", "label": "pH", "type": "string" },
+        { "nome": "turbidez", "label": "Turbidez", "type": "string" },
+        { "nome": "materialEmSuspensao", "label": "Material em Suspensão", "type": "string" },
+        { "nome": "intensidadeLuminosa", "label": "Intensidade Luminosa", "type": "string" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" }
+      ]
     },
     {
-      id: "tbmedidacamposuperficie",
-      name: "tbmedidacamposuperficie",
-      description: "Medições de campo na superfície",
-      colunas: [],
-    },
+      "id": "tbmedidacamposuperficie",
+      "name": "Campo superfície",
+      "description": "Medições de campo na superfície",
+      "colunas": [
+        { "nome": "idMedidaCampoSuperficie", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "secchi", "label": "Disco Secchi", "type": "string" },
+        { "nome": "tempAgua", "label": "Temperatura Água", "type": "string" },
+        { "nome": "condutividade", "label": "Condutividade", "type": "string" },
+        { "nome": "DO", "label": "Oxigênio Dissolvido", "type": "string" },
+        { "nome": "pH", "label": "pH", "type": "string" },
+        { "nome": "turbidez", "label": "Turbidez", "type": "string" },
+        { "nome": "materialEmSuspensao", "label": "Material em Suspensão", "type": "string" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" }
+      ]
+    }
   ],
 
-  'fisico-quimicos': [
+  "fisico-quimicos": [
     {
-      id: "tbpfq",
-      name: "tbpfq",
-      description: "Parâmetros físico-químicos diversos",
-      colunas: [],
+      "id": "tbpfq",
+      "name": "Parâmetros físico-químicos",
+      "description": "Parâmetros físico-químicos diversos",
+      "colunas": [
+        { "nome": "idPFQ", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "batimetria", "label": "Batimetria", "type": "number" },
+        { "nome": "tempar", "label": "Temperatura Ar", "type": "string" },
+        { "nome": "tempagua", "label": "Temperatura Água", "type": "number" },
+        { "nome": "DO", "label": "Oxigênio Dissolvido", "type": "number" },
+        { "nome": "pH", "label": "pH", "type": "number" },
+        { "nome": "redox", "label": "Potencial Redox", "type": "number" },
+        { "nome": "vento", "label": "Vento", "type": "string" }
+      ]
     },
     {
-      id: "tbtc",
-      name: "tbtc",
-      description: "Medições de temperatura e condutividade",
-      colunas: [],
+      "id": "tbtc",
+      "name": "Temperatura e condutividade",
+      "description": "Medições de temperatura e condutividade",
+      "colunas": [
+        { "nome": "idtc", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "string" },
+        { "nome": "tc", "label": "Temperatura/Condutividade", "type": "number" }
+      ]
     },
     {
-      id: "tbvariaveisfisicasquimicasdaagua",
-      name: "tbvariaveisfisicasquimicasdaagua",
-      description: "Variáveis físico-químicas da água",
-      colunas: [],
-    },
+      "id": "tbvariaveisfisicasquimicasdaagua",
+      "name": "Variáveis físico-químicas (água)",
+      "description": "Variáveis físico-químicas da água",
+      "colunas": [
+        { "nome": "idVariaveisFisicasQuimicasDaAgua", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "secchi", "label": "Disco Secchi", "type": "string" },
+        { "nome": "batimetria", "label": "Batimetria", "type": "number" },
+        { "nome": "F", "label": "Flúor", "type": "string" },
+        { "nome": "Cl", "label": "Cloreto", "type": "string" },
+        { "nome": "NNO3", "label": "N-NO3", "type": "string" },
+        { "nome": "PPO43", "label": "P-PO4", "type": "string" },
+        { "nome": "SSO42", "label": "S-SO4", "type": "string" },
+        { "nome": "Li", "label": "Lítio", "type": "string" },
+        { "nome": "Na", "label": "Sódio", "type": "string" },
+        { "nome": "NNH4", "label": "N-NH4", "type": "string" },
+        { "nome": "K", "label": "Potássio", "type": "string" },
+        { "nome": "Mg", "label": "Magnésio", "type": "string" },
+        { "nome": "Ca", "label": "Cálcio", "type": "string" },
+        { "nome": "clorofila", "label": "Clorofila", "type": "string" },
+        { "nome": "feofitina", "label": "Feofitina", "type": "string" },
+        { "nome": "turbidez", "label": "Turbidez", "type": "string" },
+        { "nome": "NT", "label": "Nitrogênio Total", "type": "string" },
+        { "nome": "PT", "label": "Fósforo Total", "type": "string" },
+        { "nome": "TDC", "label": "Carbono Dissolvido Total", "type": "string" }
+      ]
+    }
   ],
 
-  'parametros-biologicos': [
+  "parametros-biologicos": [
     {
-      id: "tbparametrosbiologicosfisicosagua",
-      name: "tbparametrosbiologicosfisicosagua",
-      description: "Parâmetros biológicos e físicos da água",
-      colunas: [],
+      "id": "tbparametrosbiologicosfisicosagua",
+      "name": "Parâmetros biofísicos (água)",
+      "description": "Parâmetros biológicos e físicos da água",
+      "colunas": [
+        { "nome": "idParametrosBiologicosFisicosAgua", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "secchi", "label": "Disco Secchi", "type": "string" },
+        { "nome": "tempagua", "label": "Temperatura Água", "type": "string" },
+        { "nome": "condutividade", "label": "Condutividade", "type": "string" },
+        { "nome": "DO", "label": "Oxigênio Dissolvido", "type": "string" },
+        { "nome": "pH", "label": "pH", "type": "string" },
+        { "nome": "turbidez", "label": "Turbidez", "type": "string" },
+        { "nome": "materialEmSuspensao", "label": "Material em Suspensão", "type": "string" },
+        { "nome": "DOC", "label": "DOC", "type": "string" },
+        { "nome": "TOC", "label": "TOC", "type": "string" },
+        { "nome": "POC", "label": "POC", "type": "string" },
+        { "nome": "DIC", "label": "DIC", "type": "string" },
+        { "nome": "NT", "label": "Nitrogênio Total", "type": "string" },
+        { "nome": "PT", "label": "Fósforo Total", "type": "string" },
+        { "nome": "densidadeBacteria", "label": "Densidade Bactérias", "type": "string" },
+        { "nome": "biomassaBacteria", "label": "Biomassa Bactérias", "type": "string" },
+        { "nome": "clorofilaA", "label": "Clorofila A", "type": "string" },
+        { "nome": "biomassaCarbonoTotalFito", "label": "Biomassa C Fitoplâncton", "type": "string" },
+        { "nome": "densidadeTotalFito", "label": "Densidade Fitoplâncton", "type": "string" },
+        { "nome": "biomassaZoo", "label": "Biomassa Zooplâncton", "type": "string" },
+        { "nome": "densidadeTotalZoo", "label": "Densidade Zooplâncton", "type": "string" },
+        { "nome": "producaoFitoplanctonica", "label": "Produção Fitoplanctônica", "type": "string" },
+        { "nome": "carbonoOrganicoExcretado", "label": "Carbono Orgânico Excretado", "type": "string" },
+        { "nome": "respiracaoFito", "label": "Respiração Fitoplâncton", "type": "string" },
+        { "nome": "producaoBacteriana", "label": "Produção Bacteriana", "type": "string" },
+        { "nome": "respiracaoBacteriana", "label": "Respiração Bacteriana", "type": "string" },
+        { "nome": "taxaSedimentacao", "label": "Taxa Sedimentação", "type": "string" },
+        { "nome": "delta13C", "label": "δ13C", "type": "string" },
+        { "nome": "delta15N", "label": "δ15N", "type": "string" },
+        { "nome": "intensidadeLuminosa", "label": "Intensidade Luminosa", "type": "string" }
+      ]
     },
     {
-      id: "tbnutrientessedimento",
-      name: "tbnutrientessedimento",
-      description: "Nutrientes presentes no sedimento",
-      colunas: [],
+      "id": "tbnutrientessedimento",
+      "name": "Nutrientes no sedimento",
+      "description": "Nutrientes presentes no sedimento",
+      "colunas": [
+        { "nome": "idNutrientesSedimento", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "batimetria", "label": "Batimetria", "type": "number" },
+        { "nome": "N2", "label": "Nitrogênio (N2)", "type": "number" },
+        { "nome": "PT", "label": "Fósforo Total", "type": "number" },
+        { "nome": "TC", "label": "Carbono Total", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" }
+      ]
     },
     {
-      id: "tbcarbono",
-      name: "tbcarbono",
-      description: "Medições de carbono",
-      colunas: [],
-    },
+      "id": "tbcarbono",
+      "name": "Carbono",
+      "description": "Medições de carbono",
+      "colunas": [
+        { "nome": "idCarbono", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" },
+        { "nome": "horaMedida", "label": "Hora", "type": "string" },
+        { "nome": "DC", "label": "DC", "type": "string" },
+        { "nome": "DOC", "label": "DOC", "type": "string" },
+        { "nome": "POC", "label": "POC", "type": "number" },
+        { "nome": "TOC", "label": "TOC", "type": "string" },
+        { "nome": "DIC", "label": "DIC", "type": "string" },
+        { "nome": "TC", "label": "TC", "type": "string" }
+      ]
+    }
   ],
 
-  'localizacoes-campanhas': [
+  "localizacoes-campanhas": [
     {
-      id: "tbinstituicao",
-      name: "tbinstituicao",
-      description: "Instituições participantes das campanhas",
-      colunas: [],
+      "id": "tbinstituicao",
+      "name": "Instituições",
+      "description": "Instituições participantes das campanhas",
+      "colunas": [
+        { "nome": "idInstituicao", "label": "ID", "type": "number" },
+        { "nome": "nome", "label": "Nome", "type": "string" }
+      ]
     },
     {
-      id: "tbreservatorio",
-      name: "tbreservatorio",
-      description: "Reservatórios de coleta",
-      colunas: [],
+      "id": "tbreservatorio",
+      "name": "Reservatórios",
+      "description": "Reservatórios de coleta",
+      "colunas": [
+        { "nome": "idReservatorio", "label": "ID", "type": "number" },
+        { "nome": "nome", "label": "Nome", "type": "string" },
+        { "nome": "lat", "label": "Latitude", "type": "string" },
+        { "nome": "lng", "label": "Longitude", "type": "string" }
+      ]
     },
     {
-      id: "tbcampanha",
-      name: "tbcampanha",
-      description: "Campanhas realizadas em campo",
-      colunas: [],
+      "id": "tbcampanha",
+      "name": "Campanhas",
+      "description": "Campanhas realizadas em campo",
+      "colunas": [
+        { "nome": "idcampanha", "label": "ID Campanha", "type": "number" },
+        { "nome": "idreservatorio", "label": "Reservatório", "type": "number" },
+        { "nome": "idinstituicao", "label": "Instituição", "type": "number" },
+        { "nome": "nrodacampanha", "label": "Nº Campanha", "type": "number" },
+        { "nome": "datainicio", "label": "Data Início", "type": "string" },
+        { "nome": "datafim", "label": "Data Fim", "type": "string" }
+      ]
     },
     {
-      id: "tbsitio",
-      name: "tbsitio",
-      description: "Sítios de amostragem",
-      colunas: [],
+      "id": "tbsitio",
+      "name": "Sítios de amostragem",
+      "description": "Sítios de amostragem",
+      "colunas": [
+        { "nome": "idsitio", "label": "ID", "type": "number" },
+        { "nome": "idreservatorio", "label": "Reservatório", "type": "number" },
+        { "nome": "nome", "label": "Nome", "type": "string" },
+        { "nome": "lat", "label": "Latitude", "type": "number" },
+        { "nome": "lng", "label": "Longitude", "type": "number" },
+        { "nome": "descricao", "label": "Descrição", "type": "string" }
+      ]
     },
     {
-      id: "tbtabela",
-      name: "tbtabela",
-      description: "Metadados das tabelas disponíveis",
-      colunas: [],
+      "id": "tbtabela",
+      "name": "Metadados das tabelas",
+      "description": "Metadados das tabelas disponíveis",
+      "colunas": [
+        { "nome": "idTabela", "label": "ID", "type": "number" },
+        { "nome": "idInstituicao", "label": "Instituição", "type": "number" },
+        { "nome": "nome", "label": "Nome", "type": "string" },
+        { "nome": "rotulo", "label": "Rótulo", "type": "string" },
+        { "nome": "excecao", "label": "Exceção", "type": "string" },
+        { "nome": "sitio", "label": "Sítio", "type": "string" },
+        { "nome": "campanha", "label": "Campanha", "type": "string" }
+      ]
     },
     {
-      id: "tbcampanhaportabela",
-      name: "tbcampanhaportabela",
-      description: "Relacionamento entre campanhas e tabelas",
-      colunas: [],
-    },
+      "id": "tbcampanhaportabela",
+      "name": "Campanhas por tabela",
+      "description": "Relacionamento entre campanhas e tabelas",
+      "colunas": [
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idTabela", "label": "Tabela", "type": "number" }
+      ]
+    }
   ],
 
-  'equipamentos': [
+  "equipamentos": [
     {
-      id:'nothing',
-      name:'Sem informações',
-      description: 'Sem informações, por enquanto!',
-      colunas: []
+      "id": "tbhoriba",
+      "name": "Horiba",
+      "description": "Medições com equipamento Horiba",
+      "colunas": [
+        { "nome": "idHoriba", "label": "ID", "type": "number" },
+        { "nome": "idCampanha", "label": "Campanha", "type": "number" },
+        { "nome": "idSitio", "label": "Sítio", "type": "number" },
+        { "nome": "profundidade", "label": "Profundidade", "type": "number" },
+        { "nome": "tempAgua", "label": "Temperatura Água", "type": "number" },
+        { "nome": "condutividade", "label": "Condutividade", "type": "number" },
+        { "nome": "pH", "label": "pH", "type": "number" },
+        { "nome": "DO", "label": "Oxigênio Dissolvido", "type": "number" },
+        { "nome": "TDS", "label": "Sólidos Totais Dissolvidos", "type": "number" },
+        { "nome": "redox", "label": "Potencial Redox", "type": "number" },
+        { "nome": "turbidez", "label": "Turbidez", "type": "string" },
+        { "nome": "dataMedida", "label": "Data", "type": "string" }
+      ]
     }
   ]
-};
+}
+
+
 
 export default rawData;
 
