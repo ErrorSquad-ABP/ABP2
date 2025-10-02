@@ -748,14 +748,7 @@ export default function TablesPage(): JSX.Element {
             </Row>
 
             <Row>
-              <Label>Responsável</Label>
-              <Select value={responsavel} onChange={(e) => setResponsavel(e.target.value)}>
-                {(metadata?.responsaveis || ["a","b"]).map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </Select>
+          
               <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>* Obrigatório selecionar tabela</div>
             </Row>
 
