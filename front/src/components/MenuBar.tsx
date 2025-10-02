@@ -132,7 +132,7 @@ function MenuBar() {
         <RightLogos>
           {/* SIMAS */}
           <LogoButton
-            href="/sima" /* use external url or internal route here */
+            href="/simas" /* use external url or internal route here */
             aria-label="Ir para SIMAS"
             title="SIMAS"
           >
