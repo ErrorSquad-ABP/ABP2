@@ -1,5 +1,7 @@
+//SimaPage.tsx
 import { useEffect, useState } from "react";
 import { getSima } from "../api/simaApi";
+import SimaTable from "../components/SimaTable"
 import type { Sima, PaginatedResponse } from "../types/sima";
 import styled from "styled-components";
 
@@ -95,42 +97,27 @@ function SimaPage() {
     <PageContainer>
       <Title>Lista de Registros - SIMA</Title>
 
-      <Table>
-        <thead>
-          <tr>
-            <Th>ID</Th>
-            <Th>Estação</Th>
-            <Th>Data/Hora</Th>
-            <Th>Temperatura</Th>
-            <Th>Precipitação</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row) => (
-            <Tr key={row.idsima}>
-              <Td>{row.idsima}</Td>
-              <Td>{row.idestacao}</Td>
-              <Td>{row.datahora}</Td>
-              <Td>{row.tempar ?? "-"}</Td>
-              <Td>{row.precipitacao ?? "-"}</Td>
-            </Tr>
-          ))}
-        </tbody>
-      </Table>
-
-      <Pagination>
-        <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-          Anterior
-        </Button>
-        <span>
-          Página {page} de {totalPages}
-        </span>
-        <Button disabled={page === totalPages} onClick={() => setPage(page + 1)}>
-          Próxima
-        </Button>
-      </Pagination>
+      <SimaTable
+        data={data}
+        page={page}
+        pageSize={10}
+        onPageChange={setPage}
+        columns={[
+          { key: "idsima", label: "ID", sortable: true },
+          { key: "idestacao", label: "Estação", sortable: true },
+          { 
+            key: "datahora", 
+            label: "Data/Hora", 
+            sortable: true, 
+            render: (v) => new Date(v as string).toLocaleString() 
+          },
+          { key: "tempar", label: "Temperatura", sortable: true },
+          { key: "precipitacao", label: "Precipitação", sortable: true },
+        ]}
+      />
     </PageContainer>
   );
 }
 
 export default SimaPage;
+
