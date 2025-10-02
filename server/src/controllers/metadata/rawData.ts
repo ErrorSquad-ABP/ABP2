@@ -38,7 +38,7 @@ const rawData: Record<string, TableMeta[]> = {
     },
   ],
 
-  aguaSedimento: [
+  'agua-sedimento': [
     {
       id: "tbaguamateriaorganicasedimento",
       name: "tbaguamateriaorganicasedimento",
@@ -65,7 +65,7 @@ const rawData: Record<string, TableMeta[]> = {
     },
   ],
 
-  fluxosEGases: [
+  'fluxos-gases': [
     {
       id: "tbbolhas",
       name: "tbbolhas",
@@ -122,7 +122,7 @@ const rawData: Record<string, TableMeta[]> = {
     },
   ],
 
-  campoMedidas: [
+  'campo-medidas': [
     {
       id: "tbmedidacampocoluna",
       name: "tbmedidacampocoluna",
@@ -137,7 +137,7 @@ const rawData: Record<string, TableMeta[]> = {
     },
   ],
 
-  parametrosFisicoQuimicos: [
+  'fisico-quimicos': [
     {
       id: "tbpfq",
       name: "tbpfq",
@@ -158,7 +158,7 @@ const rawData: Record<string, TableMeta[]> = {
     },
   ],
 
-  parametrosBiologicos: [
+  'parametros-biologicos': [
     {
       id: "tbparametrosbiologicosfisicosagua",
       name: "tbparametrosbiologicosfisicosagua",
@@ -179,7 +179,7 @@ const rawData: Record<string, TableMeta[]> = {
     },
   ],
 
-  localizacoesCampanhas: [
+  'localizacoes-campanhas': [
     {
       id: "tbinstituicao",
       name: "tbinstituicao",
@@ -217,6 +217,15 @@ const rawData: Record<string, TableMeta[]> = {
       colunas: [],
     },
   ],
+
+  'equipamentos': [
+    {
+      id:'nothing',
+      name:'Sem informações',
+      description: 'Sem informações, por enquanto!',
+      colunas: []
+    }
+  ]
 };
 
 export default rawData;
