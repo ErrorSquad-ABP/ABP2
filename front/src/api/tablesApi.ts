@@ -80,6 +80,8 @@ export const postExport = async (payload: { format: "csv" | "json" | "pdf"; quer
   return data;
 };
 
-export function getTableMetadata(/*table: string*/): Promise<import("../hooks/useApiHooks").TableMetadata> {
+export function getTableMetadata(/*table: string*/): Promise<
+  import("../hooks/useApiHooks").TableMetadata
+> {
   throw new Error("Function not implemented.");
 }

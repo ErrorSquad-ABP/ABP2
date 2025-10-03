@@ -6,7 +6,7 @@ const theme: DefaultTheme = {
     primaryDark: "#1e40af",
     background: "#f9fafb",
     text: {
-       default: "#000000",
+      default: "#000000",
       base: "#111827",
       inverse: "#ffffff", // <-- agora existe
     },

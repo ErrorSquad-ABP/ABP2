@@ -111,8 +111,7 @@ export default function MapBrazil({
   }, [bounds, height]);
 
   const project = (lon: number, lat: number): [number, number] => {
-    const x =
-      ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) * viewBoxWidth;
+    const x = ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) * viewBoxWidth;
     const y =
       viewBoxHeight -
       ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1)) * viewBoxHeight;
@@ -185,14 +184,14 @@ export default function MapBrazil({
         <g filter="url(#mapDrop)">
           {/* states fill */}
           <g stroke={stateStroke} strokeWidth={0.6} fill="url(#stateGrad)" opacity={0.98}>
-            {statePaths.map((s: { id: Key | null | undefined; path: string | undefined; }) => (
+            {statePaths.map((s: { id: Key | null | undefined; path: string | undefined }) => (
               <path key={s.id} d={s.path} />
             ))}
           </g>
 
           {/* state borders - slightly lighter */}
           <g stroke="rgba(255,255,255,0.04)" strokeWidth={0.6} fill="none">
-            {statePaths.map((s: { id: any; path: string | undefined; }) => (
+            {statePaths.map((s: { id: any; path: string | undefined }) => (
               <path key={`b-${s.id}`} d={s.path} />
             ))}
           </g>
@@ -200,7 +199,7 @@ export default function MapBrazil({
 
         {/* sampling polygons (hexagons) — bright on dark background */}
         <g>
-          {samplingPolygons.map((poly: { id: any; path: string | undefined; }) => (
+          {samplingPolygons.map((poly: { id: any; path: string | undefined }) => (
             <path
               key={`s-${poly.id}`}
               d={poly.path}
