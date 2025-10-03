@@ -1,4 +1,5 @@
 // front/src/components/MapBrazil.tsx
+import { Key, useCallback, useMemo } from "react";
 import brStates from "../../public/br_states.json";
 
 type Point = {
@@ -18,9 +19,11 @@ type Props = {
 };
 
 function coordsToPath(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   coords: any[][][] | any[][][][],
   project: (lon: number, lat: number) => [number, number],
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const polygons = Array.isArray(coords[0][0][0]) ? (coords as any[][][][]) : (coords as any[][][]);
   let path = "";
   for (const poly of polygons) {
@@ -52,12 +55,15 @@ function regularPolygonPath(cx: number, cy: number, radius: number, sides = 6) {
 export default function MapBrazil({
   points = [],
   height = 520,
-  stateFill = "#1e3a8a", // darker state fill to contrast on dark background
+  //stateFill = "#1e3a8a", // darker state fill to contrast on dark background
   stateStroke = "#14317a",
   samplingFill = "rgba(253, 224, 71, 0.9)", // bright sampling color
   samplingStroke = "rgba(250, 204, 21, 1)",
 }: Props) {
-  const geo = (brStates as any).features || [];
+  const geo = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (brStates as { features: any[] }).features || [];
+  }, []);
 
   const bounds = useMemo(() => {
     let minLon = Infinity,
@@ -67,6 +73,7 @@ export default function MapBrazil({
     for (const f of geo) {
       const geom = f.geometry;
       const coords = geom?.coordinates || [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stack: any[] = [coords];
       while (stack.length) {
         const cur = stack.pop();
@@ -109,25 +116,32 @@ export default function MapBrazil({
     return { viewBoxWidth: width, viewBoxHeight: height };
   }, [bounds, height]);
 
-  const project = (lon: number, lat: number) => {
-    const x = ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) * viewBoxWidth;
-    const y =
-      viewBoxHeight -
-      ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1)) * viewBoxHeight;
-    return [x, y];
-  };
+  const project = useCallback(
+    (lon: number, lat: number): [number, number] => {
+      const x = ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) * viewBoxWidth;
+      const y =
+        viewBoxHeight -
+        ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1)) * viewBoxHeight;
+
+      return [x, y];
+    },
+    [bounds, viewBoxWidth, viewBoxHeight], // ⬅️ todas as variáveis usadas dentro da função
+  );
 
   const statePaths = useMemo(() => {
-    return geo
-      .map((f: any, idx: number) => {
-        const geom = f.geometry;
-        if (!geom) return null;
-        const coords = geom.coordinates;
-        if (!coords) return null;
-        const path = coordsToPath(coords, project);
-        return { id: f.id || idx, path };
-      })
-      .filter(Boolean) as { id: string | number; path: string }[];
+    return (
+      geo
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((f: any, idx: number) => {
+          const geom = f.geometry;
+          if (!geom) return null;
+          const coords = geom.coordinates;
+          if (!coords) return null;
+          const path = coordsToPath(coords, project);
+          return { id: f.id || idx, path };
+        })
+        .filter(Boolean) as { id: string | number; path: string }[]
+    );
   }, [geo, project]);
 
   const samplingPolygons = useMemo(() => {
@@ -182,31 +196,43 @@ export default function MapBrazil({
         <g filter="url(#mapDrop)">
           {/* states fill */}
           <g stroke={stateStroke} strokeWidth={0.6} fill="url(#stateGrad)" opacity={0.98}>
-            {statePaths.map((s) => (
+            {statePaths.map((s: { id: Key | null | undefined; path: string | undefined }) => (
               <path key={s.id} d={s.path} />
             ))}
           </g>
 
           {/* state borders - slightly lighter */}
           <g stroke="rgba(255,255,255,0.04)" strokeWidth={0.6} fill="none">
-            {statePaths.map((s) => (
-              <path key={`b-${s.id}`} d={s.path} />
-            ))}
+            {statePaths.map(
+              (s: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                id: any;
+                path: string | undefined;
+              }) => (
+                <path key={`b-${s.id}`} d={s.path} />
+              ),
+            )}
           </g>
         </g>
 
         {/* sampling polygons (hexagons) — bright on dark background */}
         <g>
-          {samplingPolygons.map((poly) => (
-            <path
-              key={`s-${poly.id}`}
-              d={poly.path}
-              fill={samplingFill}
-              stroke={samplingStroke}
-              strokeWidth={1.2}
-              style={{ filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.45))" }}
-            />
-          ))}
+          {samplingPolygons.map(
+            (poly: {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              id: any;
+              path: string | undefined;
+            }) => (
+              <path
+                key={`s-${poly.id}`}
+                d={poly.path}
+                fill={samplingFill}
+                stroke={samplingStroke}
+                strokeWidth={1.2}
+                style={{ filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.45))" }}
+              />
+            ),
+          )}
         </g>
       </svg>
     </div>

@@ -396,7 +396,7 @@ export default function TablesPage(): JSX.Element {
     }
 
     load();
-  }, []);
+  }, [topicSlug]);
 
   useEffect(() => {
     if (metadata) {
@@ -420,7 +420,7 @@ export default function TablesPage(): JSX.Element {
       setColumns(columnsFromMetadata[table]);
       setResponsible(responsibleFromMetadata[table]);
     }
-  }, [table]);
+  }, [table, columnsFromMetadata]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
@@ -481,6 +481,7 @@ export default function TablesPage(): JSX.Element {
       }
     } catch (err) {
       setChartData(makeMockMeasurementsForMonths(months));
+      console.log(err);
     }
 
     setView("chart");
@@ -817,6 +818,7 @@ export default function TablesPage(): JSX.Element {
                 </div>
               </ColumnItem>
             ))}
+
           </ColumnsBox>
         </LeftColumn>
 

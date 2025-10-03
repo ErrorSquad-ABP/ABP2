@@ -13,9 +13,11 @@ export type TableMetadata = {
 };
 
 /** Hook genérico */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function useFetch<T = any>(fetcher: () => Promise<T>, deps: any[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [error, setError] = useState<any>(null);
 
   const load = useCallback(async () => {
@@ -46,7 +48,7 @@ export const useReservatorios = () => {
 export const useInstituicoes = () => {
   return useFetch<Instituicao[]>(() => api.getInstituicoes(), []);
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useDataUnion = (params?: Record<string, any>) => {
   return useFetch(() => api.getDataUnion(params), [JSON.stringify(params || {})]);
 };
@@ -54,15 +56,16 @@ export const useDataUnion = (params?: Record<string, any>) => {
 export const useTableColumns = (table: string) => {
   return useFetch(() => api.getTableColumns(table), [table]);
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useTableData = (table: string, params?: Record<string, any>) => {
   return useFetch(() => api.getTableData(table, params), [table, JSON.stringify(params || {})]);
 };
-
+/*
 export const useTableMetadata = (table: string) => {
   return useFetch<TableMetadata>(() => api.getTableMetadata(table), [table]);
 };
-
+*/
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useTableAggregate = (table: string, params?: Record<string, any>) => {
   return useFetch(
     () => api.getTableAggregate(table, params),
@@ -70,12 +73,17 @@ export const useTableAggregate = (table: string, params?: Record<string, any>) =
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useTableMap = (table: string, params?: Record<string, any>) => {
   return useFetch(() => api.getTableMap(table, params), [table, JSON.stringify(params || {})]);
 };
 
 export const useExport = () => {
-  const call = async (payload: { format: "csv" | "json" | "pdf"; query: any }) => {
+  const call = async (payload: {
+    format: "csv" | "json" | "pdf";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: any;
+  }) => {
     return api.postExport(payload);
   };
   return { exportData: call };
