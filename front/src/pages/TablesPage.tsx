@@ -12,6 +12,7 @@ import MapBrazil from "../components/MapBrazil";
  * - This file uses a small runtime-safe access to import.meta.env to avoid TS/Bundler errors.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
 
 type ColumnMeta = {
@@ -352,11 +353,15 @@ export default function TablesPage(): JSX.Element {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(() =>
     mockColumns.slice(0, 3).map((c) => c.name),
   );
+  const [responsible, setResponsible] = useState<string>();
   const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
+  const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<string>();
 
   const [view, setView] = useState<"chart" | "map">("chart");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [chartData, setChartData] = useState<any[] | null>(null);
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
@@ -381,6 +386,7 @@ export default function TablesPage(): JSX.Element {
           const m = await metaRes.json();
           const data = m.data;
           setMetadata(data);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const tfm = data.map((item: any) => item.name);
           setTablesFromMetadata(tfm);
         }
@@ -395,7 +401,9 @@ export default function TablesPage(): JSX.Element {
   useEffect(() => {
     if (metadata) {
       const newColumns = getColumnsFromMetadata(metadata);
+      const newResp = getResponsibleFromMetadata(metadata);
       setColumnsFromMetadata(newColumns);
+      setResponsibleFromMetadata(newResp);
       setTable("");
     }
   }, [metadata]);
@@ -405,20 +413,35 @@ export default function TablesPage(): JSX.Element {
       const firstItem = Object.keys(columnsFromMetadata)[0];
       setTable(firstItem);
     }
-  }, [columnsFromMetadata]);
+  }, [columnsFromMetadata, responsibleFromMetadata]);
 
   useEffect(() => {
     if (table) {
       setColumns(columnsFromMetadata[table]);
+      setResponsible(responsibleFromMetadata[table]);
     }
   }, [table]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const clms: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     meta.forEach((tb: any) => {
-      clms[tb.name] = tb.colunas; // Chave dinâmica e valor
+      clms[tb.name] = tb.colunas;
     });
     return clms;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function getResponsibleFromMetadata(meta: any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resp: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    meta.forEach((tb: any) => {
+      resp[tb.name] = tb.responsible; // Chave dinâmica e valor
+    });
+    return resp;
   }
 
   function toggleColumn(name: string) {
@@ -545,6 +568,7 @@ export default function TablesPage(): JSX.Element {
   /* Multi-series SVG chart: plots all selected numeric columns on the same coordinate system
      and shows colored points per institution with tooltip on hover.
      X axis now uses monthsBetweenDatesISO(start,end) so we always show every month label in YYYY/MM/DD. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
     if (!rows || !rows.length || !columns || !columns.length)
       return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
@@ -777,6 +801,7 @@ export default function TablesPage(): JSX.Element {
           </Controls>
 
           <ColumnsBox aria-label="Lista de colunas">
+            {/*eslint-disable-next-line @typescript-eslint/no-explicit-any*/}
             {columns.map((c: any) => (
               <ColumnItem key={c.nome}>
                 <input
@@ -860,7 +885,7 @@ export default function TablesPage(): JSX.Element {
                   }}
                 >
                   <div style={{ fontWeight: 800, color: "#0b2740", fontSize: 16 }}>
-                    Visualização — {table}
+                    Visualização — {table} — {responsible}
                   </div>
                   <div style={{ color: "#475569", fontSize: 13 }}>
                     {chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}

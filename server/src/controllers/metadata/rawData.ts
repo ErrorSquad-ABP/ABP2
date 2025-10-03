@@ -3,6 +3,7 @@ type TableMeta = {
   name: string;
   description?: string;
   colunas: Array<object>;
+  responsible: String;
 };
 
 const rawData: Record<string, TableMeta[]> = {
@@ -24,6 +25,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "delta13c", label: "δ13C", type: "string" },
         { nome: "delta15n", label: "δ15N", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbabioticosuperficie",
@@ -41,6 +43,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "delta13c", label: "δ13C", type: "string" },
         { nome: "delta15n", label: "δ15N", type: "string" },
       ],
+      responsible: "Furnas",
     },
   ],
 
@@ -67,6 +70,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "biomassaZoo", label: "Biomassa Zooplâncton", type: "string" },
         { nome: "densidadeTotalZoo", label: "Densidade Zooplâncton", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbbioticosuperficie",
@@ -89,6 +93,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "biomassaZoo", label: "Biomassa Zooplâncton", type: "string" },
         { nome: "densidadeTotalZoo", label: "Densidade Zooplâncton", type: "string" },
       ],
+      responsible: "Furnas",
     },
   ],
 
@@ -108,6 +113,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "agua", label: "Água", type: "number" },
         { nome: "materiaOrganica", label: "Matéria Orgânica", type: "number" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbconcentracaogasagua",
@@ -125,6 +131,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "CH4", label: "CH4", type: "number" },
         { nome: "CO2", label: "CO2", type: "number" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbconcentracaogassedimento",
@@ -142,6 +149,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "CH4", label: "CH4", type: "number" },
         { nome: "CO2", label: "CO2", type: "number" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbionsnaaguaintersticialdosedimento",
@@ -169,6 +177,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "dataMedida", label: "Data", type: "string" },
         { nome: "horaMedida", label: "Hora", type: "string" },
       ],
+      responsible: "Furnas",
     },
   ],
 
@@ -192,6 +201,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "dataMedida", label: "Data", type: "string" },
         { nome: "horaMedida", label: "Hora", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbcamarasolo",
@@ -211,6 +221,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "vento", label: "Vento", type: "string" },
         { nome: "altitude", label: "Altitude", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbfluxobolhasinpe",
@@ -227,6 +238,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "dataMedida", label: "Data", type: "string" },
         { nome: "horaMedida", label: "Hora", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbfluxocarbono",
@@ -245,6 +257,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "dataMedida", label: "Data", type: "string" },
         { nome: "horaMedida", label: "Hora", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbfluxodifusivo",
@@ -261,6 +274,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "dataMedida", label: "Data", type: "string" },
         { nome: "horaMedida", label: "Hora", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbfluxodifusivoinpe",
@@ -280,6 +294,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "dataMedida", label: "Data", type: "string" },
         { nome: "horaMedida", label: "Hora", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbgasesembolhas",
@@ -297,6 +312,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "N2O", label: "N2O", type: "string" },
         { nome: "dataMedida", label: "Data", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbdifusao",
@@ -318,6 +334,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "altitude", label: "Altitude", type: "string" },
         { nome: "vento", label: "Vento", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbdupladessorcaoagua",
@@ -336,6 +353,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "CH4", label: "CH4", type: "string" },
         { nome: "N2O", label: "N2O", type: "string" },
       ],
+      responsible: "Furnas",
     },
   ],
 
@@ -360,6 +378,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "dataMedida", label: "Data", type: "string" },
         { nome: "horaMedida", label: "Hora", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbmedidacamposuperficie",
@@ -379,6 +398,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "dataMedida", label: "Data", type: "string" },
         { nome: "horaMedida", label: "Hora", type: "string" },
       ],
+      responsible: "Furnas",
     },
   ],
 
@@ -402,6 +422,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "redox", label: "Potencial Redox", type: "number" },
         { nome: "vento", label: "Vento", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbtc",
@@ -415,6 +436,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "profundidade", label: "Profundidade", type: "string" },
         { nome: "tc", label: "Temperatura/Condutividade", type: "number" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbvariaveisfisicasquimicasdaagua",
@@ -447,6 +469,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "PT", label: "Fósforo Total", type: "string" },
         { nome: "TDC", label: "Carbono Dissolvido Total", type: "string" },
       ],
+      responsible: "Furnas",
     },
   ],
 
@@ -491,6 +514,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "delta15N", label: "δ15N", type: "string" },
         { nome: "intensidadeLuminosa", label: "Intensidade Luminosa", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbnutrientessedimento",
@@ -508,6 +532,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "dataMedida", label: "Data", type: "string" },
         { nome: "horaMedida", label: "Hora", type: "string" },
       ],
+      responsible: "Furnas",
     },
     {
       id: "tbcarbono",
@@ -526,6 +551,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "DIC", label: "DIC", type: "string" },
         { nome: "TC", label: "TC", type: "string" },
       ],
+      responsible: "Furnas",
     },
   ],
 
@@ -538,6 +564,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "idInstituicao", label: "ID", type: "number" },
         { nome: "nome", label: "Nome", type: "string" },
       ],
+      responsible: "Furnas, Balcar",
     },
     {
       id: "tbreservatorio",
@@ -549,6 +576,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "lat", label: "Latitude", type: "string" },
         { nome: "lng", label: "Longitude", type: "string" },
       ],
+      responsible: "Furnas, Balcar",
     },
     {
       id: "tbcampanha",
@@ -562,6 +590,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "datainicio", label: "Data Início", type: "string" },
         { nome: "datafim", label: "Data Fim", type: "string" },
       ],
+      responsible: "Furnas, Balcar",
     },
     {
       id: "tbsitio",
@@ -575,6 +604,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "lng", label: "Longitude", type: "number" },
         { nome: "descricao", label: "Descrição", type: "string" },
       ],
+      responsible: "Furnas, sitio",
     },
     {
       id: "tbtabela",
@@ -589,6 +619,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "sitio", label: "Sítio", type: "string" },
         { nome: "campanha", label: "Campanha", type: "string" },
       ],
+      responsible: "Furnas, Balcar, Sima",
     },
     {
       id: "tbcampanhaportabela",
@@ -598,6 +629,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "idCampanha", label: "Campanha", type: "number" },
         { nome: "idTabela", label: "Tabela", type: "number" },
       ],
+      responsible: "Furnas, Balcar",
     },
   ],
 
@@ -620,6 +652,7 @@ const rawData: Record<string, TableMeta[]> = {
         { nome: "turbidez", label: "Turbidez", type: "string" },
         { nome: "dataMedida", label: "Data", type: "string" },
       ],
+      responsible: "Furnas",
     },
   ],
 };
