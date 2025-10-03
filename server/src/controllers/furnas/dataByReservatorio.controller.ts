@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 
-const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
+/*const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10; */
 
 export const getReservatorioById = async (req: Request, res: Response): Promise<void> => {
   try {
