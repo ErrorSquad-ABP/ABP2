@@ -20,7 +20,7 @@ export const logger = winston.createLogger({
       format: combine(colorize(), consoleFormat),
     }),
     new winston.transports.File({
-      filename: "logs/error.log",
+      filename: "../../logs/error.log",
       level: "error",
       format: combine(json()),
     }),
