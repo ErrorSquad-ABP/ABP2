@@ -268,18 +268,20 @@ export const getColumns = async (req: Request, res: Response): Promise<void> => 
 
     // formata resposta
     const columns = colsRes.rows.map((r: any) => {
-      const isTime =
-        ["date", "timestamp", "timestamp without time zone", "timestamp with time zone"].includes(
-          r.data_type,
-        );
+      const isTime = [
+        "date",
+        "timestamp",
+        "timestamp without time zone",
+        "timestamp with time zone",
+      ].includes(r.data_type);
 
       return {
         name: r.column_name,
         type: isTime
           ? "date"
           : r.data_type.includes("int") || r.data_type.includes("numeric")
-          ? "number"
-          : "string",
+            ? "number"
+            : "string",
         label: formatLabel(r.column_name),
         is_time: isTime,
       };
@@ -297,7 +299,5 @@ export const getColumns = async (req: Request, res: Response): Promise<void> => 
 };
 
 function formatLabel(name: string): string {
-  return name
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }

@@ -63,11 +63,6 @@ export const getTableDataByInstituicao = async (
   return data;
 };
 
-export const getTableMetadata = async (table: string) => {
-  const { data } = await api.get(`/tables/${encodeURIComponent(table)}/metadata`);
-  return data;
-};
-
 export const getTableAggregate = async (table: string, params?: Record<string, any>) => {
   const { data } = await api.get(`/tables/${encodeURIComponent(table)}/aggregate`, { params });
   return data;

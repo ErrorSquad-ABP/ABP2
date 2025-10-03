@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 
-const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
+/*const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10; */
 
 export const getReservatorioById = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -51,7 +51,7 @@ export const getReservatorioById = async (req: Request, res: Response): Promise<
     res.status(200).json({
       success: true,
       rows: result.rows.length,
-      data: result.rows
+      data: result.rows,
     });
   } catch (error: any) {
     logger.error("Erro ao buscar reservatório", {

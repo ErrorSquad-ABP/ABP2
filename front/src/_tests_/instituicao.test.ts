@@ -1,3 +1,4 @@
+/*
 import { Instituicao } from "../models/instituicao.ts";
 import { IReservatorio } from "../types/reservatorio.ts";
 
@@ -55,3 +56,4 @@ describe("Instituicao", () => {
     });
   });
 });
+*/

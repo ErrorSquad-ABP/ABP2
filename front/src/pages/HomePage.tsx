@@ -1,7 +1,6 @@
 // front/src/pages/HomePage.tsx
-import React from "react";
+import { JSX } from "react";
 import styled from "styled-components";
-import { useTableMetadata } from "../hooks/useApiHooks";
 
 type Category = {
   id: string;
@@ -93,43 +92,12 @@ export default function HomePage(): JSX.Element {
       <Content>
         <Cards role="list">
           {CATEGORIES.map((c) => {
-            const tableSlug = c.href.replace(/^\/tables\//, "");
-            const { data: meta, loading, error } = useTableMetadata(tableSlug);
-
-            const minDate = meta?.minDate ? new Date(meta.minDate).toLocaleDateString() : null;
-            const maxDate = meta?.maxDate ? new Date(meta.maxDate).toLocaleDateString() : null;
-            const responsaveisCount = meta?.responsaveis ? meta.responsaveis.length : 0;
-            const totalRecords =
-              typeof meta?.totalRecords === "number" ? meta.totalRecords.toLocaleString() : null;
-
             return (
               <CardLink key={c.id} href={c.href} target="_blank" rel="noopener noreferrer">
                 <Card>
                   <Icon aria-hidden>{c.icon}</Icon>
                   <CardTitle>{c.title}</CardTitle>
                   <CardDesc>{c.description}</CardDesc>
-
-                  <MetaArea>
-                    {loading && <MetaText>Carregando dados…</MetaText>}
-                    {error && <MetaTextError>Erro ao carregar</MetaTextError>}
-                    {!loading && !error && meta && (
-                      <>
-                        {minDate && maxDate ? (
-                          <MetaText>
-                            {minDate} — {maxDate}
-                          </MetaText>
-                        ) : (
-                          <MetaText>Período: —</MetaText>
-                        )}
-                        {responsaveisCount > 0 && (
-                          <MetaText>
-                            {responsaveisCount} responsável{responsaveisCount > 1 ? "es" : ""}
-                          </MetaText>
-                        )}
-                        {totalRecords !== null && <MetaText>{totalRecords} registros</MetaText>}
-                      </>
-                    )}
-                  </MetaArea>
 
                   <CardCTA>Abrir →</CardCTA>
                 </Card>
@@ -267,7 +235,7 @@ const CardDesc = styled.p`
   line-height: 1.3;
   max-width: 88%;
 `;
-
+/*
 const MetaArea = styled.div`
   margin-top: 6px;
   display: flex;
@@ -284,7 +252,7 @@ const MetaText = styled.span`
 const MetaTextError = styled(MetaText)`
   color: #c84b4b;
 `;
-
+*/
 const CardCTA = styled.div`
   margin-top: auto;
   color: ${({ theme }) => theme.colors.primary};
