@@ -117,19 +117,16 @@ export default function MapBrazil({
   }, [bounds, height]);
 
   const project = useCallback(
-  (lon: number, lat: number): [number, number] => {
-    const x =
-      ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) *
-      viewBoxWidth;
-    const y =
-      viewBoxHeight -
-      ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1)) *
-        viewBoxHeight;
+    (lon: number, lat: number): [number, number] => {
+      const x = ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) * viewBoxWidth;
+      const y =
+        viewBoxHeight -
+        ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1)) * viewBoxHeight;
 
-    return [x, y];
-  },
-  [bounds, viewBoxWidth, viewBoxHeight] // ⬅️ todas as variáveis usadas dentro da função
-);
+      return [x, y];
+    },
+    [bounds, viewBoxWidth, viewBoxHeight], // ⬅️ todas as variáveis usadas dentro da função
+  );
 
   const statePaths = useMemo(() => {
     return (
@@ -207,12 +204,11 @@ export default function MapBrazil({
           {/* state borders - slightly lighter */}
           <g stroke="rgba(255,255,255,0.04)" strokeWidth={0.6} fill="none">
             {statePaths.map(
-              (s:
-                {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  id: any;
-                  path: string | undefined;
-                }) => (
+              (s: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                id: any;
+                path: string | undefined;
+              }) => (
                 <path key={`b-${s.id}`} d={s.path} />
               ),
             )}
@@ -222,12 +218,11 @@ export default function MapBrazil({
         {/* sampling polygons (hexagons) — bright on dark background */}
         <g>
           {samplingPolygons.map(
-            (poly: 
-              {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                id: any;
-                path: string | undefined;
-              }) => (
+            (poly: {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              id: any;
+              path: string | undefined;
+            }) => (
               <path
                 key={`s-${poly.id}`}
                 d={poly.path}
