@@ -58,11 +58,11 @@ export const useTableColumns = (table: string) => {
 export const useTableData = (table: string, params?: Record<string, any>) => {
   return useFetch(() => api.getTableData(table, params), [table, JSON.stringify(params || {})]);
 };
-
+/*
 export const useTableMetadata = (table: string) => {
   return useFetch<TableMetadata>(() => api.getTableMetadata(table), [table]);
 };
-
+*/
 export const useTableAggregate = (table: string, params?: Record<string, any>) => {
   return useFetch(
     () => api.getTableAggregate(table, params),

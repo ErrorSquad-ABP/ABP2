@@ -1,6 +1,6 @@
 //SimaTable.tsx
 import type { Sima } from "../types/sima";
-import React, { useState, useMemo } from "react";
+import { useState, useMemo, JSX } from "react";
 import styled from "styled-components";
 import { chunkArray } from "../utils/chunkArray";
 

@@ -1,4 +1,5 @@
 // front/src/components/MapBrazil.tsx
+import { Key, useMemo } from "react";
 import brStates from "../../public/br_states.json";
 
 type Point = {
@@ -52,7 +53,7 @@ function regularPolygonPath(cx: number, cy: number, radius: number, sides = 6) {
 export default function MapBrazil({
   points = [],
   height = 520,
-  stateFill = "#1e3a8a", // darker state fill to contrast on dark background
+  //stateFill = "#1e3a8a", // darker state fill to contrast on dark background
   stateStroke = "#14317a",
   samplingFill = "rgba(253, 224, 71, 0.9)", // bright sampling color
   samplingStroke = "rgba(250, 204, 21, 1)",
@@ -109,11 +110,13 @@ export default function MapBrazil({
     return { viewBoxWidth: width, viewBoxHeight: height };
   }, [bounds, height]);
 
-  const project = (lon: number, lat: number) => {
-    const x = ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) * viewBoxWidth;
+  const project = (lon: number, lat: number): [number, number] => {
+    const x =
+      ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) * viewBoxWidth;
     const y =
       viewBoxHeight -
       ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1)) * viewBoxHeight;
+
     return [x, y];
   };
 
@@ -182,14 +185,14 @@ export default function MapBrazil({
         <g filter="url(#mapDrop)">
           {/* states fill */}
           <g stroke={stateStroke} strokeWidth={0.6} fill="url(#stateGrad)" opacity={0.98}>
-            {statePaths.map((s) => (
+            {statePaths.map((s: { id: Key | null | undefined; path: string | undefined; }) => (
               <path key={s.id} d={s.path} />
             ))}
           </g>
 
           {/* state borders - slightly lighter */}
           <g stroke="rgba(255,255,255,0.04)" strokeWidth={0.6} fill="none">
-            {statePaths.map((s) => (
+            {statePaths.map((s: { id: any; path: string | undefined; }) => (
               <path key={`b-${s.id}`} d={s.path} />
             ))}
           </g>
@@ -197,7 +200,7 @@ export default function MapBrazil({
 
         {/* sampling polygons (hexagons) — bright on dark background */}
         <g>
-          {samplingPolygons.map((poly) => (
+          {samplingPolygons.map((poly: { id: any; path: string | undefined; }) => (
             <path
               key={`s-${poly.id}`}
               d={poly.path}
