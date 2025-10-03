@@ -13,5 +13,4 @@ router.use("/sima", sima);
 router.use("/metadata", metadata);
 router.use("/tables", tables);
 
-
 export default router;
