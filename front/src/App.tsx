@@ -9,7 +9,6 @@ import HomePage from "./pages/HomePage";
 import TablesPage from "./pages/TablesPage";
 import SimasPage from "./pages/SimasPage";
 import BalcarPage from "./pages/BalcarPage";
-import BalcarEquipe from "./pages/BalcarEquipe";
 
 function App() {
   return (
@@ -25,7 +24,6 @@ function App() {
               <Route path="/sima" element={<SimaPage />} />
               <Route path="/simas" element={<SimasPage />} />
               <Route path="/balcar" element={<BalcarPage />} />
-              <Route path="/balcar/equipe" element={<BalcarEquipe />} />
               <Route path="/tables/:slug" element={<TablesPage />} />
               <Route path="*" element={<HomePage />} />
             </Routes>
