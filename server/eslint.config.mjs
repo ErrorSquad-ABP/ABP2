@@ -45,8 +45,11 @@ export default tseslint.config(
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+
       // Adiciona regras recomendadas do TypeScript
       ...tseslint.configs.recommended.rules,
+
+      // sobrescreve as que você não quer
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
