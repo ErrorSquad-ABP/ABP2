@@ -383,8 +383,7 @@ export default function TablesPage(): JSX.Element {
           const m = await metaRes.json();
           const data = m.data;
           setMetadata(data);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const tfm = data.map((item: any) => item.name);
+          const tfm = data.map((item) => item.name);
           setTablesFromMetadata(tfm);
         }
       } catch (err) {
@@ -393,7 +392,7 @@ export default function TablesPage(): JSX.Element {
     }
 
     load();
-  }, []);
+  }, [topicSlug]);
 
   useEffect(() => {
     if (metadata) {
@@ -414,7 +413,7 @@ export default function TablesPage(): JSX.Element {
     if (table) {
       setColumns(columnsFromMetadata[table]);
     }
-  }, [table]);
+  }, [table, columnsFromMetadata]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
@@ -464,6 +463,7 @@ export default function TablesPage(): JSX.Element {
       }
     } catch (err) {
       setChartData(makeMockMeasurementsForMonths(months));
+      console.log(err);
     }
 
     setView("chart");

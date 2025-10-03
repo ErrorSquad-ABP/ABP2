@@ -1,5 +1,5 @@
 // front/src/components/MapBrazil.tsx
-import { Key, useMemo } from "react";
+import { Key, useCallback, useMemo } from "react";
 import brStates from "../../public/br_states.json";
 
 type Point = {
@@ -60,8 +60,10 @@ export default function MapBrazil({
   samplingFill = "rgba(253, 224, 71, 0.9)", // bright sampling color
   samplingStroke = "rgba(250, 204, 21, 1)",
 }: Props) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const geo = (brStates as any).features || [];
+  const geo = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (brStates as { features: any[] }).features || [];
+  }, []);
 
   const bounds = useMemo(() => {
     let minLon = Infinity,
@@ -114,14 +116,20 @@ export default function MapBrazil({
     return { viewBoxWidth: width, viewBoxHeight: height };
   }, [bounds, height]);
 
-  const project = (lon: number, lat: number): [number, number] => {
-    const x = ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) * viewBoxWidth;
+  const project = useCallback(
+  (lon: number, lat: number): [number, number] => {
+    const x =
+      ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) *
+      viewBoxWidth;
     const y =
       viewBoxHeight -
-      ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1)) * viewBoxHeight;
+      ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1)) *
+        viewBoxHeight;
 
     return [x, y];
-  };
+  },
+  [bounds, viewBoxWidth, viewBoxHeight] // ⬅️ todas as variáveis usadas dentro da função
+);
 
   const statePaths = useMemo(() => {
     return (
@@ -199,11 +207,12 @@ export default function MapBrazil({
           {/* state borders - slightly lighter */}
           <g stroke="rgba(255,255,255,0.04)" strokeWidth={0.6} fill="none">
             {statePaths.map(
-              (s: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              {
-                id: any;
-                path: string | undefined;
-              }) => (
+              (s:
+                {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  id: any;
+                  path: string | undefined;
+                }) => (
                 <path key={`b-${s.id}`} d={s.path} />
               ),
             )}
@@ -213,11 +222,12 @@ export default function MapBrazil({
         {/* sampling polygons (hexagons) — bright on dark background */}
         <g>
           {samplingPolygons.map(
-            (poly: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            {
-              id: any;
-              path: string | undefined;
-            }) => (
+            (poly: 
+              {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                id: any;
+                path: string | undefined;
+              }) => (
               <path
                 key={`s-${poly.id}`}
                 d={poly.path}
