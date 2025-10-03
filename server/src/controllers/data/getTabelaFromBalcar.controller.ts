@@ -11,13 +11,17 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
 
     const tabela = req.params.tabela;
 
-    const query = `SELECT * FROM ${tabela} LIMIT ${limit} OFFSET ${offset}`
+    const queryColumns:any = req.query.colunas
+    
+    // const columns = `(${queryColumns.join(',')})`
+
+    const query = `SELECT idfluxoinpe FROM ${tabela} LIMIT ${limit} OFFSET ${offset}`
 
       const result = await balcarPool.query(query);
       const resultData = result.rows;
 
      res.status(200).json({
-      data: resultData
+      colunas:queryColumns,data: resultData
     })
   } 
     catch (error: any) {
