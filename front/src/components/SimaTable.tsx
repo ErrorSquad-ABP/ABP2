@@ -156,10 +156,10 @@ const SimaTable = ({
               {columns.map((col) => (
                 <td key={String(col.key)}>
                   {col.render
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ? col.render((row as any)[col.key], row)
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    : String((row as any)[col.key] ?? "-")}
+                    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      col.render((row as any)[col.key], row)
+                    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      String((row as any)[col.key] ?? "-")}
                 </td>
               ))}
             </tr>

@@ -551,7 +551,7 @@ export default function TablesPage(): JSX.Element {
   /* Multi-series SVG chart: plots all selected numeric columns on the same coordinate system
      and shows colored points per institution with tooltip on hover.
      X axis now uses monthsBetweenDatesISO(start,end) so we always show every month label in YYYY/MM/DD. */
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
     if (!rows || !rows.length || !columns || !columns.length)
       return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
@@ -787,20 +787,21 @@ export default function TablesPage(): JSX.Element {
             {columns.map(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (c: any) => (
-              <ColumnItem key={c.nome}>
-                <input
-                  key={c.nome}
-                  type="checkbox"
-                  checked={selectedColumns.includes(c.nome)}
-                  onChange={() => toggleColumn(c.nome)}
-                  id={`col-${c.nome}`}
-                />
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontWeight: 700 }}>{c.label || c.nome}</span>
-                  <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
-                </div>
-              </ColumnItem>
-            ))}
+                <ColumnItem key={c.nome}>
+                  <input
+                    key={c.nome}
+                    type="checkbox"
+                    checked={selectedColumns.includes(c.nome)}
+                    onChange={() => toggleColumn(c.nome)}
+                    id={`col-${c.nome}`}
+                  />
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontWeight: 700 }}>{c.label || c.nome}</span>
+                    <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
+                  </div>
+                </ColumnItem>
+              ),
+            )}
           </ColumnsBox>
         </LeftColumn>
 

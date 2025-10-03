@@ -79,9 +79,11 @@ export const useTableMap = (table: string, params?: Record<string, any>) => {
 };
 
 export const useExport = () => {
-  const call = async (payload: 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    { format: "csv" | "json" | "pdf"; query: any }) => {
+  const call = async (payload: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  {
+    format: "csv" | "json" | "pdf";
+    query: any;
+  }) => {
     return api.postExport(payload);
   };
   return { exportData: call };
