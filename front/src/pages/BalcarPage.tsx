@@ -1,4 +1,3 @@
-import { Section } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
@@ -859,11 +858,26 @@ const DescricaoContent = () => {
     border-radius: 6px;
   `;
 
+  const SectionColorless = styled.div`
+    background-color: #f0f0f5;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+  `;
+
   const SectionTitle = styled.div`
     font-weight: bold;
     color: #333;
     margin-bottom: 10px;
     font-size: 18px;
+  `;
+
+  const SectionColorlessTitle = styled.div`
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 18px;
+    border-bottom: 1px solid #333;
   `;
 
   return (
@@ -1059,6 +1073,298 @@ const DescricaoContent = () => {
           </div>
         </Section>
       </Column>
+      <Column>
+        <SectionColorless>
+          <SectionColorlessTitle>Furnas</SectionColorlessTitle>
+
+          <div>
+            <div style={{ fontWeight: "1000" }}>Dados de precipitação</div>
+            <div>Quantidade de coletas: 20683</div>
+            <div>Parâmetros coletados: Precipitação (Medida diária)</div>
+            <div style={{ fontWeight: "1000" }}>Nível do reservatório</div>
+            <div>Quantidade de coletas: 8470</div>
+            <div>
+              Parâmetros coletados: Nível (Nível da água do reservatório à 0h00), Volume útil
+              (Volume útil do reservatório à 0h00), Per. volume útil (Percentual do volume útil à
+              0h00), Geração (Geração diária da usina), Vazão afluente (Média diária), Vazão
+              defluente (Média diária), Produtividade (Média diária), Vazão turbinada (Média
+              diária), Vazão vertida (Média diária), Vazão turb. em vazio (Média diária)
+            </div>
+          </div>
+        </SectionColorless>
+
+        <SectionColorless>
+          <SectionColorlessTitle>IEE</SectionColorlessTitle>
+          <div>
+            <div style={{ fontWeight: "1000" }}>Água e matéria orgânica no sedimento</div>
+            <div>Quantidade de coletas: 1283</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 243</div>
+            <div>
+              Parâmetros coletados: Profundidade (Intervalo de profundidade da fatia de sedimento),
+              Cota (Nível da água), Água (Conteúdo de água no sedimento), Matéria orgânica (Conteúdo
+              de matéria orgânica no sedimento)
+            </div>
+            <div style={{ fontWeight: "1000" }}>Concentração de gás na água</div>
+            <div>Quantidade de coletas: 1008</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 244</div>
+            <div>
+              Parâmetros coletados: Cota (Nível da água), Altura (Altura sobre a interface
+              (distância da interface sedimento-água)), Réplica, CH4 (Concentração de metano na
+              amostra da água sobre a interface (em milimolar)), CO2 (Concentração de dióxido de
+              carbono na amostra da água sobre a interface (em milimolar))
+            </div>
+            <div style={{ fontWeight: "1000" }}>Concentração de gás no sedimento</div>
+            <div>Quantidade de coletas: 3548</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 243</div>
+            <div>
+              Parâmetros coletados: Cota (Nível da água), Profundidade (Profundidade do sedimento
+              sob a interface), Réplica, CH4 (Concentração de metano na amostra de sedimento (em
+              milimolar)), CO2 (Concentração de dióxido de carbono na amostra de sedimento (em
+              milimolar))
+            </div>
+            <div style={{ fontWeight: "1000" }}>Dados do Horiba</div>
+            <div>Quantidade de coletas: 21799</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 198</div>
+            <div>
+              Parâmetros coletados: Prof. (Profundidade de coleta), Temp. da água, Condutividade,
+              pH, DO (Oxigênio dissolvido), TDS (Sólidos totais dissolvidos), Potencial REDOX
+              (Potencial de óxido redução), Turbidez
+            </div>
+            <div style={{ fontWeight: "1000" }}>Fluxo difusivo</div>
+            <div>Quantidade de coletas: 324</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 243</div>
+            <div>
+              Parâmetros coletados: Cota (Nível da água), Intervalo (Direção do fluxo: positivo
+              (através da interface) e negativo (para a interface)), CH4 (Metano), CO2 (Dióxido de
+              carbono)
+            </div>
+            <div style={{ fontWeight: "1000" }}>Íons na água intersticial do sedimento</div>
+            <div>Quantidade de coletas: 1069</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 207</div>
+            <div>
+              Parâmetros coletados: Profundidade (Intervalo de profundidade da fatia de sedimento),
+              Cota (Nível da água), F- (Fluoreto), Cl- (Cloreto), NO2- (Nitrito), Br- (Brometo),
+              NO3- (Nitrato), PO4--- (Fosfato), SO4-- (Sulfato), Na+ (Sódio), NH4+ (Amônio), K+
+              (Potássio), Mg (Magnésio), Ca++ (Cálcio), Acetato
+            </div>
+            <div style={{ fontWeight: "1000" }}>Nutrientes no sedimento</div>
+            <div>Quantidade de coletas: 1233</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 238</div>
+            <div>
+              Parâmetros coletados: Profundidade (Intervalo de profundidade da fatia de sedimento),
+              Cota (Nível da água), N2 (Concentração de Nitrogênio Total Kjeldahl no sedimento), PT
+              (Concentração de Fósforo Total no sedimento), TC (Concentração de Carbono Total no
+              sedimento)
+            </div>
+            <div style={{ fontWeight: "1000" }}>Variáveis físicas e químicas da água</div>
+            <div>Quantidade de coletas: 446</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 197</div>
+            <div>
+              Parâmetros coletados: Profundidade (Profundidade de coleta), Secchi (Profundidade do
+              disco de Secchi), Cota (Nível da água), F- (Fluoreto), Cl- (Cloreto), N-NO3-
+              (Nitrato), P-PO43- (Fosfato), S-SO42- (Sulfato), Li (Lítio), Na (Sódio), N-NH4
+              (Amônio), K (Potássio), Mg (Magnésio), Ca (Cálcio), Clorofila (Clorofila a),
+              Feofitina, Turbidez, NT (Concentração de Nitrogênio Orgânico Total (NTK)), PT
+              (Concentração de Fósforo Total), TDC (Concentração de carbono total dissolvido)
+            </div>
+          </div>
+        </SectionColorless>
+
+        <SectionColorless>
+          <SectionColorlessTitle>INPE</SectionColorlessTitle>
+
+          <div>
+            <div style={{ fontWeight: "1000" }}>Fluxo de bolhas</div>
+            <div>Quantidade de coletas: 297</div>
+            <div>Quantidade de campanhas: 2</div>
+            <div>Locais distintos de coleta: 1</div>
+            <div>
+              Parâmetros coletados: Profundidade (Profundidade média), CH4 (Fluxo de Bolhas), Desvio
+              padrão (missing values repostos com valores medianos para cada tempo), Nro. de
+              amostras
+            </div>
+            <div style={{ fontWeight: "1000" }}>Fluxo difusivo (INPE)</div>
+            <div>Quantidade de coletas: 380</div>
+            <div>Quantidade de campanhas: 4</div>
+            <div>Locais distintos de coleta: 3</div>
+            <div>
+              Parâmetros coletados: Profundidade, CO2 (Fluxo de CO2 na interface água-ar), Desvio
+              padrão CO2, Nro. de amostras CO2, CH4 (Fluxo de CH4 difusivo+bolhas na interface
+              água-ar), Desvio Padrão CH4, Nro. de amostras CH4
+            </div>
+          </div>
+        </SectionColorless>
+
+        <SectionColorless>
+          <SectionColorlessTitle>UFJF</SectionColorlessTitle>
+
+          <div>
+            <div style={{ fontWeight: "1000" }}>Abióticos na coluna d água</div>
+            <div>Quantidade de coletas: 120</div>
+            <div>Quantidade de campanhas: 20</div>
+            <div>Locais distintos de coleta: 9</div>
+            <div>
+              Parâmetros coletados: Profundidade (Profundidade de coleta), DIC (Carbono inorgânico
+              dissolvido), NT (Nitrogênio), PT (Fósforo Total), Delta 13C, Delta 15N
+            </div>
+            <div style={{ fontWeight: "1000" }}>Abióticos na superfície</div>
+            <div>Quantidade de coletas: 238</div>
+            <div>Quantidade de campanhas: 21</div>
+            <div>Locais distintos de coleta: 85</div>
+            <div>
+              Parâmetros coletados: DIC (Carbono inorgânico dissolvido), NT (Nitrogênio), PT
+              (Fósforo Total), Delta 13C, Delta 15N
+            </div>
+            <div style={{ fontWeight: "1000" }}>Bióticos na coluna d água</div>
+            <div>Quantidade de coletas: 120</div>
+            <div>Quantidade de campanhas: 20</div>
+            <div>Locais distintos de coleta: 9</div>
+            <div>
+              Parâmetros coletados: Profundidade (Profundidade de coleta), DOC (Carbono orgânico
+              dissolvido), POC (Carbono orgânico particulado), TOC (Carbono orgânico total),
+              Densidade bactéria, Biomassa bactéria, Clorofila, Biomassa carbono total fito,
+              Densidade total fito, Biomassa zoo, Densidade total zoo
+            </div>
+            <div style={{ fontWeight: "1000" }}>Bióticos na superfície</div>
+            <div>Quantidade de coletas: 239</div>
+            <div>Quantidade de campanhas: 21</div>
+            <div>Locais distintos de coleta: 85</div>
+            <div>
+              Parâmetros coletados: DOC (Carbono orgânico dissolvido), POC (Carbono orgânico
+              particulado), TOC (Carbono orgânico total), Densidade bactéria, Biomassa bactéria,
+              Clorofila, Biomassa carbono total fito, Densidade total fito, Biomassa zoo, Densidade
+              total zoo
+            </div>
+            <div style={{ fontWeight: "1000" }}>Fluxos de carbono</div>
+            <div>Quantidade de coletas: 19</div>
+            <div>Quantidade de campanhas: 19</div>
+            <div>Locais distintos de coleta: 8</div>
+            <div>
+              Parâmetros coletados: Produção fitoplanctônica, Carbono orgânico excretado, Respiração
+              fito, Produção bacteriana, Respiração bacteriana, Taxa de sedimentação
+            </div>
+            <div style={{ fontWeight: "1000" }}>Medidas de campo na coluna d água</div>
+            <div>Quantidade de coletas: 131</div>
+            <div>Quantidade de campanhas: 21</div>
+            <div>Locais distintos de coleta: 9</div>
+            <div>
+              Parâmetros coletados: Profundidade (Profundidade de coleta), Secchi (Profundidade do
+              disco de Secchi), Temp. da água, Condutividade, DO (Oxigênio dissolvido), pH,
+              Turbidez, Material em suspensão, Intensidade luminosa
+            </div>
+            <div style={{ fontWeight: "1000" }}>Medidas de campo na superfície</div>
+            <div>Quantidade de coletas: 238</div>
+            <div>Quantidade de campanhas: 21</div>
+            <div>Locais distintos de coleta: 85</div>
+            <div>
+              Parâmetros coletados: Secchi (Profundidade do disco de Secchi), Temp. da água,
+              Condutividade, DO (Oxigênio dissolvido), pH, Turbidez, Material em suspensão
+            </div>
+            <div style={{ fontWeight: "1000" }}>Parâmetros biológicos e físicos da água</div>
+            <div>Quantidade de coletas: 201</div>
+            <div>Quantidade de campanhas: 12</div>
+            <div>Locais distintos de coleta: 46</div>
+            <div>
+              Parâmetros coletados: Profundidade (Profundidade de coleta), Secchi, Temp. da água,
+              Condutividade, DO (Oxigênio dissolvido), pH, Turbidez, Material em suspensão, DOC
+              (Carbono orgânico dissolvido), POC (Carbono orgânico particulado), TOC (Carbono
+              orgânico total), DIC (Carbono inorgânico dissolvido), NT (Nitrogênio), PT (Fósforo
+              Total), Densidade bactéria, Biomassa bactéria, Clorofila, Biomassa carbono total fito,
+              Densidade total fito, Biomassa zoo, Densidade total zoo, Produção fitoplanctônica,
+              Carbono orgânico excretado, Respiração fito, Produção bacteriana, Respiração
+              bacteriana, Taxa de sedimentação, Delta 13C, Delta 15N, Intensidade luminosa
+            </div>
+          </div>
+        </SectionColorless>
+
+        <SectionColorless>
+          <SectionColorlessTitle>UFRJ</SectionColorlessTitle>
+          <div>
+            <div style={{ fontWeight: "1000" }}>Bolhas</div>
+            <div>Quantidade de coletas: 396</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 119</div>
+            <div>
+              Parâmetros coletados: Profundidade (Profundidade de coleta), Nro. de funis, Volume
+              coletado, CO2 (Dióxido de carbono), O2 (Oxigênio), N2 (Nitrogênio), CH4 (Metano), N2O
+              (Óxido nitroso)
+            </div>
+            <div style={{ fontWeight: "1000" }}>Câmara solo</div>
+            <div>Quantidade de coletas: 82</div>
+            <div>Quantidade de campanhas: 22</div>
+            <div>Locais distintos de coleta: 31</div>
+            <div>
+              Parâmetros coletados: CH4 (Metano), CO2 (Dióxido de carbono), N2O (Óxido nitroso),
+              Temp. do ar, Temp. do solo, Vel. do vento, Altitude (Altitude do local da medida)
+            </div>
+            <div style={{ fontWeight: "1000" }}>Carbono Total no sedimento</div>
+            <div>Quantidade de coletas: 301</div>
+            <div>Quantidade de campanhas: 26</div>
+            <div>Locais distintos de coleta: 29</div>
+            <div>
+              Parâmetros coletados: Camada (Profundidade no sedimento), TC (Carbono total em
+              sedimento)
+            </div>
+            <div style={{ fontWeight: "1000" }}>DC, DOC, POC, TOC, DIC e TC</div>
+            <div>Quantidade de coletas: 315</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 272</div>
+            <div>
+              Parâmetros coletados: DC (Carbono dissolvido), DOC (Carbono orgânico dissolvido), POC
+              (Carbono orgânico particulado), TOC (Carbono orgânico total), DIC (Carbono inorgânico
+              dissolvido), TC (Carbono total)
+            </div>
+            <div style={{ fontWeight: "1000" }}>Difusão</div>
+            <div>Quantidade de coletas: 654</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 368</div>
+            <div>
+              Parâmetros coletados: CH4 (Metano), CO2 (Dióxido de carbono), N2O (Óxido nitroso), pH,
+              Temp. da água, Temp. do ar, Profundidade (Profundidade de coleta), Altitude (Altitude
+              do local da medida), Vel. do vento
+            </div>
+            <div style={{ fontWeight: "1000" }}>Dupla dessorção da água</div>
+            <div>Quantidade de coletas: 535</div>
+            <div>Quantidade de campanhas: 19</div>
+            <div>Locais distintos de coleta: 45</div>
+            <div>
+              Parâmetros coletados: Profundidade (Profundidade de coleta), CO2 (O volume de água
+              utilizado para a dupla dessorção foi de 250 ml), O2 (O volume de água utilizado para a
+              dupla dessorção foi de 250 ml), N2 (O volume de água utilizado para a dupla dessorção
+              foi de 250 ml), CH4 (O volume de água utilizado para a dupla dessorção foi de 250 ml),
+              N2O (O volume de água utilizado para a dupla dessorção foi de 250 ml)
+            </div>
+            <div style={{ fontWeight: "1000" }}>Gases em bolhas</div>
+            <div>Quantidade de coletas: 20</div>
+            <div>Quantidade de campanhas: 7</div>
+            <div>Locais distintos de coleta: 11</div>
+            <div>
+              Parâmetros coletados: Profundidade (Profundidade de coleta), CO2 (Máximo volume de gás
+              extraível de um volume de 250 ml de água), O2 (Máximo volume de gás extraível de um
+              volume de 250 ml de água), N2 (Máximo volume de gás extraível de um volume de 250 ml
+              de água), CH4 (Máximo volume de gás extraível de um volume de 250 ml de água), N2O
+              (Máximo volume de gás extraível de um volume de 250 ml de água)
+            </div>
+            <div style={{ fontWeight: "1000" }}>Parâmetros físicos e químicos</div>
+            <div>Quantidade de coletas: 1547</div>
+            <div>Quantidade de campanhas: 27</div>
+            <div>Locais distintos de coleta: 103</div>
+            <div>
+              Parâmetros coletados: Profundidade (Profundidade de coleta), Cota (Nível da água),
+              Temp. do ar, Temp. da água, DO (Oxigênio dissolvido), pH, Potencial REDOX (Potencial
+              de óxido redução), Vel. do vento
+            </div>
+          </div>
+        </SectionColorless>
+      </Column>
     </TwoColumnContainer>
   );
 };
@@ -1071,10 +1377,6 @@ const App: React.FC = () => {
     const ano = document.getElementById("ano");
     if (ano) ano.innerText = new Date().getFullYear().toString();
   }, []);
-
-  const openMapa = () => {
-    window.open("http://www.dsr.inpe.br/hidrosfera/sima/mapa.php", "_blank");
-  };
 
   return (
     <PageContainer>
@@ -1102,7 +1404,6 @@ const App: React.FC = () => {
         <MenuItem active={page === "descricao"} onClick={() => setPage("descricao")}>
           Descricao
         </MenuItem>
-        <MenuItem onClick={openMapa}>Mapa SIMA</MenuItem> {/* NOVO LINK */}
       </Menu>
 
       {/* Conteúdo */}
@@ -1113,7 +1414,7 @@ const App: React.FC = () => {
 
       {/* Footer */}
       <Footer>
-        © <span id="ano"></span>&nbsp;Hidrosfera INPE
+        © <span id="ano"></span>&nbsp;BALCAR
       </Footer>
     </PageContainer>
   );
