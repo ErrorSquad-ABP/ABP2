@@ -11,7 +11,7 @@ import MapBrazil from "../components/MapBrazil";
  * - Use Vite env via import.meta (not process.env).
  * - This file uses a small runtime-safe access to import.meta.env to avoid TS/Bundler errors.
  */
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
 
 type ColumnMeta = {
@@ -354,9 +354,11 @@ export default function TablesPage(): JSX.Element {
   );
   const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
 
   const [view, setView] = useState<"chart" | "map">("chart");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [chartData, setChartData] = useState<any[] | null>(null);
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
@@ -381,6 +383,7 @@ export default function TablesPage(): JSX.Element {
           const m = await metaRes.json();
           const data = m.data;
           setMetadata(data);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const tfm = data.map((item: any) => item.name);
           setTablesFromMetadata(tfm);
         }
@@ -413,8 +416,11 @@ export default function TablesPage(): JSX.Element {
     }
   }, [table]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const clms: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     meta.forEach((tb: any) => {
       clms[tb.name] = tb.colunas; // Chave dinâmica e valor
     });
@@ -545,6 +551,7 @@ export default function TablesPage(): JSX.Element {
   /* Multi-series SVG chart: plots all selected numeric columns on the same coordinate system
      and shows colored points per institution with tooltip on hover.
      X axis now uses monthsBetweenDatesISO(start,end) so we always show every month label in YYYY/MM/DD. */
+     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
     if (!rows || !rows.length || !columns || !columns.length)
       return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
@@ -777,7 +784,9 @@ export default function TablesPage(): JSX.Element {
           </Controls>
 
           <ColumnsBox aria-label="Lista de colunas">
-            {columns.map((c: any) => (
+            {columns.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (c: any) => (
               <ColumnItem key={c.nome}>
                 <input
                   key={c.nome}

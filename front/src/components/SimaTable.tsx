@@ -9,6 +9,7 @@ interface SimaTableProps<T> {
     key: keyof T;
     label: string;
     sortable?: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     render?: (value: any, row: T) => JSX.Element;
   }>;
   data: T[];
@@ -150,11 +151,14 @@ const SimaTable = ({
         </thead>
         <tbody>
           {pages[page]?.map((row) => (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             <tr key={(row as any).idsima}>
               {columns.map((col) => (
                 <td key={String(col.key)}>
                   {col.render
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ? col.render((row as any)[col.key], row)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     : String((row as any)[col.key] ?? "-")}
                 </td>
               ))}

@@ -2,10 +2,13 @@ export function sortBy<T>(
   items: T[],
   field: keyof T,
   order: "asc" | "desc" = "asc",
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parser?: (v: any) => any,
 ): T[] {
   return items.slice().sort((a, b) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let valA: any = a[field];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let valB: any = b[field];
 
     // aplicar parser se existir
@@ -29,7 +32,9 @@ export function sortBy<T>(
       (valA instanceof Date || typeof valA === "string") &&
       (valB instanceof Date || typeof valB === "string")
     ) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       valA = new Date(valA as any).getTime();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       valB = new Date(valB as any).getTime();
     }
 

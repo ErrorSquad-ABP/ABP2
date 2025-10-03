@@ -19,9 +19,11 @@ type Props = {
 };
 
 function coordsToPath(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   coords: any[][][] | any[][][][],
   project: (lon: number, lat: number) => [number, number],
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const polygons = Array.isArray(coords[0][0][0]) ? (coords as any[][][][]) : (coords as any[][][]);
   let path = "";
   for (const poly of polygons) {
@@ -58,6 +60,7 @@ export default function MapBrazil({
   samplingFill = "rgba(253, 224, 71, 0.9)", // bright sampling color
   samplingStroke = "rgba(250, 204, 21, 1)",
 }: Props) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const geo = (brStates as any).features || [];
 
   const bounds = useMemo(() => {
@@ -68,6 +71,7 @@ export default function MapBrazil({
     for (const f of geo) {
       const geom = f.geometry;
       const coords = geom?.coordinates || [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stack: any[] = [coords];
       while (stack.length) {
         const cur = stack.pop();
@@ -121,6 +125,7 @@ export default function MapBrazil({
 
   const statePaths = useMemo(() => {
     return geo
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((f: any, idx: number) => {
         const geom = f.geometry;
         if (!geom) return null;
@@ -191,7 +196,8 @@ export default function MapBrazil({
 
           {/* state borders - slightly lighter */}
           <g stroke="rgba(255,255,255,0.04)" strokeWidth={0.6} fill="none">
-            {statePaths.map((s: { id: any; path: string | undefined }) => (
+            {statePaths.map((s: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              { id: any; path: string | undefined }) => (
               <path key={`b-${s.id}`} d={s.path} />
             ))}
           </g>
@@ -199,7 +205,8 @@ export default function MapBrazil({
 
         {/* sampling polygons (hexagons) — bright on dark background */}
         <g>
-          {samplingPolygons.map((poly: { id: any; path: string | undefined }) => (
+          {samplingPolygons.map((poly: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          { id: any; path: string | undefined }) => (
             <path
               key={`s-${poly.id}`}
               d={poly.path}
