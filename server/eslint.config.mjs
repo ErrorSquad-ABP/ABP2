@@ -40,14 +40,17 @@ export default tseslint.config(
     },
     rules: {
       "no-console": "off",
-      "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+
       // Adiciona regras recomendadas do TypeScript
       ...tseslint.configs.recommended.rules,
+
+      // sobrescreve as que você não quer
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 
