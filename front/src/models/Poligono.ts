@@ -41,7 +41,8 @@ export class Poligono {
 
   calcularCentroide(): Vertice {
     const n = this.vertices.length;
-    let cx = 0, cy = 0;
+    let cx = 0,
+      cy = 0;
 
     for (const { x, y } of this.vertices) {
       cx += x;
@@ -58,10 +59,10 @@ export class Poligono {
 
     const allVertices = [...this.vertices, ...other.vertices];
 
-    const minX = Math.min(...allVertices.map(v => v.x));
-    const maxX = Math.max(...allVertices.map(v => v.x));
-    const minY = Math.min(...allVertices.map(v => v.y));
-    const maxY = Math.max(...allVertices.map(v => v.y));
+    const minX = Math.min(...allVertices.map((v) => v.x));
+    const maxX = Math.max(...allVertices.map((v) => v.x));
+    const minY = Math.min(...allVertices.map((v) => v.y));
+    const maxY = Math.max(...allVertices.map((v) => v.y));
 
     const bboxVertices: Vertice[] = [
       { x: minX, y: minY },

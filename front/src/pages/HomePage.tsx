@@ -1,5 +1,5 @@
 // front/src/pages/HomePage.tsx
-import React from "react";
+import { JSX } from "react";
 import styled from "styled-components";
 
 type Category = {
@@ -92,16 +92,12 @@ export default function HomePage(): JSX.Element {
       <Content>
         <Cards role="list">
           {CATEGORIES.map((c) => {
-            
-
             return (
               <CardLink key={c.id} href={c.href} target="_blank" rel="noopener noreferrer">
                 <Card>
                   <Icon aria-hidden>{c.icon}</Icon>
                   <CardTitle>{c.title}</CardTitle>
                   <CardDesc>{c.description}</CardDesc>
-
-
 
                   <CardCTA>Abrir →</CardCTA>
                 </Card>
@@ -239,7 +235,7 @@ const CardDesc = styled.p`
   line-height: 1.3;
   max-width: 88%;
 `;
-
+/*
 const MetaArea = styled.div`
   margin-top: 6px;
   display: flex;
@@ -256,7 +252,7 @@ const MetaText = styled.span`
 const MetaTextError = styled(MetaText)`
   color: #c84b4b;
 `;
-
+*/
 const CardCTA = styled.div`
   margin-top: auto;
   color: ${({ theme }) => theme.colors.primary};
