@@ -33,7 +33,8 @@ const Table = styled.table`
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
-  th, td {
+  th,
+  td {
     padding: 0.75rem 1rem;
     text-align: left;
     border-bottom: 1px solid #e5e7eb;
@@ -140,13 +141,9 @@ const SimaTable = ({
         <thead>
           <tr>
             {columns.map((col) => (
-              <th
-                key={String(col.key)}
-                onClick={() => col.sortable && handleSort(col.key)}
-              >
+              <th key={String(col.key)} onClick={() => col.sortable && handleSort(col.key)}>
                 {col.label}
-                {sortConfig?.field === col.key &&
-                  (sortConfig.order === "asc" ? " ▲" : " ▼")}
+                {sortConfig?.field === col.key && (sortConfig.order === "asc" ? " ▲" : " ▼")}
               </th>
             ))}
           </tr>
@@ -174,9 +171,7 @@ const SimaTable = ({
           Página {page + 1} de {pages.length || 1}
         </span>
         <button
-          onClick={() =>
-            handlePageChange(Math.min(page + 1, pages.length - 1))
-          }
+          onClick={() => handlePageChange(Math.min(page + 1, pages.length - 1))}
           disabled={page === pages.length - 1 || pages.length === 0}
         >
           Next

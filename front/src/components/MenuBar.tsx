@@ -82,14 +82,14 @@ const LogoButton = styled.a`
   border-radius: 8px;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 6px 18px rgba(7,42,89,0.08);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 18px rgba(7, 42, 89, 0.08);
   text-decoration: none;
 
   &:hover {
     transform: translateY(-2px);
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
   }
 
   img {
@@ -124,7 +124,13 @@ function MenuBar() {
         <Brand to="/">
           <Logo>
             {/* substitute with your own icon or keep text fallback */}
-            <LogoImg src="/DBIcon.png" alt="BDLimnologico" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+            <LogoImg
+              src="/DBIcon.png"
+              alt="BDLimnologico"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
           </Logo>
           <Title>BDLimnologico</Title>
         </Brand>
@@ -136,25 +142,29 @@ function MenuBar() {
             aria-label="Ir para SIMAS"
             title="SIMAS"
           >
-            <img src={simasLogo} alt="SIMAS"/>
+            <img src={simasLogo} alt="SIMAS" />
           </LogoButton>
 
           {/* FURNAS */}
-          <LogoButton
-            href="/furnas"
-            aria-label="Ir para FURNAS"
-            title="FURNAS"
-          >
-            <img src={furnasLogo} alt="FURNAS" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+          <LogoButton href="/furnas" aria-label="Ir para FURNAS" title="FURNAS">
+            <img
+              src={furnasLogo}
+              alt="FURNAS"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
           </LogoButton>
 
           {/* BALCAR */}
-          <LogoButton
-            href="/balcar"
-            aria-label="Ir para BALCAR"
-            title="BALCAR"
-          >
-            <img src={balcarLogo} alt="BALCAR" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+          <LogoButton href="/balcar" aria-label="Ir para BALCAR" title="BALCAR">
+            <img
+              src={balcarLogo}
+              alt="BALCAR"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
           </LogoButton>
 
           {/* hamburger for mobile */}

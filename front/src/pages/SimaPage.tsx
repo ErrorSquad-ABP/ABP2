@@ -1,3 +1,4 @@
+/*
 //SimaPage.tsx
 import { useEffect, useState } from "react";
 import { getSima } from "../api/simaApi";
@@ -20,6 +21,7 @@ const Title = styled.h1`
   margin-bottom: 1rem;
   color: #111827;
 `;
+
 
 // Tabela
 const Table = styled.table`
@@ -120,4 +122,4 @@ function SimaPage() {
 }
 
 export default SimaPage;
-
+*/

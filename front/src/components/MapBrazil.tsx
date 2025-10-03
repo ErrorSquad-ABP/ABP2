@@ -1,5 +1,4 @@
 // front/src/components/MapBrazil.tsx
-import React, { useMemo } from "react";
 import brStates from "../../public/br_states.json";
 
 type Point = {
@@ -18,7 +17,10 @@ type Props = {
   samplingStroke?: string;
 };
 
-function coordsToPath(coords: any[][][] | any[][][][], project: (lon: number, lat: number) => [number, number]) {
+function coordsToPath(
+  coords: any[][][] | any[][][][],
+  project: (lon: number, lat: number) => [number, number],
+) {
   const polygons = Array.isArray(coords[0][0][0]) ? (coords as any[][][][]) : (coords as any[][][]);
   let path = "";
   for (const poly of polygons) {
@@ -109,7 +111,9 @@ export default function MapBrazil({
 
   const project = (lon: number, lat: number) => {
     const x = ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon || 1)) * viewBoxWidth;
-    const y = viewBoxHeight - ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1)) * viewBoxHeight;
+    const y =
+      viewBoxHeight -
+      ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1)) * viewBoxHeight;
     return [x, y];
   };
 
@@ -160,7 +164,13 @@ export default function MapBrazil({
       >
         <defs>
           <filter id="mapDrop" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="6" stdDeviation="18" floodColor="#001428" floodOpacity="0.55" />
+            <feDropShadow
+              dx="0"
+              dy="6"
+              stdDeviation="18"
+              floodColor="#001428"
+              floodOpacity="0.55"
+            />
           </filter>
           <linearGradient id="stateGrad" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0%" stopColor="#23408a" stopOpacity="1" />

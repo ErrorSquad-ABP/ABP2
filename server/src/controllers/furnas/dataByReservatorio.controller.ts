@@ -51,7 +51,7 @@ export const getReservatorioById = async (req: Request, res: Response): Promise<
     res.status(200).json({
       success: true,
       rows: result.rows.length,
-      data: result.rows
+      data: result.rows,
     });
   } catch (error: any) {
     logger.error("Erro ao buscar reservatório", {

@@ -1,3 +1,4 @@
+/*
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FiltroDadosProps, AppliedFilters } from "../types/filtroDados";
@@ -144,7 +145,6 @@ export const FiltroDados: React.FC<FiltroDadosProps> = ({ table, initial, onAppl
           error={errors.responsibleType}
         />
 
-        {/* responsável ID */}
         <Select
           label="ID do Responsável"
           value={responsibleId}
@@ -197,3 +197,4 @@ export const FiltroDados: React.FC<FiltroDadosProps> = ({ table, initial, onAppl
     </Wrapper>
   );
 };
+*/
