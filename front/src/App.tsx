@@ -8,6 +8,7 @@ import MenuBar from "./components/MenuBar";
 import HomePage from "./pages/HomePage";
 import TablesPage from "./pages/TablesPage";
 import SimasPage from "./pages/SimasPage";
+import BalcarPage from "./pages/BalcarPage";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               {/*<Route path="/sima" element={<SimaPage />} />*/}
               <Route path="/simas" element={<SimasPage />} />
+              <Route path="/balcar" element={<BalcarPage />} />
               <Route path="/tables/:slug" element={<TablesPage />} />
               <Route path="*" element={<HomePage />} />
             </Routes>
