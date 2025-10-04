@@ -231,18 +231,18 @@ O protótipo tem como finalidade demonstrar visualmente a interface do sistema q
     </tr>
     <tr>
       <td>
-        <img src="https://github.com/ErrorSquad-ABP/" alt="Homepage com cards" width="100%">
+        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/homepage_1.png" alt="Homepage com cards" width="100%">
         <p><strong>Homepage com cartões com tópicos de dados:</strong> Visualização principal dos dados por topico</p>
       </td>
       <td>
-        <img src="https://github.com/ErrorSquad-ABP/" alt="Homepage com cards" width="100%">
+        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/homepage_2.png" alt="Homepage com cards" width="100%">
         <p><strong>Homepage com cartões com tópicos de dados:</strong> Visualização principal dos dados por topico</p>
       </td>
     </tr>
     <tr>
       <td>
-        <img src="https://github.com/ErrorSquad-ABP/" alt="Mapa Interativo Desktop" width="100%">
-        <p><strong>Mapa Interativo:</strong> Visualização espacial dos ambientes acadêmicos</p>
+        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/grafico_prototipo.png" alt="Mapa Interativo Desktop" width="100%">
+        <p><strong>Gerador de grafico:</strong> pagina dentro do card para geração dos graficos</p>
       </td>
     </tr>
         <tr>
