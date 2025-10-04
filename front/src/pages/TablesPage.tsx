@@ -448,6 +448,24 @@ export default function TablesPage(): JSX.Element {
     setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
   }
 
+  function handleStartDate(e:React.ChangeEvent<HTMLInputElement>):void {
+    const date:string = e.target.value;
+    if (date <= endDate) {
+      setStartDate(date)
+    } else {
+      alert('Data de início deve ser menor que data final!')
+    }
+  }
+
+   function handleEndDate(e:React.ChangeEvent<HTMLInputElement>):void {
+    const date:string = e.target.value;
+    if (date >= startDate) {
+      setEndDate(date)
+    } else {
+      alert('Data final deve ser menor que data de início!')
+    }
+  }
+
   // try backend aggregate, fallback to mock
   async function handleGenerate() {
     if (!selectedColumns.length) {
@@ -768,12 +786,12 @@ export default function TablesPage(): JSX.Element {
           <Controls>
             <Row>
               <Label>Data início</Label>
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <Input type="date" value={startDate} onChange={(e) => handleStartDate(e)} />
             </Row>
 
             <Row>
               <Label>Data fim</Label>
-              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              <Input type="date" value={endDate} onChange={(e) => handleEndDate(e)} />
             </Row>
 
             <Row>
