@@ -2,12 +2,9 @@ import { balcarPool } from "../../configs/db";
 import { Request, Response } from "express";
 import { logger } from "../../configs/logger";
 
-const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
 
 export const getTabela = async (req: Request, res: Response): Promise<void> => {
-   try { const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || PAGE_SIZE;
-    const offset = (page - 1) * limit;
+   try {
 
     const tabela = req.params.tabela;
 
@@ -15,7 +12,7 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
     
     const columns = queryColumns ? `${queryColumns}` : '*'
 
-    const query = `SELECT ${columns} FROM ${tabela} LIMIT ${limit} OFFSET ${offset}`
+    const query = `SELECT ${columns} FROM ${tabela}`
 
       const result = await balcarPool.query(query);
       const resultData = result.rows;
