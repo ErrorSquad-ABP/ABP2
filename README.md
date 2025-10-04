@@ -217,13 +217,75 @@ Quero aplicar filtros combinados em múltiplas colunas,
 
 <details>  
 <summary><b>🎨 Design do Site</b></summary>
+🧭 Objetivo do Protótipo
 
-- 🧭 Objetivo do Protótipo
-- 📊 Interfaces Principais
-- 🗂️ Arquitetura de Navegação
-- 🎨 Design System
-  - Paleta de Cores
-- 💡 Diferenciais de UX
+O protótipo tem como finalidade demonstrar visualmente a interface do sistema que permitirá a consulta de horários, turmas, professores e a ocupação de ambientes da instituição. Além disso, visa oferecer uma visualização gráfica e interativa das salas, apoiar a exportação de relatórios e garantir uma experiência fluida tanto em dispositivos desktop quanto móveis.
+
+### 📊 Interfaces Principais
+
+<div align="center">
+  <table>
+    <tr>
+      <th width="50%">inicio da pagina</th>
+      <th width="50%">fim da pagina</th>
+    </tr>
+    <tr>
+      <td>
+        <img src="https://github.com/ErrorSquad-ABP/" alt="Homepage com cards" width="100%">
+        <p><strong>Homepage com cartões com tópicos de dados:</strong> Visualização principal dos dados por topico</p>
+      </td>
+      <td>
+        <img src="https://github.com/ErrorSquad-ABP/" alt="Homepage com cards" width="100%">
+        <p><strong>Homepage com cartões com tópicos de dados:</strong> Visualização principal dos dados por topico</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="https://github.com/ErrorSquad-ABP/" alt="Mapa Interativo Desktop" width="100%">
+        <p><strong>Mapa Interativo:</strong> Visualização espacial dos ambientes acadêmicos</p>
+      </td>
+    </tr>
+        <tr>
+      <td>
+        <img src="https://github.com/ErrorSquad-ABP/" alt="Mapa Interativo Desktop" width="100%">
+        <p><strong>Mapa Interativo:</strong> Visualização espacial dos ambientes acadêmicos</p>
+      </td>
+    </tr>
+  </table>
+</div>
+
+### 🗂️ Arquitetura de Navegação
+
+O sistema é estruturado em páginas principais:
+- **Home**: Página inicial com introdução ao sistema
+- **Consulta**: Por turma, professor ou ambiente
+- **Mapa Interativo**: Visualização espacial dos ambientes
+- **Grade de Horários**: Visualização detalhada das aulas
+
+### 🎨 Design System
+
+#### Paleta de Cores
+
+<div align="center">
+  <table>
+    <tr>
+      <td style="background-color:#FF5757; color:white; text-align:center; padding:8px">Vermelho Principal<br>#FF5757</td>
+      <td style="background-color:#F44336; color:white; text-align:center; padding:8px">Vermelho Escuro<br>#F44336</td>
+      <td style="background-color:#F5F5F5; color:black; text-align:center; padding:8px">Cinza Claro<br>#F5F5F5</td>
+      <td style="background-color:#333333; color:white; text-align:center; padding:8px">Cinza Escuro<br>#333333</td>
+      <td style="background-color:#FFFFFF; color:black; text-align:center; padding:8px; border:1px solid #ccc">Branco<br>#FFFFFF</td>
+    </tr>
+  </table>
+</div>
+
+A paleta utiliza predominantemente tons de vermelho para destacar elementos importantes, combinados com cinza e branco para criar contraste e legibilidade. O vermelho transmite energia e destaca as informações críticas do sistema.
+
+### 💡 Diferenciais de UX
+
+- **Responsividade completa**: Adaptação fluida a qualquer dispositivo
+- **Mapa interativo**: Visualização espacial com status em tempo real
+- **Filtros dinâmicos**: Seleção personalizada de critérios de busca
+- **Experiência intuitiva**: Navegação simplificada e consistente
 
 </details>
 

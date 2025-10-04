@@ -1,5 +1,5 @@
 // front/src/pages/TablesPage.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
@@ -12,6 +12,7 @@ import MapBrazil from "../components/MapBrazil";
  * - This file uses a small runtime-safe access to import.meta.env to avoid TS/Bundler errors.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
 
 type ColumnMeta = {
@@ -24,8 +25,7 @@ type TableMetadata = {
   id: string;
   name: string;
   description?: string;
-  colunas: Array<object>
-
+  colunas: Array<object>;
 };
 
 function isoDate(date: Date) {
@@ -57,7 +57,7 @@ const mockColumns: ColumnMeta[] = [
 ];
 
 //ARRUMAR MOCK / TIRAR O QUE USA
-
+/*
 const mockMetadata: any = 
    [
     {
@@ -80,10 +80,10 @@ const mockMetadata: any =
     }
   ]
 ;
-
+*/
 const MOCK_INSTITUTIONS = ["INPE", "FURNAS", "BALCAR", "UFRJ", "USP"];
-
-/* simple color palette for multiple series */
+/*
+ simple color palette for multiple series */
 const SERIES_COLORS = ["#0b5394", "#2563EB", "#06B6D4", "#F59E0B", "#EF4444", "#10B981"];
 const INSTITUTION_FILL_COLORS = ["#ffd6d6", "#fff0d6", "#d6ffe8", "#dff4ff", "#f0e6ff", "#fff8d6"];
 
@@ -344,20 +344,24 @@ export default function TablesPage(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
   const topicSlug = slug || "abioticos";
 
-  const [startDate, setStartDate] = useState<string>(() => isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)));
+  const [startDate, setStartDate] = useState<string>(() =>
+    isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)),
+  );
   const [endDate, setEndDate] = useState<string>(() => isoDate(new Date()));
-  const [table, setTable] = useState<string>();
-
+  const [table, setTable] = useState<string>("");
   const [columns, setColumns] = useState<ColumnMeta[]>(mockColumns);
   const [selectedColumns, setSelectedColumns] = useState<string[]>(() =>
     mockColumns.slice(0, 3).map((c) => c.name),
   );
+  const [responsible, setResponsible] = useState<string>();
   const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
-
+  const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<string>();
 
   const [view, setView] = useState<"chart" | "map">("chart");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [chartData, setChartData] = useState<any[] | null>(null);
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
@@ -382,6 +386,7 @@ export default function TablesPage(): JSX.Element {
           const m = await metaRes.json();
           const data = m.data;
           setMetadata(data);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const tfm = data.map((item: any) => item.name);
           setTablesFromMetadata(tfm);
         }
@@ -391,36 +396,52 @@ export default function TablesPage(): JSX.Element {
     }
 
     load();
-  }, []); 
-
+  }, [topicSlug]);
 
   useEffect(() => {
     if (metadata) {
-          const newColumns = getColumnsFromMetadata(metadata);
-          setColumnsFromMetadata(newColumns);
-          setTable()
+      const newColumns = getColumnsFromMetadata(metadata);
+      const newResp = getResponsibleFromMetadata(metadata);
+      setColumnsFromMetadata(newColumns);
+      setResponsibleFromMetadata(newResp);
+      setTable("");
     }
-  }, [metadata])
+  }, [metadata]);
 
   useEffect(() => {
-        if (columnsFromMetadata) {
-          const firstItem = Object.keys(columnsFromMetadata)[0];
-          setTable(firstItem)
-        } 
-  }, [columnsFromMetadata])
+    if (columnsFromMetadata) {
+      const firstItem = Object.keys(columnsFromMetadata)[0];
+      setTable(firstItem);
+    }
+  }, [columnsFromMetadata, responsibleFromMetadata]);
 
-    useEffect(() => {
-        if (table) {
-          setColumns(columnsFromMetadata[table])
-        }
-  }, [table])
+  useEffect(() => {
+    if (table) {
+      setColumns(columnsFromMetadata[table]);
+      setResponsible(responsibleFromMetadata[table]);
+    }
+  }, [table, columnsFromMetadata]);
 
-  function getColumnsFromMetadata(meta:any){
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function getColumnsFromMetadata(meta: any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const clms: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
-    meta.forEach((tb:any) => {
-     clms[tb.name] = tb.colunas; // Chave dinâmica e valor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    meta.forEach((tb: any) => {
+      clms[tb.name] = tb.colunas;
     });
-    return clms
+    return clms;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function getResponsibleFromMetadata(meta: any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resp: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    meta.forEach((tb: any) => {
+      resp[tb.name] = tb.responsible; // Chave dinâmica e valor
+    });
+    return resp;
   }
 
   function toggleColumn(name: string) {
@@ -460,6 +481,7 @@ export default function TablesPage(): JSX.Element {
       }
     } catch (err) {
       setChartData(makeMockMeasurementsForMonths(months));
+      console.log(err);
     }
 
     setView("chart");
@@ -525,6 +547,7 @@ export default function TablesPage(): JSX.Element {
       .map((r) => ({ lat: r.latitude, lon: r.longitude, id: r.id }));
   }, [chartData]);
 
+  /*
   function normalizePoints(points: { lat: number; lon: number }[]) {
     if (!points.length) return [];
     const lats = points.map((p) => p.lat);
@@ -539,13 +562,14 @@ export default function TablesPage(): JSX.Element {
       left: ((p.lon - minLon) / lonSpan) * 100,
       top: 100 - ((p.lat - minLat) / latSpan) * 100,
     }));
-  }
+  } */
 
-  const normalizedMarkers = useMemo(() => normalizePoints(latLonPoints), [latLonPoints]);
+  /* const normalizedMarkers = useMemo(() => normalizePoints(latLonPoints), [latLonPoints]); */
 
   /* Multi-series SVG chart: plots all selected numeric columns on the same coordinate system
      and shows colored points per institution with tooltip on hover.
      X axis now uses monthsBetweenDatesISO(start,end) so we always show every month label in YYYY/MM/DD. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
     if (!rows || !rows.length || !columns || !columns.length)
       return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
@@ -555,7 +579,8 @@ export default function TablesPage(): JSX.Element {
       const found = rows.map((r) => {
         if (!r.datamedida) return "";
         const d = new Date(r.datamedida);
-        if (!isNaN(d.getTime())) return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/01`;
+        if (!isNaN(d.getTime()))
+          return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/01`;
         const s = String(r.datamedida).slice(0, 10).replace(/-/g, "/");
         return s.length ? s : "";
       });
@@ -657,7 +682,8 @@ export default function TablesPage(): JSX.Element {
                       strokeWidth={2}
                       style={{ cursor: "pointer" }}
                       onMouseEnter={(ev) => {
-                        const rect = (chartMainRef.current && chartMainRef.current.getBoundingClientRect()) || {
+                        const rect = (chartMainRef.current &&
+                          chartMainRef.current.getBoundingClientRect()) || {
                           left: 0,
                           top: 0,
                         };
@@ -671,11 +697,16 @@ export default function TablesPage(): JSX.Element {
                         });
                       }}
                       onMouseMove={(ev) => {
-                        const rect = (chartMainRef.current && chartMainRef.current.getBoundingClientRect()) || {
+                        const rect = (chartMainRef.current &&
+                          chartMainRef.current.getBoundingClientRect()) || {
                           left: 0,
                           top: 0,
                         };
-                        setTooltip((t) => ({ ...t, left: ev.clientX - rect.left, top: ev.clientY - rect.top }));
+                        setTooltip((t) => ({
+                          ...t,
+                          left: ev.clientX - rect.left,
+                          top: ev.clientY - rect.top,
+                        }));
                       }}
                       onMouseLeave={() => setTooltip({ visible: false, left: 0, top: 0 })}
                     />
@@ -687,7 +718,14 @@ export default function TablesPage(): JSX.Element {
 
           {/* x axis labels: show every month label (YYYY/MM/DD) */}
           {months.map((m, i) => (
-            <text key={`lbl-${i}`} x={xFor(i)} y={height - 10} fontSize="12" fill="#5b6b7a" textAnchor="middle">
+            <text
+              key={`lbl-${i}`}
+              x={xFor(i)}
+              y={height - 10}
+              fontSize="12"
+              fill="#5b6b7a"
+              textAnchor="middle"
+            >
               {m}
             </text>
           ))}
@@ -717,8 +755,9 @@ export default function TablesPage(): JSX.Element {
     );
   }
 
-
-  const numericColumns = columns.filter((c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name));
+  const numericColumns = columns.filter(
+    (c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name),
+  );
   const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.name === s));
   const plottedColumns = plotColumns.length ? plotColumns : [selectedColumns[0]].filter(Boolean);
 
@@ -740,7 +779,15 @@ export default function TablesPage(): JSX.Element {
             <Row>
               <Label>Tabela</Label>
               <Select value={table} onChange={(e) => setTable(e.target.value)}>
-                {tablesFromMetadata && tablesFromMetadata != 0 ? tablesFromMetadata.map((tableName) => <option key={tableName} value={tableName}>{tableName}</option>) : <option value={null}>Carregando tabelas...</option>}
+                {tablesFromMetadata && tablesFromMetadata.length > 0 ? (
+                  tablesFromMetadata.map((tableName) => (
+                    <option key={tableName} value={tableName}>
+                      {tableName}
+                    </option>
+                  ))
+                ) : (
+                  <option value={[]}>Carregando tabelas...</option>
+                )}{" "}
               </Select>
               <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>
                 * Obrigatório selecionar tabela
@@ -755,10 +802,11 @@ export default function TablesPage(): JSX.Element {
           </Controls>
 
           <ColumnsBox aria-label="Lista de colunas">
-            {columns.map((c:any) => (
+            {/*eslint-disable-next-line @typescript-eslint/no-explicit-any*/}
+            {columns.map((c: any) => (
               <ColumnItem key={c.nome}>
                 <input
-                key={c.nome}
+                  key={c.nome}
                   type="checkbox"
                   checked={selectedColumns.includes(c.nome)}
                   onChange={() => toggleColumn(c.nome)}
@@ -770,6 +818,7 @@ export default function TablesPage(): JSX.Element {
                 </div>
               </ColumnItem>
             ))}
+
           </ColumnsBox>
         </LeftColumn>
 
@@ -837,8 +886,12 @@ export default function TablesPage(): JSX.Element {
                     marginBottom: 8,
                   }}
                 >
-                  <div style={{ fontWeight: 800, color: "#0b2740", fontSize: 16 }}>Visualização — {table}</div>
-                  <div style={{ color: "#475569", fontSize: 13 }}>{chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}</div>
+                  <div style={{ fontWeight: 800, color: "#0b2740", fontSize: 16 }}>
+                    Visualização — {table} — {responsible}
+                  </div>
+                  <div style={{ color: "#475569", fontSize: 13 }}>
+                    {chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}
+                  </div>
                 </div>
 
                 <ChartWrapper>
@@ -856,7 +909,15 @@ export default function TablesPage(): JSX.Element {
                         <Legend aria-hidden>
                           {plottedColumns.map((col, i) => (
                             <LegendItem key={col}>
-                              <div style={{ width: 14, height: 14, borderRadius: 3, background: SERIES_COLORS[i % SERIES_COLORS.length], border: "1px solid rgba(0,0,0,0.06)" }} />
+                              <div
+                                style={{
+                                  width: 14,
+                                  height: 14,
+                                  borderRadius: 3,
+                                  background: SERIES_COLORS[i % SERIES_COLORS.length],
+                                  border: "1px solid rgba(0,0,0,0.06)",
+                                }}
+                              />
                               <div>{col}</div>
                             </LegendItem>
                           ))}
@@ -864,7 +925,8 @@ export default function TablesPage(): JSX.Element {
                       </div>
                     ) : (
                       <div style={{ padding: 16, color: "#64748b" }}>
-                        Clique em <strong>Gerar Gráfico</strong> para criar uma visualização (protótipo).
+                        Clique em <strong>Gerar Gráfico</strong> para criar uma visualização
+                        (protótipo).
                       </div>
                     )}
                   </ChartMain>
@@ -872,7 +934,14 @@ export default function TablesPage(): JSX.Element {
               </>
             ) : (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 8,
+                  }}
+                >
                   <div style={{ fontWeight: 800, color: "#0b2740" }}>Mapa — pontos de coleta</div>
                   <div style={{ color: "#475569", fontSize: 13 }}>{latLonPoints.length} pontos</div>
                 </div>
@@ -881,14 +950,20 @@ export default function TablesPage(): JSX.Element {
                   {latLonPoints.length ? (
                     <div style={{ padding: 12, width: "100%", height: "100%" }}>
                       <MapBrazil
-                        points={latLonPoints.map((p) => ({ id: p.id, lat: p.lat, lon: p.lon, label: `Ponto ${p.id}` }))}
+                        points={latLonPoints.map((p) => ({
+                          id: p.id,
+                          lat: p.lat,
+                          lon: p.lon,
+                          label: `Ponto ${p.id}`,
+                        }))}
                         height={520}
-                        showPolygons={true}
+                        /*showPolygons={true}*/
                       />
                     </div>
                   ) : (
                     <div style={{ padding: 16, color: "#334155" }}>
-                      Não há coordenadas disponíveis. Gere o gráfico com colunas contendo <code>latitude</code> / <code>longitude</code>.
+                      Não há coordenadas disponíveis. Gere o gráfico com colunas contendo{" "}
+                      <code>latitude</code> / <code>longitude</code>.
                     </div>
                   )}
                 </MapPlaceholder>

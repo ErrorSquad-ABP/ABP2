@@ -26,6 +26,7 @@ export const getInstituicoes = async () => {
   return data;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getDataUnion = async (params?: Record<string, any>) => {
   const { data } = await api.get("/data/union", { params });
   return data;
@@ -36,6 +37,7 @@ export const getTableColumns = async (table: string) => {
   return data;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getTableData = async (table: string, params?: Record<string, any>) => {
   const { data } = await api.get(`/tables/${encodeURIComponent(table)}/data`, { params });
   return data;
@@ -44,6 +46,7 @@ export const getTableData = async (table: string, params?: Record<string, any>) 
 export const getTableDataByReservatorio = async (
   table: string,
   reservatorioId: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params?: Record<string, any>,
 ) => {
   const { data } = await api.get(`/tables/${encodeURIComponent(table)}/data/by-reservatorio`, {
@@ -55,6 +58,7 @@ export const getTableDataByReservatorio = async (
 export const getTableDataByInstituicao = async (
   table: string,
   instituicaoId: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params?: Record<string, any>,
 ) => {
   const { data } = await api.get(`/tables/${encodeURIComponent(table)}/data/by-instituicao`, {
@@ -63,24 +67,28 @@ export const getTableDataByInstituicao = async (
   return data;
 };
 
-export const getTableMetadata = async (table: string) => {
-  const { data } = await api.get(`/tables/${encodeURIComponent(table)}/metadata`);
-  return data;
-};
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getTableAggregate = async (table: string, params?: Record<string, any>) => {
   const { data } = await api.get(`/tables/${encodeURIComponent(table)}/aggregate`, { params });
   return data;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getTableMap = async (table: string, params?: Record<string, any>) => {
   const { data } = await api.get(`/tables/${encodeURIComponent(table)}/map`, { params });
   return data;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const postExport = async (payload: { format: "csv" | "json" | "pdf"; query: any }) => {
   const { data } = await api.post("/export", payload, {
     responseType: payload.format === "pdf" ? "blob" : "json",
   });
   return data;
 };
+
+export function getTableMetadata(/*table: string*/): Promise<
+  import("../hooks/useApiHooks").TableMetadata
+> {
+  throw new Error("Function not implemented.");
+}

@@ -1,6 +1,6 @@
 //SimaTable.tsx
 import type { Sima } from "../types/sima";
-import React, { useState, useMemo } from "react";
+import { useState, useMemo, JSX } from "react";
 import styled from "styled-components";
 import { chunkArray } from "../utils/chunkArray";
 
@@ -9,6 +9,7 @@ interface SimaTableProps<T> {
     key: keyof T;
     label: string;
     sortable?: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     render?: (value: any, row: T) => JSX.Element;
   }>;
   data: T[];
@@ -33,7 +34,8 @@ const Table = styled.table`
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
-  th, td {
+  th,
+  td {
     padding: 0.75rem 1rem;
     text-align: left;
     border-bottom: 1px solid #e5e7eb;
@@ -140,25 +142,24 @@ const SimaTable = ({
         <thead>
           <tr>
             {columns.map((col) => (
-              <th
-                key={String(col.key)}
-                onClick={() => col.sortable && handleSort(col.key)}
-              >
+              <th key={String(col.key)} onClick={() => col.sortable && handleSort(col.key)}>
                 {col.label}
-                {sortConfig?.field === col.key &&
-                  (sortConfig.order === "asc" ? " ▲" : " ▼")}
+                {sortConfig?.field === col.key && (sortConfig.order === "asc" ? " ▲" : " ▼")}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {pages[page]?.map((row) => (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             <tr key={(row as any).idsima}>
               {columns.map((col) => (
                 <td key={String(col.key)}>
                   {col.render
-                    ? col.render((row as any)[col.key], row)
-                    : String((row as any)[col.key] ?? "-")}
+                    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      col.render((row as any)[col.key], row)
+                    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      String((row as any)[col.key] ?? "-")}
                 </td>
               ))}
             </tr>
@@ -174,9 +175,7 @@ const SimaTable = ({
           Página {page + 1} de {pages.length || 1}
         </span>
         <button
-          onClick={() =>
-            handlePageChange(Math.min(page + 1, pages.length - 1))
-          }
+          onClick={() => handlePageChange(Math.min(page + 1, pages.length - 1))}
           disabled={page === pages.length - 1 || pages.length === 0}
         >
           Next
