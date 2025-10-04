@@ -10,6 +10,7 @@ export function errorHandler(err: any, req: Request, res: Response, _next: NextF
     body: req.body,
   });
 
+  
   res.status(500).json({
     success: false,
     error: "Erro interno do servidor.",
