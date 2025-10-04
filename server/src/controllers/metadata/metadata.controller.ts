@@ -6,6 +6,9 @@ export const getDataFromTable = async (req: Request, res: Response): Promise<voi
   try {
     const result = rawData[req.params.table];
 
+
+
+    
     res.status(200).json({
       success: true,
       data: result,

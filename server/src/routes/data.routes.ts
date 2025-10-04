@@ -4,6 +4,6 @@ import { getDataByInstituicao } from "../../controllers/furnas/getDataByInstitui
 const router = Router();
 
 // Endpoint atalho para consulta por instituição
-router.get("/tables/:table/data/by-instituicao", getDataByInstituicao);
+router.get("/tablesbyinst/:table/data/by-instituicao", getDataByInstituicao);
 
 export default router;

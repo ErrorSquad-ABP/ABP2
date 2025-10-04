@@ -11,6 +11,8 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
     const limit = Number(req.query.limit) || PAGE_SIZE;
     const offset = (page - 1) * limit;
 
+
+    
     // consulta com paginação
     const result = await simaPool.query(
       `
