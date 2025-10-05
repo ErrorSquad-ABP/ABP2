@@ -40,14 +40,6 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
 
 ---
 
-## 📈 Diagramas UML
-
-Para melhor estruturação do projeto, modelamos os principais diagramas da Uml antes de partir para a fase de implementação. São eles:
-
-#### Diagrama de Casos de Uso
-
-![Casos de Uso](./SCRUM/diagramas/DIAGRAMA_CASOS_DE_USO.png)
-
 
 </details>
 
@@ -226,8 +218,8 @@ O protótipo tem como finalidade demonstrar visualmente a interface do sistema q
 <div align="center">
   <table>
     <tr>
-      <th width="50%">inicio da pagina</th>
-      <th width="50%">fim da pagina</th>
+      <th width="50%">pagina 1</th>
+      <th width="50%">pagina 2</th>
     </tr>
     <tr>
       <td>
@@ -262,61 +254,107 @@ O sistema é estruturado em páginas principais:
 - **Mapa Interativo**: Visualização espacial dos ambientes
 - **Grade de Horários**: Visualização detalhada das aulas
 
-### 🎨 Design System
+- 🎨 Design System
+  - Tipografia: fontes sans-serif (Helvetica Neue / Arial) para leitura científica clara.  
+  - Componentes: `styled-components` com ThemeProvider (cores, espaçamentos, sombras e bordas padrão).  
+  - Interações: hover sutil, elevação (box-shadow) em cards, transições leves em botões.
 
 #### Paleta de Cores
 
 <div align="center">
   <table>
     <tr>
-      <td style="background-color:#FF5757; color:white; text-align:center; padding:8px">Vermelho Principal<br>#FF5757</td>
-      <td style="background-color:#F44336; color:white; text-align:center; padding:8px">Vermelho Escuro<br>#F44336</td>
-      <td style="background-color:#F5F5F5; color:black; text-align:center; padding:8px">Cinza Claro<br>#F5F5F5</td>
-      <td style="background-color:#333333; color:white; text-align:center; padding:8px">Cinza Escuro<br>#333333</td>
+      <td style="background-color:#0B5394; color:white; text-align:center; padding:8px">Azul Escuro<br>#0B5394</td>
+      <td style="background-color:#2563EB; color:white; text-align:center; padding:8px">Azul Primário<br>#2563EB</td>
+      <td style="background-color:#DBEAFE; color:#0b2740; text-align:center; padding:8px">Fundo Claro Azul<br>#DBEAFE</td>
+      <td style="background-color:#0B2740; color:white; text-align:center; padding:8px">Texto Escuro<br>#0B2740</td>
       <td style="background-color:#FFFFFF; color:black; text-align:center; padding:8px; border:1px solid #ccc">Branco<br>#FFFFFF</td>
     </tr>
   </table>
 </div>
 
-A paleta utiliza predominantemente tons de vermelho para destacar elementos importantes, combinados com cinza e branco para criar contraste e legibilidade. O vermelho transmite energia e destaca as informações críticas do sistema.
+A paleta usa tons de azul para o topo e elementos de destaque, combinada com branco e azuis claros para fundos e contraste. Para séries no gráfico utilizamos uma pequena paleta complementar (ex.: #0b5394, #2563EB, #06B6D4, #F59E0B, #EF4444).
 
-### 💡 Diferenciais de UX
-
-- **Responsividade completa**: Adaptação fluida a qualquer dispositivo
-- **Mapa interativo**: Visualização espacial com status em tempo real
-- **Filtros dinâmicos**: Seleção personalizada de critérios de busca
-- **Experiência intuitiva**: Navegação simplificada e consistente
+- 💡 Diferenciais de UX
+  - **Seleção explícita de tabela** como passo obrigatório para evitar queries incorretas.  
+  - **Gráfico protótipo SVG multissérie** que mostra pontos clicáveis/hover com tooltip (instituição + reservatório).  
+  - **Mapa com polígonos dos estados do Brasil** e pontos de coleta escaláveis; controles de zoom e opção de mostrar nomes.  
+  - **Exportação integrada** (CSV / PDF via geração client-side).  
+  - **Layouts responsivos** com grid (2 colunas em desktop, 1 coluna em mobile) e cards maiores para facilitar leitura de dados.
 
 </details>
 
 <details>  
 <summary><b>📋 Visão Geral dos Casos de Uso</b></summary>
 
-- 📝 Principais Funcionalidades
-- 👥 Atores do Sistema
+Para melhor estruturação do projeto, modelamos os principais diagramas da UML antes de partir para a fase de implementação. São eles:
+
+#### Diagrama de Casos de Uso
+
+![Casos de Uso](./SCRUM/diagramas/DIAGRAMA_CASOS_DE_USO.png)
+
+**Principais atores**
+- Pesquisador / Usuário — filtra, gera gráficos, visualiza mapa, exporta dados.  
+- Sistema (backend) — fornece endpoints para metadados, agregados, mapas e exportação.  
+- Admin (futuro) — gerencia tabelas/metadados.
 
 </details>
 
 <details>  
 <summary><b>📊 Modelo de Dados</b></summary>
 
-- Diagrama ER
-- 📝 Principais Classes e Relacionamentos
-- 🔄 Relacionamentos Principais
-- Características Técnicas
-- 💡 Características do Sistema
+- **Bancos envolvidos**
+  - `bdfurnas-campanha` (Furnas)
+  - `bdsima` (SIMA)
+  - `bdbalcar-campanha` (Balcar)
+
+- **Entidades principais**
+  - `reservatorio` (id, nome, instituicao, geom/metadados)
+  - `instituicao` (id, nome, contato)
+  - `campanha`, `sitio`, `amostra`, `medicao` (aninhadas — campanhas → sitios → amostras → medicoes)
+  - Tabelas por tópico (abioticos, bioticos, agua-sedimento, fluxos-gases, etc.)
+
+- **Relacionamentos**
+  - `instituicao` 1:N `reservatorio`
+  - `campanha` 1:N `sitio` → 1:N `amostra` → 1:N `medicao`
+  - Cada medição referencia `reservatorio` e `instituicao`
+
+- **Características Técnicas**
+  - Geometria: armazenada no Postgres (geom/lat/lon), usado para mapas e polígonos.  
+  - Views/materialized views previstas para otimizar consultas de mapa e agregações.
 
 </details>
 
 <details>  
 <summary><b>🚀 Funcionalidades Implementadas</b></summary>
 
-- 💻 Visão Geral das Implementações
-- 🔍 Detalhes das Implementações
-  - Backend
-  - Banco de Dados
-  - Frontend
-  - Arquitetura e Ferramentas
+- 💻 **Backend (Express + Node)**  
+  Endpoints planejados / implementados (essenciais):
+  - `GET /reservatorios`
+  - `GET /instituicoes`
+  - `GET /data/union` (integração / união de fontes)
+  - `GET /tables/:table/columns` (metadados de colunas)
+  - `GET /tables/:table/metadata` (intervalo de datas e responsáveis)
+  - `GET /tables/:table/aggregate` (dados prontos para gráfico)
+  - `GET /tables/:table/map` (dados geoespaciais / polígonos)
+  - `POST /export` (CSV | JSON | PDF)
+  - Outros endpoints de atalho: by-reservatorio / by-instituicao / dados/filtrados / dados/paginados / dados/mapa
+
+- 🗃️ **Banco de Dados**
+  - Conexões para 3 bancos (Furnas, SIMA, Balcar) via env vars.
+  - Scripts de criação em `docker-compose` montados para popular dados de exemplo.
+
+- 🖥️ **Frontend (React + Vite + styled-components)**  
+  Implementações principais:
+  - Topbar (MenuBar) com branding, ícone e espaço para 3 logos (SIMAS, FURNAS, BALCAR).
+  - Home com cards por tópico e estilização moderna.
+  - TablesPage: seleção de tabela, escolha de colunas, geração de gráfico SVG multissérie, mapa do Brasil por estados (polígonos JSON), export CSV/PDF.
+  - MapBrazil component (consome `br_states.json`) com opção de zoom e toggle de nomes.
+
+- 🧰 **Ferramentas & Infra**
+  - Docker + docker-compose (Postgres + server + front).  
+  - Hot-reload configurado para front com Vite e `CHOKIDAR_USEPOLLING` no container.  
+  - CI: Prettier / tests — em andamento (alguns conflitos/format issues a resolver).
 
 </details>
 
@@ -329,24 +367,37 @@ A paleta utiliza predominantemente tons de vermelho para destacar elementos impo
     <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/burndown/Sprint%201/Sprint1Burndown.jpeg" alt="Burndown Chart da Sprint" width="80%">
 </div>
 
-- 📋 Análise do Desempenho
+- 📋 Observações rápidas  
+  - Sprint 1 focou em protótipo visual e arquitetura de endpoints.  
+  - Próximos passos: estabilizar endpoints de agregação/mapa, corrigir CI (Prettier/tests), e integrar dados reais ao gráfico.
 
 </details>
 
 <details>  
 <summary><b>🔍 Sprint Retrospective</b></summary>
 
-- 🎯 Visão Geral da Retrospectiva
-- ✅ O que funcionou bem
+- 🎯 O que funcionou bem
+  - Protótipo visual (cards, TablesPage, MapBrazil) avançou rapidamente.  
+  - Docker + bancos de testes configurados para reproduzir dados locais.  
+  - Entendimento claro dos endpoints necessários para alimentar o frontend.
+
 - ⚠️ Desafios enfrentados
-- 🚀 Plano de melhorias
-  - Processo e comunicação
-  - Gestão de tarefas
-  - Planejamento e execução
-- 📈 Métricas para Sprint 2
+  - Conflitos de merge em arquivos TS (marcadores `<<<<<<< >>>>>>>`) e issues de formatação (Prettier).  
+  - Algumas rotas/endpoints ainda não implementadas ou em mismatch com o front (causa de `ERR_EMPTY_RESPONSE`).  
+  - Test suites e path `package.json` em subpastas (front/server) podem confundir comandos locais.
+
+- 🚀 Plano de melhorias (Sprint seguinte)
+  - Finalizar e documentar os endpoints: `/tables/:table/metadata`, `/aggregate`, `/map` e `/export`.  
+  - Resolver CI (prettier --write, corrigir testes com sintaxe JSX em ambientes de teste).  
+  - Integração completa: frontend chamando endpoints reais e testes de integração.  
+  - Melhorias UX: legendas, tooltips, zoom suave no mapa, e export mais robusto (PDF com snapshot do SVG/mapa).
+
+- 📈 Métricas alvo para Sprint 2
+  - 100% dos endpoints core implementados e testados localmente.  
+  - CI Green (format + lint + unit tests).  
+  - Integração frontend-backend com dados reais em 3 tópicos piloto.
 
 </details>
-
 </details>
 
 ---
