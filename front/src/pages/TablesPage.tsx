@@ -376,17 +376,25 @@ export default function TablesPage(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
   const topicSlug = slug || "abioticos";
 
-  const [startDate, setStartDate] = useState<string>(() => isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)));
+  const [startDate, setStartDate] = useState<string>(() =>
+    isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)),
+  );
   const [endDate, setEndDate] = useState<string>(() => isoDate(new Date()));
   const [table, setTable] = useState<string>("");
   const [columns, setColumns] = useState<ColumnMeta[]>(mockColumns);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>(() => mockColumns.slice(0, 3).map((c) => c.name));
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(() =>
+    mockColumns.slice(0, 3).map((c) => c.name),
+  );
   const [responsible, setResponsible] = useState<string>();
   const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
-  const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<string>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
+    string,
+    any
+  > | null>(null);
 
   const [view, setView] = useState<"chart" | "map">("chart");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -480,21 +488,21 @@ export default function TablesPage(): JSX.Element {
     setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
   }
 
-  function handleStartDate(e:React.ChangeEvent<HTMLInputElement>):void {
-    const date:string = e.target.value;
+  function handleStartDate(e: React.ChangeEvent<HTMLInputElement>): void {
+    const date: string = e.target.value;
     if (date <= endDate) {
-      setStartDate(date)
+      setStartDate(date);
     } else {
-      alert('Data de início deve ser menor que data final!')
+      alert("Data de início deve ser menor que data final!");
     }
   }
 
-   function handleEndDate(e:React.ChangeEvent<HTMLInputElement>):void {
-    const date:string = e.target.value;
+  function handleEndDate(e: React.ChangeEvent<HTMLInputElement>): void {
+    const date: string = e.target.value;
     if (date >= startDate) {
-      setEndDate(date)
+      setEndDate(date);
     } else {
-      alert('Data final deve ser menor que data de início!')
+      alert("Data final deve ser menor que data de início!");
     }
   }
 
@@ -732,7 +740,8 @@ export default function TablesPage(): JSX.Element {
                       strokeWidth={2}
                       style={{ cursor: "pointer" }}
                       onMouseEnter={(ev) => {
-                        const rect = (chartMainRef.current && chartMainRef.current.getBoundingClientRect()) || {
+                        const rect = (chartMainRef.current &&
+                          chartMainRef.current.getBoundingClientRect()) || {
                           left: 0,
                           top: 0,
                         };
@@ -746,7 +755,8 @@ export default function TablesPage(): JSX.Element {
                         });
                       }}
                       onMouseMove={(ev) => {
-                        const rect = (chartMainRef.current && chartMainRef.current.getBoundingClientRect()) || {
+                        const rect = (chartMainRef.current &&
+                          chartMainRef.current.getBoundingClientRect()) || {
                           left: 0,
                           top: 0,
                         };
@@ -766,7 +776,14 @@ export default function TablesPage(): JSX.Element {
 
           {/* x axis labels: show every month label (YYYY/MM/DD) */}
           {months.map((m, i) => (
-            <text key={`lbl-${i}`} x={xFor(i)} y={height - 10} fontSize="12" fill="#5b6b7a" textAnchor="middle">
+            <text
+              key={`lbl-${i}`}
+              x={xFor(i)}
+              y={height - 10}
+              fontSize="12"
+              fill="#5b6b7a"
+              textAnchor="middle"
+            >
               {m}
             </text>
           ))}
@@ -796,7 +813,9 @@ export default function TablesPage(): JSX.Element {
     );
   }
 
-  const numericColumns = columns.filter((c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name));
+  const numericColumns = columns.filter(
+    (c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name),
+  );
   const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.name === s));
   const plottedColumns = plotColumns.length ? plotColumns : [selectedColumns[0]].filter(Boolean);
 
@@ -828,11 +847,15 @@ export default function TablesPage(): JSX.Element {
                   <option value={[]}>Carregando tabelas...</option>
                 )}{" "}
               </Select>
-              <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>* Obrigatório selecionar tabela</div>
+              <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>
+                * Obrigatório selecionar tabela
+              </div>
             </Row>
             <div style={{ fontSize: 13, color: "#475569", marginTop: 6 }}>
               <strong>Colunas disponíveis</strong>
-              <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>Marque as colunas que deseja incluir no gráfico</div>
+              <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
+                Marque as colunas que deseja incluir no gráfico
+              </div>
             </div>
           </Controls>
 
@@ -911,9 +934,21 @@ export default function TablesPage(): JSX.Element {
           <Panel ref={chartRef}>
             {view === "chart" ? (
               <>
-                <div style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                  <div style={{ fontWeight: 800, color: "#0b2740", fontSize: 16 }}>Visualização — {table} — {responsible}</div>
-                  <div style={{ color: "#475569", fontSize: 13 }}>{chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}</div>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
+                  <div style={{ fontWeight: 800, color: "#0b2740", fontSize: 16 }}>
+                    Visualização — {table} — {responsible}
+                  </div>
+                  <div style={{ color: "#475569", fontSize: 13 }}>
+                    {chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}
+                  </div>
                 </div>
 
                 <ChartWrapper>
@@ -931,7 +966,15 @@ export default function TablesPage(): JSX.Element {
                         <Legend aria-hidden>
                           {plottedColumns.map((col, i) => (
                             <LegendItem key={col}>
-                              <div style={{ width: 14, height: 14, borderRadius: 3, background: SERIES_COLORS[i % SERIES_COLORS.length], border: "1px solid rgba(0,0,0,0.06)" }} />
+                              <div
+                                style={{
+                                  width: 14,
+                                  height: 14,
+                                  borderRadius: 3,
+                                  background: SERIES_COLORS[i % SERIES_COLORS.length],
+                                  border: "1px solid rgba(0,0,0,0.06)",
+                                }}
+                              />
                               <div>{col}</div>
                             </LegendItem>
                           ))}
@@ -939,7 +982,8 @@ export default function TablesPage(): JSX.Element {
                       </div>
                     ) : (
                       <div style={{ padding: 16, color: "#64748b" }}>
-                        Clique em <strong>Gerar Gráfico</strong> para criar uma visualização (protótipo).
+                        Clique em <strong>Gerar Gráfico</strong> para criar uma visualização
+                        (protótipo).
                       </div>
                     )}
                   </ChartMain>
@@ -947,7 +991,14 @@ export default function TablesPage(): JSX.Element {
               </>
             ) : (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 8,
+                  }}
+                >
                   <div style={{ fontWeight: 800, color: "#0b2740" }}>Mapa — pontos de coleta</div>
                   <div style={{ color: "#475569", fontSize: 13 }}>{latLonPoints.length} pontos</div>
                 </div>
@@ -956,21 +1007,56 @@ export default function TablesPage(): JSX.Element {
                   {/* Zoom controls and label toggle */}
                   <ZoomControls>
                     <label>
-                      <input type="checkbox" checked={showStateNames} onChange={(e) => setShowStateNames(e.target.checked)} />
+                      <input
+                        type="checkbox"
+                        checked={showStateNames}
+                        onChange={(e) => setShowStateNames(e.target.checked)}
+                      />
                       <span>Mostrar nomes</span>
                     </label>
                     <div>
-                      <button aria-label="Zoom Out" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}>-</button>
-                      <button aria-label="Zoom In" onClick={() => setZoom((z) => Math.min(2.0, +(z + 0.2).toFixed(2)))}>+</button>
+                      <button
+                        aria-label="Zoom Out"
+                        onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}
+                      >
+                        -
+                      </button>
+                      <button
+                        aria-label="Zoom In"
+                        onClick={() => setZoom((z) => Math.min(2.0, +(z + 0.2).toFixed(2)))}
+                      >
+                        +
+                      </button>
                     </div>
                   </ZoomControls>
 
                   {latLonPoints.length ? (
-                    <div style={{ padding: 12, width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <div
+                      style={{
+                        padding: 12,
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
                       {/* make map larger by using a bigger height and applying zoom as multiplier */}
-                      <div style={{ width: "100%", maxWidth: 1100, transform: `scale(${zoom})`, transformOrigin: "center top" }}>
+                      <div
+                        style={{
+                          width: "100%",
+                          maxWidth: 1100,
+                          transform: `scale(${zoom})`,
+                          transformOrigin: "center top",
+                        }}
+                      >
                         <MapBrazil
-                          points={latLonPoints.map((p) => ({ id: p.id, lat: p.lat, lon: p.lon, label: `Ponto ${p.id}` }))}
+                          points={latLonPoints.map((p) => ({
+                            id: p.id,
+                            lat: p.lat,
+                            lon: p.lon,
+                            label: `Ponto ${p.id}`,
+                          }))}
                           height={760}
                           showPolygons={true}
                           showStateNames={showStateNames}
@@ -979,7 +1065,8 @@ export default function TablesPage(): JSX.Element {
                     </div>
                   ) : (
                     <div style={{ padding: 16, color: "#334155" }}>
-                      Não há coordenadas disponíveis. Gere o gráfico com colunas contendo <code>latitude</code> / <code>longitude</code>.
+                      Não há coordenadas disponíveis. Gere o gráfico com colunas contendo{" "}
+                      <code>latitude</code> / <code>longitude</code>.
                     </div>
                   )}
                 </MapPlaceholder>
