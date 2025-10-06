@@ -1,7 +1,7 @@
 export class Tbdadosprecipitacao {
   idDadosPrecipitacao: number = 0;
   idReservatorio: number = 0;
-  dataMedida: string = '';
+  dataMedida: string = "";
   precipitacao: number = 0;
   idReservatorio_anterior: number = 0;
 

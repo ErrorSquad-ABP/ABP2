@@ -3,7 +3,7 @@ import balcar from "./balcar";
 import furnas from "./furnas";
 import sima from "./sima";
 import metadata from "./metadata";
-import tables from "./tables"
+import tables from "./tables";
 
 const router = express.Router();
 

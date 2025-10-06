@@ -7,9 +7,9 @@ export class Tbfluxocarbono {
   respiracaoFito: number = 0;
   producaoBacteriana: number = 0;
   respiracaoBacteriana: number = 0;
-  taxaSedimentacao: string = '';
-  dataMedida: string = '';
-  horaMedida: string = '';
+  taxaSedimentacao: string = "";
+  dataMedida: string = "";
+  horaMedida: string = "";
 
   constructor(data: Partial<Tbfluxocarbono>) {
     Object.assign(this, data);

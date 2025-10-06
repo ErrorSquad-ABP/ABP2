@@ -9,8 +9,8 @@ export class Tbhoriba {
   DO: number = 0;
   TDS: number = 0;
   redox: number = 0;
-  turbidez: string = '';
-  dataMedida: string = '';
+  turbidez: string = "";
+  dataMedida: string = "";
 
   constructor(data: Partial<Tbhoriba>) {
     Object.assign(this, data);
