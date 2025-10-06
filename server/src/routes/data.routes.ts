@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getDataByInstituicao } from "../../controllers/furnas/getDataByInstituicao";
+import { getDataByInstituicao } from "../controllers/furnas/getDataByInstituicao";
 
 const router = Router();
 

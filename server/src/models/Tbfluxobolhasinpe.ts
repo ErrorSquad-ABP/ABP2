@@ -1,13 +1,13 @@
 export class Tbfluxobolhasinpe {
-  idFluxoBolhasInpe: number;
-  idCampanha: number;
-  idSitio: number;
-  profundidade: number;
-  CH4: number;
-  CH4_desvioPadrao: number;
-  CH4_amostras: number;
-  dataMedida: string;
-  horaMedida: string;
+  idFluxoBolhasInpe: number  = 0;
+  idCampanha: number = 0;
+  idSitio: number = 0;
+  profundidade: number = 0;
+  CH4: number = 0;
+  CH4_desvioPadrao: number = 0;
+  CH4_amostras: number = 0;
+  dataMedida: string = '';
+  horaMedida: string = '';
 
   constructor(data: Partial<Tbfluxobolhasinpe>) {
     Object.assign(this, data);
