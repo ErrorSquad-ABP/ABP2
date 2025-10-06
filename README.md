@@ -378,7 +378,7 @@ Para melhor estruturação do projeto, modelamos os principais diagramas da UML 
 - 🖼️ Gráfico de Burndown
 
 <div align="center">
-    <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/burndown/Sprint%201/Sprint1Burndown.jpeg" alt="Burndown Chart da Sprint" width="80%">
+    <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/burndown/Sprint%201/BurndownSprint1.png" alt="Burndown Chart da Sprint" width="80%">
 </div>
 
 - 📋 Observações rápidas  
