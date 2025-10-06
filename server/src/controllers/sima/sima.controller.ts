@@ -103,7 +103,7 @@ export const getAllSortedById = async (req: Request, res: Response): Promise<voi
 
     // aplica a ordenação recursiva (mesmo com limit)
     const sortedData = recursiveSort(
-      result.rows.map((r) => ({ ...r, idsima: Number(r.idsima) })),
+      result.rows.map((r: { idsima: any }) => ({ ...r, idsima: Number(r.idsima) })),
       "idsima",
     );
 
