@@ -390,9 +390,10 @@ export default function TablesPage(): JSX.Element {
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
     string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   > | null>(null);
 
@@ -446,7 +447,7 @@ export default function TablesPage(): JSX.Element {
       setResponsibleFromMetadata(newResp);
       setTable("");
     }
-  }, [metadata]);
+  }, [metadata, responsibleFromMetadata]);
 
   useEffect(() => {
     if (columnsFromMetadata) {
@@ -460,7 +461,7 @@ export default function TablesPage(): JSX.Element {
       setColumns(columnsFromMetadata[table]);
       setResponsible(responsibleFromMetadata[table]);
     }
-  }, [table, columnsFromMetadata]);
+  }, [table, columnsFromMetadata, responsibleFromMetadata]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
