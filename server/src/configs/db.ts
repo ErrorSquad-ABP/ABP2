@@ -26,5 +26,3 @@ export const balcarPool = new Pool({
   database: process.env.DB_BALCAR_NAME,
   port: Number(process.env.DB_BALCAR_PORT),
 });
-
-

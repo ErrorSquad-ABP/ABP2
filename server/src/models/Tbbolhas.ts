@@ -5,13 +5,13 @@ export class Tbbolhas {
   profundidade: number = 0;
   nroDeFunis: number = 0;
   volumeColetado: number = 0;
-  CO2: string = '';
+  CO2: string = "";
   O2: number = 0;
   N2: number = 0;
   CH4: number = 0;
-  N2O: string = '';
-  dataMedida: string = '';
-  horaMedida: string = '';
+  N2O: string = "";
+  dataMedida: string = "";
+  horaMedida: string = "";
 
   constructor(data: Partial<Tbbolhas>) {
     Object.assign(this, data);

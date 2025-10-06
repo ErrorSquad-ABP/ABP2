@@ -7,8 +7,8 @@ export class Tbnutrientessedimento {
   N2: number = 0;
   PT: number = 0;
   TC: number = 0;
-  dataMedida: string = '';
-  horaMedida: string = '';
+  dataMedida: string = "";
+  horaMedida: string = "";
 
   constructor(data: Partial<Tbnutrientessedimento>) {
     Object.assign(this, data);

@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { health } from "../../controllers/data/health.controller"
+import { health } from "../../controllers/data/health.controller";
 import { getTabela } from "../../controllers/data/getTabelaFromBalcar.controller";
 
-const router = Router()
+const router = Router();
 
 router.get("/health", health);
 router.get("/:tabela", getTabela);

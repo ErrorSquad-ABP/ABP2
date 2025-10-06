@@ -9,8 +9,8 @@ export class Tbfluxodifusivoinpe {
   CH4: number = 0;
   CH4_desvioPadrao: number = 0;
   CH4_amostras: number = 0;
-  dataMedida: string = '';
-  horaMedida: string = '';
+  dataMedida: string = "";
+  horaMedida: string = "";
 
   constructor(data: Partial<Tbfluxodifusivoinpe>) {
     Object.assign(this, data);
