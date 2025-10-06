@@ -8,9 +8,8 @@ import MenuBar from "./components/MenuBar";
 import HomePage from "./pages/HomePage";
 import TablesPage from "./pages/TablesPage";
 import SimasPage from "./pages/SimasPage";
-import FurnasPage from "./pages/FurnasPage"
+import FurnasPage from "./pages/FurnasPage";
 import BalcarPage from "./pages/BalcarPage";
-
 
 function App() {
   return (
