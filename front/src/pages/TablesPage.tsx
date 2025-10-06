@@ -214,14 +214,14 @@ const ControlsTopRight = styled.div`
   }
 `;
 
-const Button = styled.button<{ primary?: boolean }>`
+const Button = styled.button<{ $primary?: boolean }>`
   padding: 10px 14px;
   border-radius: 10px;
   border: none;
   cursor: pointer;
   font-weight: 700;
-  background: ${(p) => (p.primary ? p.theme.colors.primary : "rgba(2,6,23,0.06)")};
-  color: ${(p) => (p.primary ? "#fff" : "#04203a")};
+  background: ${(p) => (p.$primary ? p.theme.colors.primary : "rgba(2,6,23,0.06)")};
+  color: ${(p) => (p.$primary ? "#fff" : "#04203a")};
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -447,7 +447,7 @@ export default function TablesPage(): JSX.Element {
       setResponsibleFromMetadata(newResp);
       setTable("");
     }
-  }, [metadata, responsibleFromMetadata]);
+  }, [metadata]);
 
   useEffect(() => {
     if (columnsFromMetadata) {
@@ -861,29 +861,30 @@ export default function TablesPage(): JSX.Element {
           </Controls>
 
           <ColumnsBox aria-label="Lista de colunas">
-            {/*eslint-disable-next-line @typescript-eslint/no-explicit-any*/}
-            {columns.map((c: any) => (
-              <ColumnItem key={c.nome}>
-                <input
-                  key={c.nome}
-                  type="checkbox"
-                  checked={selectedColumns.includes(c.nome)}
-                  onChange={() => toggleColumn(c.nome)}
-                  id={`col-${c.nome}`}
-                />
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontWeight: 700 }}>{c.label || c.nome}</span>
-                  <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
-                </div>
-              </ColumnItem>
-            ))}
+            {columns.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (c: any, index: number) => (
+                <ColumnItem key={c.nome || `column-${index}`}>
+                  <input
+                    type="checkbox"
+                    checked={selectedColumns.includes(c.nome)}
+                    onChange={() => toggleColumn(c.nome)}
+                    id={`col-${c.nome || index}`}
+                  />
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontWeight: 700 }}>{c.label || c.nome}</span>
+                    <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
+                  </div>
+                </ColumnItem>
+              ),
+            )}
           </ColumnsBox>
         </LeftColumn>
 
         <RightPanel>
           <ControlsTopRight>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <Button primary onClick={handleGenerate}>
+              <Button $primary onClick={handleGenerate}>
                 Gerar Gráfico
               </Button>
 
