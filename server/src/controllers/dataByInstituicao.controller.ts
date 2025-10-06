@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { furnasPool } from "../../configs/db"; // ajuste conforme seu projeto
-import { logger } from "../../configs/logger";
+import { furnasPool } from "../configs/db"; // ajuste conforme seu projeto
+import { logger } from "../configs/logger";
 
 // Função principal do endpoint
 export const getDataByInstituicao = async (req: Request, res: Response) => {

@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 import simasLogo from "../assets/simas.png";
 import furnasLogo from "../assets/furnas.png";
-import balcarLogo from "../assets/balcar.png";
+import balcarLogo from "../assets/Balcar.png";
 
 const Nav = styled.nav`
   background: linear-gradient(

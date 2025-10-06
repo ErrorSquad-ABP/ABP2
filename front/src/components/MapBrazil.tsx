@@ -12,6 +12,8 @@ type Point = {
 type Props = {
   points?: Point[]; // pontos de coleta
   height?: number; // altura do SVG em px
+  showPolygons?: boolean;
+  showStateNames?: boolean;
   stateFill?: string;
   stateStroke?: string;
   samplingFill?: string;

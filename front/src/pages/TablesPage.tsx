@@ -338,6 +338,38 @@ const MapPlaceholder = styled.div`
   padding: 12px;
 `;
 
+/* zoom controls positioned on top-right of map */
+const ZoomControls = styled.div`
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  display: flex;
+  gap: 8px;
+  z-index: 70;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+
+  button {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  label {
+    color: #e6f0ff;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+`;
+
 /* ================= Component ================= */
 
 export default function TablesPage(): JSX.Element {
@@ -358,7 +390,12 @@ export default function TablesPage(): JSX.Element {
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
-  const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<string>();
+
+  const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
+    string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any
+  > | null>(null);
 
   const [view, setView] = useState<"chart" | "map">("chart");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -376,6 +413,10 @@ export default function TablesPage(): JSX.Element {
     reservatorio?: string;
     color?: string;
   }>({ visible: false, left: 0, top: 0 });
+
+  // zoom & labels
+  const [zoom, setZoom] = useState<number>(1);
+  const [showStateNames, setShowStateNames] = useState<boolean>(true);
 
   useEffect(() => {
     async function load() {
@@ -406,7 +447,7 @@ export default function TablesPage(): JSX.Element {
       setResponsibleFromMetadata(newResp);
       setTable("");
     }
-  }, [metadata]);
+  }, [metadata, responsibleFromMetadata]);
 
   useEffect(() => {
     if (columnsFromMetadata) {
@@ -420,7 +461,7 @@ export default function TablesPage(): JSX.Element {
       setColumns(columnsFromMetadata[table]);
       setResponsible(responsibleFromMetadata[table]);
     }
-  }, [table, columnsFromMetadata]);
+  }, [table, columnsFromMetadata, responsibleFromMetadata]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
@@ -446,6 +487,24 @@ export default function TablesPage(): JSX.Element {
 
   function toggleColumn(name: string) {
     setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
+  }
+
+  function handleStartDate(e: React.ChangeEvent<HTMLInputElement>): void {
+    const date: string = e.target.value;
+    if (date <= endDate) {
+      setStartDate(date);
+    } else {
+      alert("Data de início deve ser menor que data final!");
+    }
+  }
+
+  function handleEndDate(e: React.ChangeEvent<HTMLInputElement>): void {
+    const date: string = e.target.value;
+    if (date >= startDate) {
+      setEndDate(date);
+    } else {
+      alert("Data final deve ser menor que data de início!");
+    }
   }
 
   // try backend aggregate, fallback to mock
@@ -768,12 +827,12 @@ export default function TablesPage(): JSX.Element {
           <Controls>
             <Row>
               <Label>Data início</Label>
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <Input type="date" value={startDate} onChange={(e) => handleStartDate(e)} />
             </Row>
 
             <Row>
               <Label>Data fim</Label>
-              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              <Input type="date" value={endDate} onChange={(e) => handleEndDate(e)} />
             </Row>
 
             <Row>
@@ -818,7 +877,6 @@ export default function TablesPage(): JSX.Element {
                 </div>
               </ColumnItem>
             ))}
-
           </ColumnsBox>
         </LeftColumn>
 
@@ -947,18 +1005,64 @@ export default function TablesPage(): JSX.Element {
                 </div>
 
                 <MapPlaceholder>
-                  {latLonPoints.length ? (
-                    <div style={{ padding: 12, width: "100%", height: "100%" }}>
-                      <MapBrazil
-                        points={latLonPoints.map((p) => ({
-                          id: p.id,
-                          lat: p.lat,
-                          lon: p.lon,
-                          label: `Ponto ${p.id}`,
-                        }))}
-                        height={520}
-                        /*showPolygons={true}*/
+                  {/* Zoom controls and label toggle */}
+                  <ZoomControls>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={showStateNames}
+                        onChange={(e) => setShowStateNames(e.target.checked)}
                       />
+                      <span>Mostrar nomes</span>
+                    </label>
+                    <div>
+                      <button
+                        aria-label="Zoom Out"
+                        onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}
+                      >
+                        -
+                      </button>
+                      <button
+                        aria-label="Zoom In"
+                        onClick={() => setZoom((z) => Math.min(2.0, +(z + 0.2).toFixed(2)))}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </ZoomControls>
+
+                  {latLonPoints.length ? (
+                    <div
+                      style={{
+                        padding: 12,
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      {/* make map larger by using a bigger height and applying zoom as multiplier */}
+                      <div
+                        style={{
+                          width: "100%",
+                          maxWidth: 1100,
+                          transform: `scale(${zoom})`,
+                          transformOrigin: "center top",
+                        }}
+                      >
+                        <MapBrazil
+                          points={latLonPoints.map((p) => ({
+                            id: p.id,
+                            lat: p.lat,
+                            lon: p.lon,
+                            label: `Ponto ${p.id}`,
+                          }))}
+                          height={760}
+                          showPolygons={true}
+                          showStateNames={showStateNames}
+                        />
+                      </div>
                     </div>
                   ) : (
                     <div style={{ padding: 16, color: "#334155" }}>

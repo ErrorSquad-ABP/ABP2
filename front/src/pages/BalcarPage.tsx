@@ -299,7 +299,7 @@ const PublicacoesContent = () => {
     line-height: 1.5;
     margin-bottom: 10px;
   `;
-
+  /*
   const PublicationLink = styled.a`
     display: block;
     color: #222;
@@ -310,7 +310,7 @@ const PublicacoesContent = () => {
       text-decoration: underline;
     }
   `;
-
+*/
   return (
     <TwoColumnContainer>
       <Column>
