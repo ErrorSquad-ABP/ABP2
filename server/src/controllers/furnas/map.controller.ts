@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { furnasPool } from "../../configs/db";
 
-export const getMapGeoJSON = async (req: Request, res: Response) => {
+export const getMapGeoJSON = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { table } = req.params;
-    const { start, end, responsible_type, responsible_id, columns, limit } = req.query;
+    const { start, end, responsible_type, responsible_id, limit } = req.query;
 
     let sql = `
       SELECT 
