@@ -61,7 +61,7 @@ atualmente, os dados limnologicos do INPE se encontravam desorganizados, poluido
 <details>  
 <summary>📌 Histórias Selecionadas para a Sprint 1</summary>
 
-## História (Item 1) – Visualizar e Filtrar Todos os Dados
+## História (US01) – Visualizar e Filtrar Todos os Dados
 
 **Como usuário,**  
 Quero poder visualizar todos os dados armazenados,  
@@ -81,7 +81,7 @@ Quero poder visualizar todos os dados armazenados,
 - Sistema de filtragem de dados funcional (filtros aplicáveis retornam resultados corretos).
 
 
-## História (Item 2) – Exibir Dados em Tabelas Ordenáveis
+## História (US02) – Exibir Dados em Tabelas Ordenáveis
 
 **Como usuário,**  
 Quero ordenar e visualizar os dados em forma de tabelas,  
@@ -101,7 +101,7 @@ Quero ordenar e visualizar os dados em forma de tabelas,
 - Colunas são selecionáveis (mostrar/ocultar) e ordenáveis.
 
 
-## História (Item 10) – Selecionar Tabelas por Categoria
+## História (US10) – Selecionar Tabelas por Categoria
 
 **Como usuário,**  
 Quero selecionar diferentes tabelas dentro de cada categoria de dados,  
@@ -122,7 +122,7 @@ Quero selecionar diferentes tabelas dentro de cada categoria de dados,
 - É possível definir e exigir seleção de filtros obrigatórios antes da execução da consulta.
 
 
-## História (Item 12) – Acesso Detalhado a Bancos e Portais via Navegação
+## História (US12) – Acesso Detalhado a Bancos e Portais via Navegação
 
 **Como usuário,**  
 Quero acessar informações de cada banco de dados e portais em páginas detalhadas, através de botões na barra de navegação,  
@@ -142,7 +142,7 @@ Quero acessar informações de cada banco de dados e portais em páginas detalha
 - Interface limpa e responsiva nas páginas detalhadas.
 
 
-## História (Item 13) – Filtros Combinados em Múltiplas Colunas
+## História (US13) – Filtros Combinados em Múltiplas Colunas
 
 **Como usuário,**  
 Quero aplicar filtros combinados em múltiplas colunas,  
@@ -237,10 +237,28 @@ O protótipo tem como finalidade demonstrar visualmente a interface do sistema q
         <p><strong>Gerador de grafico:</strong> pagina dentro do card para geração dos graficos</p>
       </td>
     </tr>
-        <tr>
+    <tr>
       <td>
-        <img src="https://github.com/ErrorSquad-ABP/" alt="Mapa Interativo Desktop" width="100%">
+        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/mapa_prototipo.png" alt="Mapa Interativo" width="100%">
         <p><strong>Mapa Interativo:</strong> Visualização espacial dos ambientes acadêmicos</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/HomePageSima.png" alt="Homepage Sima" width="100%">
+        <p><strong>Homepage Sima:</strong>Página inicial do projeto Sima</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/HomePageBalcar.png" alt="Homepage Balcar" width="100%">
+        <p><strong>Homepage Balcar:</strong> Página inicial do projeto Balcar</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/HomePageFurnas.png" alt="Homepage Furnas" width="100%">
+        <p><strong>Homepage Furnas:</strong> Página inicial do projeto Furnas</p>
       </td>
     </tr>
   </table>
@@ -249,10 +267,10 @@ O protótipo tem como finalidade demonstrar visualmente a interface do sistema q
 ### 🗂️ Arquitetura de Navegação
 
 O sistema é estruturado em páginas principais:
-- **Home**: Página inicial com introdução ao sistema
-- **Consulta**: Por turma, professor ou ambiente
-- **Mapa Interativo**: Visualização espacial dos ambientes
-- **Grade de Horários**: Visualização detalhada das aulas
+- **Home**: Página inicial com cards que armazenam as tabelas agrupadas em topicos
+- **Consulta**: Pagina para seleção de tabela e de colunas que seram utilizadas para a criação do grafico
+- **Mapa Interativo**: Visualização do mapa nacional e das coordenadas de coleta dos dados com poligonos
+- **Projetos**: cada projeto(Sima, Balcar, Furnas) possui seu respectivo icone na topbar, que redirecionam a suas paginas com todas as informações dos projetos.
 
 - 🎨 Design System
   - Tipografia: fontes sans-serif (Helvetica Neue / Arial) para leitura científica clara.  
@@ -278,8 +296,7 @@ A paleta usa tons de azul para o topo e elementos de destaque, combinada com bra
 - 💡 Diferenciais de UX
   - **Seleção explícita de tabela** como passo obrigatório para evitar queries incorretas.  
   - **Gráfico protótipo SVG multissérie** que mostra pontos clicáveis/hover com tooltip (instituição + reservatório).  
-  - **Mapa com polígonos dos estados do Brasil** e pontos de coleta escaláveis; controles de zoom e opção de mostrar nomes.  
-  - **Exportação integrada** (CSV / PDF via geração client-side).  
+  - **Mapa com polígonos dos estados do Brasil** e pontos de coleta escaláveis; controles de zoom e opção de mostrar nomes.   
   - **Layouts responsivos** com grid (2 colunas em desktop, 1 coluna em mobile) e cards maiores para facilitar leitura de dados.
 
 </details>
@@ -293,10 +310,9 @@ Para melhor estruturação do projeto, modelamos os principais diagramas da UML 
 
 ![Casos de Uso](./SCRUM/diagramas/DIAGRAMA_CASOS_DE_USO.png)
 
-**Principais atores**
+**Funcionalidades Principais**
 - Pesquisador / Usuário — filtra, gera gráficos, visualiza mapa, exporta dados.  
-- Sistema (backend) — fornece endpoints para metadados, agregados, mapas e exportação.  
-- Admin (futuro) — gerencia tabelas/metadados.
+- Sistema (backend) — fornece endpoints para metadados, agregados, mapas e exportação.
 
 </details>
 
@@ -337,7 +353,6 @@ Para melhor estruturação do projeto, modelamos os principais diagramas da UML 
   - `GET /tables/:table/metadata` (intervalo de datas e responsáveis)
   - `GET /tables/:table/aggregate` (dados prontos para gráfico)
   - `GET /tables/:table/map` (dados geoespaciais / polígonos)
-  - `POST /export` (CSV | JSON | PDF)
   - Outros endpoints de atalho: by-reservatorio / by-instituicao / dados/filtrados / dados/paginados / dados/mapa
 
 - 🗃️ **Banco de Dados**
@@ -354,7 +369,6 @@ Para melhor estruturação do projeto, modelamos os principais diagramas da UML 
 - 🧰 **Ferramentas & Infra**
   - Docker + docker-compose (Postgres + server + front).  
   - Hot-reload configurado para front com Vite e `CHOKIDAR_USEPOLLING` no container.  
-  - CI: Prettier / tests — em andamento (alguns conflitos/format issues a resolver).
 
 </details>
 
@@ -369,8 +383,7 @@ Para melhor estruturação do projeto, modelamos os principais diagramas da UML 
 
 - 📋 Observações rápidas  
   - Sprint 1 focou em protótipo visual e arquitetura de endpoints.  
-  - Próximos passos: estabilizar endpoints de agregação/mapa, corrigir CI (Prettier/tests), e integrar dados reais ao gráfico.
-
+  - Próximos passos: realizar alimentação correta do gerador de graficos, implementar mapa funcional
 </details>
 
 <details>  
@@ -383,19 +396,23 @@ Para melhor estruturação do projeto, modelamos os principais diagramas da UML 
 
 - ⚠️ Desafios enfrentados
   - Conflitos de merge em arquivos TS (marcadores `<<<<<<< >>>>>>>`) e issues de formatação (Prettier).  
-  - Algumas rotas/endpoints ainda não implementadas ou em mismatch com o front (causa de `ERR_EMPTY_RESPONSE`).  
-  - Test suites e path `package.json` em subpastas (front/server) podem confundir comandos locais.
+  - Algumas rotas/endpoints ainda não implementadas ou em mismatch com o front.  
+  - Adaptação ao novo modelo de ABP baseado em tasks por matéria.
+  - Conflitos de padronização de commits e branches
+  - erros frequentes de CI CD
 
 - 🚀 Plano de melhorias (Sprint seguinte)
-  - Finalizar e documentar os endpoints: `/tables/:table/metadata`, `/aggregate`, `/map` e `/export`.  
-  - Resolver CI (prettier --write, corrigir testes com sintaxe JSX em ambientes de teste).  
+  - Finalizar os endpoints.  
   - Integração completa: frontend chamando endpoints reais e testes de integração.  
-  - Melhorias UX: legendas, tooltips, zoom suave no mapa, e export mais robusto (PDF com snapshot do SVG/mapa).
+  - Melhorias UX: legendas, tooltips, zoom suave no mapa, e export mais robusto.
+  - adição de novas funcionalidades.
+  - geração de gráficos funcional.
+  - visualização e interação de mapa funcional.
 
 - 📈 Métricas alvo para Sprint 2
-  - 100% dos endpoints core implementados e testados localmente.  
-  - CI Green (format + lint + unit tests).  
-  - Integração frontend-backend com dados reais em 3 tópicos piloto.
+  - 100% dos endpoints core implementados e testados localmente.   
+  - Integração frontend-backend com dados reais.
+  - funcionalidades concluidas.
 
 </details>
 </details>
