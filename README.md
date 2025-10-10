@@ -4,7 +4,7 @@
 
 [![Site](https://img.shields.io/badge/🌐_Site-Offline-000000?style=for-the-badge)]()
 [![Status](https://img.shields.io/badge/⚙️_Status-em_progresso-orange?style=for-the-badge)](#-sobre-o-projeto)
-[![Sprint](https://img.shields.io/badge/📅_Sprint-1/3-orange?style=for-the-badge)](#-sprint-3)
+[![Sprint](https://img.shields.io/badge/📅_Sprint-2/3-orange?style=for-the-badge)](#-sprint-3)
 [![Docs](https://img.shields.io/badge/📚_Docs-Wiki-4a90e2?style=for-the-badge)](#documentação)
 
 </div>
@@ -424,9 +424,9 @@ Para melhor estruturação do projeto, modelamos o diagrama de casos de uso:
 
 ### 📅 Período
 
-- **Início:** 16/09/2025
-- **Término:** 06/10/2025
-- **Review:** 07/10/2025
+- **Início:** 13/10/2025
+- **Término:** 03/11/2025
+- **Review:** 04/11/2025
 
 ### 🎯 Objetivos Principais
 
