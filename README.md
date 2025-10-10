@@ -727,7 +727,7 @@ A paleta usa tons de azul para o topo e elementos de destaque, combinada com bra
 - 🖼️ Gráfico de Burndown
 
 <div align="center">
-    <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/burndown/Sprint%202/BurndownSprint2.png" alt="Burndown Chart da Sprint" width="80%">
+    <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/burndown/Sprint%202/BurndownInicialSprint2.png" alt="Burndown Chart da Sprint" width="80%">
 </div>
 
 - 📋 Observações rápidas  
