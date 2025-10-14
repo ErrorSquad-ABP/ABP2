@@ -9,6 +9,5 @@ const router = express.Router();
 router.use("/sima", sima);
 router.use("/balcar", balcar);
 router.use("/furnas", furnas);
-router.get("/:tabela", getTabela);
 
 export default router;
