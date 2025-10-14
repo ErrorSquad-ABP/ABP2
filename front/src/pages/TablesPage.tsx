@@ -370,6 +370,7 @@ const ZoomControls = styled.div`
   }
 `;
 
+
 /* ================= Component ================= */
 
 export default function TablesPage(): JSX.Element {
@@ -417,6 +418,8 @@ export default function TablesPage(): JSX.Element {
   // zoom & labels
   const [zoom, setZoom] = useState<number>(1);
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+
 
   useEffect(() => {
     async function load() {
@@ -605,6 +608,15 @@ export default function TablesPage(): JSX.Element {
       .filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number")
       .map((r) => ({ lat: r.latitude, lon: r.longitude, id: r.id }));
   }, [chartData]);
+
+  const handleMouseMove = (e) => {
+          if (e.buttons === 1) {
+              setPan((prevPan) => ({
+                  x: prevPan.x + e.movementX,
+                  y: prevPan.y + e.movementY,
+              }));
+          }
+      };
 
   /*
   function normalizePoints(points: { lat: number; lon: number }[]) {
@@ -1035,6 +1047,7 @@ export default function TablesPage(): JSX.Element {
 
                   {latLonPoints.length ? (
                     <div
+                    onMouseMove = {handleMouseMove}
                       style={{
                         padding: 12,
                         width: "100%",
@@ -1049,7 +1062,8 @@ export default function TablesPage(): JSX.Element {
                           width: "100%",
                           height: "100%",
                           maxWidth: 1100,
-                          transform: `scale(${zoom})`,
+                          transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+                          cursor: 'grab',
                           transformOrigin: "center top",
                         }}
                       >

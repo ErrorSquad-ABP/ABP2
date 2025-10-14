@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-function MapSvg(props) {
+function MapSvg() {
     const [hoveredState, setHoveredState] = useState(null);
-    const [pan, setPan] = useState({ x: 0, y: 0 });
 
     const svgRef = useRef(null);
 
@@ -18,16 +17,6 @@ function MapSvg(props) {
         e.target.style.fill = "White"
     };
 
-    const handleMouseMove = (event) => {
-        if (event.buttons === 1) {
-            setPan((prevPan) => ({
-                x: prevPan.x + event.movementX,
-                y: prevPan.y + event.movementY,
-            }));
-        }
-    };
-
-
     return (
         <>
             <div className="tooltip" style={{ display: hoveredState ? 'block' : 'none' }}>
@@ -37,10 +26,7 @@ function MapSvg(props) {
                 ref={svgRef}
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 700 650"
-                onMouseMove={handleMouseMove}  // Movimenta o mapa ao arrastar
                 style={{
-                    transform: `translate(${pan.x}px, ${pan.y}px)`,
-                    transformOrigin: 'top left',
                     cursor: 'grab',
                     fill: "white"
                 }}
