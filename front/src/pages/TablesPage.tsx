@@ -418,6 +418,7 @@ export default function TablesPage(): JSX.Element {
   // zoom & labels
   const [zoom, setZoom] = useState<number>(1);
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     async function load() {
@@ -632,6 +633,15 @@ export default function TablesPage(): JSX.Element {
       .filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number")
       .map((r) => ({ lat: r.latitude, lon: r.longitude, id: r.id }));
   }, [chartData]);
+
+  const handleMouseMove = (e) => {
+    if (e.buttons === 1) {
+      setPan((prevPan) => ({
+        x: prevPan.x + e.movementX,
+        y: prevPan.y + e.movementY,
+      }));
+    }
+  };
 
   /*
   function normalizePoints(points: { lat: number; lon: number }[]) {
@@ -1088,13 +1098,22 @@ export default function TablesPage(): JSX.Element {
                       >
                         +
                       </button>
+                      <button
+                        aria-label="Center"
+                        onClick={() => {
+                          setPan({ x: 0, y: 0 });
+                          setZoom(1);
+                        }}
+                      >
+                        +
+                      </button>
                     </div>
                   </ZoomControls>
 
                   {latLonPoints.length ? (
                     <div
+                      onMouseMove={handleMouseMove}
                       style={{
-                        padding: 12,
                         width: "100%",
                         height: "100%",
                         display: "flex",
@@ -1102,26 +1121,20 @@ export default function TablesPage(): JSX.Element {
                         alignItems: "center",
                       }}
                     >
-                      {/* make map larger by using a bigger height and applying zoom as multiplier */}
                       <div
                         style={{
                           width: "100%",
+                          height: "100%",
                           maxWidth: 1100,
-                          transform: `scale(${zoom})`,
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+                          cursor: "grab",
                           transformOrigin: "center top",
                         }}
                       >
-                        <MapBrazil
-                          points={latLonPoints.map((p) => ({
-                            id: p.id,
-                            lat: p.lat,
-                            lon: p.lon,
-                            label: `Ponto ${p.id}`,
-                          }))}
-                          height={760}
-                          showPolygons={true}
-                          showStateNames={showStateNames}
-                        />
+                        <MapBrazil />
                       </div>
                     </div>
                   ) : (
