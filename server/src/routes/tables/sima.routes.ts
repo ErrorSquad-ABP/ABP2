@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { health } from "../../controllers/data/health.controller";
-import { getTabela } from "../../controllers/data/getTabelaFromBalcar.controller";
+import { getTabela } from "../../controllers/data/getTabelaFromSima.controller";
 
 const router = Router();
 
