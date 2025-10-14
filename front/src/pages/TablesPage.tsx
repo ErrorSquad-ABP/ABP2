@@ -3,6 +3,7 @@ import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
+import axios from "axios";
 
 /**
  * TablesPage
@@ -14,6 +15,12 @@ import MapBrazil from "../components/MapBrazil";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
+
+interface Campanha {
+  idcampanha: number;
+  datainicio: string;
+  datafim: string;
+}
 
 type ColumnMeta = {
   name: string;
@@ -153,13 +160,6 @@ const Label = styled.label`
   @media (max-width: 520px) {
     min-width: auto;
   }
-`;
-
-const Input = styled.input`
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(2, 6, 23, 0.06);
-  width: 100%;
 `;
 
 const Select = styled.select`
@@ -403,6 +403,7 @@ export default function TablesPage(): JSX.Element {
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
   const [showExportOptions, setShowExportOptions] = useState(false);
+  const [campanhas, setCampanhas] = useState<Campanha[]>([]);
 
   // tooltip state
   const [tooltip, setTooltip] = useState<{
@@ -463,6 +464,32 @@ export default function TablesPage(): JSX.Element {
     }
   }, [table, columnsFromMetadata, responsibleFromMetadata]);
 
+  useEffect(() => {
+    const fetchCampanhas = async () => {
+      try {
+        const res = await axios.get("http://localhost:3001/furnas/campanha/all");
+        const data = res.data.data as Campanha[];
+
+        // remove duplicadas
+        const uniqueDates = data.reduce((acc: Campanha[], curr) => {
+          const exists = acc.some(
+            (d) =>
+              d.datainicio.slice(0, 10) === curr.datainicio.slice(0, 10) &&
+              d.datafim.slice(0, 10) === curr.datafim.slice(0, 10),
+          );
+          if (!exists) acc.push(curr);
+          return acc;
+        }, []);
+
+        setCampanhas(uniqueDates);
+      } catch (err) {
+        console.error("Erro ao carregar campanhas", err);
+      }
+    };
+
+    fetchCampanhas();
+  }, []);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -489,7 +516,7 @@ export default function TablesPage(): JSX.Element {
     setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
   }
 
-  function handleStartDate(e: React.ChangeEvent<HTMLInputElement>): void {
+  function handleStartDate(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void {
     const date: string = e.target.value;
     if (date <= endDate) {
       setStartDate(date);
@@ -498,7 +525,7 @@ export default function TablesPage(): JSX.Element {
     }
   }
 
-  function handleEndDate(e: React.ChangeEvent<HTMLInputElement>): void {
+  function handleEndDate(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void {
     const date: string = e.target.value;
     if (date >= startDate) {
       setEndDate(date);
@@ -827,12 +854,44 @@ export default function TablesPage(): JSX.Element {
           <Controls>
             <Row>
               <Label>Data início</Label>
-              <Input type="date" value={startDate} onChange={(e) => handleStartDate(e)} />
+              <select
+                value={startDate}
+                onChange={(e) => handleStartDate(e)}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                <option value="">Selecione...</option>
+                {campanhas.map((c) => (
+                  <option key={`ini-${c.idcampanha}`} value={c.datainicio.slice(0, 10)}>
+                    {new Date(c.datainicio).toLocaleDateString("pt-BR")}
+                  </option>
+                ))}
+              </select>
             </Row>
 
             <Row>
               <Label>Data fim</Label>
-              <Input type="date" value={endDate} onChange={(e) => handleEndDate(e)} />
+              <select
+                value={endDate}
+                onChange={(e) => handleEndDate(e)}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                <option value="">Selecione...</option>
+                {campanhas.map((c) => (
+                  <option key={`fim-${c.idcampanha}`} value={c.datafim.slice(0, 10)}>
+                    {new Date(c.datafim).toLocaleDateString("pt-BR")}
+                  </option>
+                ))}
+              </select>
             </Row>
 
             <Row>
