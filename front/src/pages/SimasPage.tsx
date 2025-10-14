@@ -7,94 +7,161 @@ import sonda from "../assets/sonda.png";
 
 // ================= Styled Components =================
 const PageContainer = styled.div`
-  flex: 1;
-  width: 1149px;
-  margin: 5px auto;
+  width: 100%;
+  min-height: 100vh;
   font-family: "Calibri", "Arial", "Helvetica", "Verdana", "sans-serif";
   font-size: 15px;
-  background-color: #f0f0f5;
-  padding: 1.5rem;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  padding: 0; /* aplicar padding apenas nos blocks */
+`;
+
+const HeaderWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding-bottom: 0; /* sem padding inferior, a separação será feita pela linha */
 `;
 
 const HeaderContainer = styled.div`
   width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 0 0.5rem 0; /* topo maior, bottom menor para aproximar da linha */
+  box-sizing: border-box;
 `;
 
-const LogoSIMA = styled.div`
-  float: left;
-  width: 182px;
-  height: 34px;
-  margin-top: 18px;
-  background-image: url("site/imagens/logo2.png");
-  background-repeat: no-repeat;
+const HeaderText = styled.h1`
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
 `;
 
-const HeaderText = styled.div`
-  float: right;
-  font-size: 20px;
-  margin: 28px -15px 0 0;
-  color: #4682b4;
+const HeaderSeparator = styled.div`
+  width: 100%; /* centralizada */
+  height: 3px; /* largura mais fina, visual moderno */
+  background-color: rgba(255, 255, 255, 0.7); /* branco translúcido, destaca sobre o gradiente */
+  margin: 0.5rem 0; /* separação entre headerText e menu */
+  border-radius: 2px; /* cantos levemente arredondados para ficar mais moderno */
 `;
 
-const HeaderBanner = styled.div`
-  clear: both;
-  width: 100%;
-  height: 46px;
-  background-image: url("site/imagens/banner2.png");
-  background-repeat: repeat-x;
-  margin-top: 10px;
+const Separator = styled.div`
+  width: 60%;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.5);
+  margin: 0.5rem 0 2rem 0; /* espaço inferior maior antes do corpo */
 `;
 
-const Menu = styled.div`
-  width: 100%;
-  height: 25px;
-  line-height: 25px;
-  font-size: 16px;
-  margin-bottom: 15px;
+const MenuContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  padding: 0.75rem 0;
 `;
 
 const MenuItem = styled.span<{ active?: boolean }>`
-  float: right;
-  height: 25px;
-  line-height: 25px;
-  padding: 0px 7px;
-  margin-right: 15px;
-  cursor: ${(props) => (props.active ? "default" : "pointer")};
-  color: ${(props) => (props.active ? "#333" : "#0081d8")};
-  border-bottom: 2px solid ${(props) => (props.active ? "#333" : "transparent")};
+  color: ${(props) => (props.active ? "#fff" : "#cce0ff")};
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+
   &:hover {
-    border-bottom-color: ${(props) => (props.active ? "#333" : "#0081d8")};
+    color: #fff;
+  }
+
+  &::after {
+    content: "";
+    display: block;
+    margin: 0 auto;
+    height: 3px;
+    width: ${(props) => (props.active ? "100%" : "0")};
+    background: #cce0ff;
+    transition: width 0.3s;
+  }
+
+  &:hover::after {
+    width: 100%;
   }
 `;
 
 const TwoColumnContainer = styled.div`
   display: flex;
-  flex-wrap: wrap;
   gap: 20px;
+  flex-wrap: wrap; /* permite que as colunas se ajustem em telas menores */
 `;
 
 const Column = styled.div`
-  flex: 1;
-  min-width: 500px;
+  flex: 1 1 300px; /* cada coluna ocupa espaço igual, com largura mínima */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 `;
 
 const Block = styled.div`
-  background-color: #e3e8f0;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background-color: #fff;
+  margin: 20px; /* adiciona espaçamento em volta dos blocks, em vez de padding global */
 `;
 
-const BlockTitle = styled.div`
-  font-weight: bold;
+export const BlockTitle = styled.h2`
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  padding: 1rem;
+  background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+  text-align: center;
+`;
+
+const LinkItem = styled.a`
+  display: block;
+  margin-bottom: 8px;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+  transition:
+    color 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    color: #0056b3;
+    transform: translateX(5px);
+  }
+`;
+
+export const BlockText = styled.p`
+  font-size: 1rem;
   color: #333;
-  margin-bottom: 10px;
-`;
-
-const BlockText = styled.div`
-  color: #222;
+  line-height: 1.6;
   text-align: justify;
-  font-size: 16px;
+  padding: 1rem;
+
+  a {
+    color: #2563eb;
+    text-decoration: none;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.2s;
+
+    &:hover {
+      border-color: #2563eb;
+    }
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+  }
 `;
 
 const Footer = styled.div`
@@ -113,16 +180,21 @@ const ImageRow = styled.div`
   display: flex;
   gap: 10px;
   margin-top: 20px;
+  flex-wrap: wrap; /* permite quebrar linha se for necessário */
 
   img {
-    height: 199px;
+    flex: 1 1 48%; /* cada imagem ocupa quase metade do espaço */
+    max-width: 100%;
+    height: auto; /* mantém proporção */
     object-fit: cover;
+    border-radius: 8px; /* opcional, para visual mais moderno */
   }
 `;
 
 // ================= Conteúdo das páginas =================
 const HomeContent = () => (
   <TwoColumnContainer>
+    {/* Coluna 1 */}
     <Column>
       <Block>
         <BlockTitle>Sobre o SIMA</BlockTitle>
@@ -167,23 +239,6 @@ const HomeContent = () => (
           diferentes profundidades).
         </BlockText>
       </Block>
-    </Column>
-
-    <Column>
-      <Block>
-        <BlockTitle>Estrutura do SIMA</BlockTitle>
-        <BlockText>
-          O SIMA é formado por uma plataforma que em alguns modelos pode ser uma bóia toroidal (foto
-          abaixo e a esquerda) ou uma estrutura maior (foto abaixo e a direita). No centro da
-          plataforma existe uma torre onde são afixados os painéis solares, sensores meteorológicos
-          e antena. No vão central um compartimento abriga a eletrônica do sistema, baterias e
-          transmissor de satélite. Os sensores submersos são conectados a eletrônica por cabos.
-          <ImageRow>
-            <img src={sima1} alt="Plataforma esquerda" />
-            <img src={sima2} alt="Plataforma direita" />
-          </ImageRow>
-        </BlockText>
-      </Block>
 
       <Block>
         <BlockTitle>Modo de Funcionamento</BlockTitle>
@@ -222,46 +277,11 @@ const HomeContent = () => (
               realizadas a cada 10 minutos.
             </li>
           </ul>
-          <img src={sima3} alt="Modo de funcionamento" />
+          <ImageRow>
+            <img src={sima3} alt="Modo de funcionamento" />
+          </ImageRow>
         </BlockText>
       </Block>
-
-      <Block>
-        <BlockTitle>História</BlockTitle>
-        <BlockText>
-          O SIMA foi desenvolvido em uma parceria entre a Universidade do Vale do Paraíba e o INPE.
-          A partir de 1995, o projeto foi transferido para a Neuron Engenharia Ltda. Através de uma
-          parceria com a Diretoria de Hidrografia e Navegação (DHN) a Neuron construiu um protótipo
-          do SIMA, que ficou fundeado em águas do litoral do Rio de Janeiro durante um ano e os
-          dados coletados foram disponibilizados pelo Programa Nacional de Bóia. Os dados coletados
-          neste período foram comparados com dados{" "}
-          <span style={{ fontStyle: "italic" }}>in situ</span>, o que confirmou o bom desempenho do
-          sistema.
-        </BlockText>
-      </Block>
-
-      <Block>
-        <BlockTitle>Problemas</BlockTitle>
-        <BlockText>
-          <ul>
-            <li>
-              Sensores: por características específicas de alguns ambientes aquáticos, os sensores
-              podem se degradar rapidamente, tornando os dados inválidos. Veja como exemplo a foto
-              abaixo tirada da sonda do SIMA fundeado no reservatório de Funil, no momento de uma
-              atividade de calibração;
-            </li>
-            <li>
-              Satélite: o SIMA faz uma leitura de parâmetros a cada hora, ou seja, 24 leituras por
-              dia. Acontece que nem sempre são recebidas todas as leituras, pois o sistema necessita
-              de satélites para completar a transmissão e por questão de posicionamento da
-              constelação de satélites, algumas localidades terrestres não são atendidas com a
-              frequência necessária para completar todas as transmissões.
-            </li>
-          </ul>
-          <img src={sonda} alt="Sonda do SIMA" />
-        </BlockText>
-      </Block>
-
       <Block>
         <BlockTitle>Apoio</BlockTitle>
         <BlockText>
@@ -305,139 +325,173 @@ const HomeContent = () => (
         </BlockText>
       </Block>
     </Column>
+
+    {/* Coluna 2 */}
+    <Column>
+      <Block>
+        <BlockTitle>Estrutura do SIMA</BlockTitle>
+        <BlockText>
+          O SIMA é formado por uma plataforma que em alguns modelos pode ser uma bóia toroidal (foto
+          abaixo e a esquerda) ou uma estrutura maior (foto abaixo e a direita). No centro da
+          plataforma existe uma torre onde são afixados os painéis solares, sensores meteorológicos
+          e antena. No vão central um compartimento abriga a eletrônica do sistema, baterias e
+          transmissor de satélite. Os sensores submersos são conectados a eletrônica por cabos.
+          <ImageRow>
+            <img src={sima1} alt="Plataforma esquerda" />
+            <img src={sima2} alt="Plataforma direita" />
+          </ImageRow>
+        </BlockText>
+      </Block>
+
+      <Block>
+        <BlockTitle>História</BlockTitle>
+        <BlockText>
+          O SIMA foi desenvolvido em uma parceria entre a Universidade do Vale do Paraíba e o INPE.
+          A partir de 1995, o projeto foi transferido para a Neuron Engenharia Ltda. Através de uma
+          parceria com a Diretoria de Hidrografia e Navegação (DHN) a Neuron construiu um protótipo
+          do SIMA, que ficou fundeado em águas do litoral do Rio de Janeiro durante um ano e os
+          dados coletados foram disponibilizados pelo Programa Nacional de Bóia. Os dados coletados
+          neste período foram comparados com dados{" "}
+          <span style={{ fontStyle: "italic" }}>in situ</span>, o que confirmou o bom desempenho do
+          sistema.
+        </BlockText>
+      </Block>
+
+      <Block>
+        <BlockTitle>Problemas</BlockTitle>
+        <BlockText>
+          <ul>
+            <li>
+              Sensores: por características específicas de alguns ambientes aquáticos, os sensores
+              podem se degradar rapidamente, tornando os dados inválidos. Veja como exemplo a foto
+              abaixo tirada da sonda do SIMA fundeado no reservatório de Funil, no momento de uma
+              atividade de calibração;
+            </li>
+            <li>
+              Satélite: o SIMA faz uma leitura de parâmetros a cada hora, ou seja, 24 leituras por
+              dia. Acontece que nem sempre são recebidas todas as leituras, pois o sistema necessita
+              de satélites para completar a transmissão e por questão de posicionamento da
+              constelação de satélites, algumas localidades terrestres não são atendidas com a
+              frequência necessária para completar todas as transmissões.
+            </li>
+          </ul>
+          <ImageRow>
+            <img src={sonda} alt="Sonda do SIMA" />
+          </ImageRow>
+        </BlockText>
+      </Block>
+    </Column>
   </TwoColumnContainer>
 );
 
-const EquipeContent = () => (
+export const EquipeContent = () => (
   <TwoColumnContainer>
+    {/* Coluna 1 */}
     <Column>
       <Block>
         <BlockTitle>Coordenação</BlockTitle>
-        <div>
-          <a href="http://lattes.cnpq.br/2691497637313274" target="_blank">
+        <BlockText>
+          <LinkItem href="http://lattes.cnpq.br/2691497637313274" target="_blank">
             José Luiz Stech (stech@dsr.inpe.br)
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/7939379291404418" target="_blank">
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/7939379291404418" target="_blank">
             Enner Herenio de Alcântara
-          </a>
-        </div>
+          </LinkItem>
+        </BlockText>
       </Block>
-    </Column>
 
-    <Column>
       <Block>
         <BlockTitle>Colaboradores</BlockTitle>
-        <div>
-          <a href="http://lattes.cnpq.br/5535667070825818" target="_blank">
+        <BlockText>
+          <LinkItem href="http://lattes.cnpq.br/5535667070825818" target="_blank">
             André Carlos Prates Cimbleris
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/8150880476098677" target="_blank">
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/8150880476098677" target="_blank">
             Arcilan Trevenzoli Assireu
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/7642043789034070" target="_blank">
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/7642043789034070" target="_blank">
             Artur Luiz da Costa da Silva
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/7466500214796269" target="_blank">
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/7466500214796269" target="_blank">
             Augusto Cesar Fonseca Saraiva
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/1596449770636962" target="_blank">
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/1596449770636962" target="_blank">
             Cláudio Clemente Faria Barbosa
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/4775535537651746" target="_blank">
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/4775535537651746" target="_blank">
             Donato Seiji Abe
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/9857505876280820" target="_blank">
-            Evlyn Márcia Leão de Moraes Novo
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/0567809153346429" target="_blank">
-            Fábio Roland
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/3852581196429739" target="_blank">
-            João Antônio Lorenzzetti
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/0030922264947314" target="_blank">
-            Jorge Machado Damazio
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/4155308755013168" target="_blank">
-            Marco Aurélio dos Santos
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/8471974730664804" target="_blank">
-            Maria Elvira Piñeiro Maceira
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/5149356080083086" target="_blank">
-            Nelson Luís da Costa Dias
-          </a>
-        </div>
+          </LinkItem>
+        </BlockText>
       </Block>
 
       <Block>
         <BlockTitle>Desenvolvimento do Sistema de Coleta de Dados</BlockTitle>
-        <div>
-          <a href="http://www.neuron.com.br" target="_blank">
+        <BlockText>
+          <LinkItem href="http://www.neuron.com.br" target="_blank">
             Neuron Eletrônica
-          </a>
-        </div>
+          </LinkItem>
+        </BlockText>
+      </Block>
+    </Column>
+
+    {/* Coluna 2 */}
+    <Column>
+      <Block>
+        <BlockTitle>Colaboradores (continuação)</BlockTitle>
+        <BlockText>
+          <LinkItem href="http://lattes.cnpq.br/9857505876280820" target="_blank">
+            Evlyn Márcia Leão de Moraes Novo
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/0567809153346429" target="_blank">
+            Fábio Roland
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/3852581196429739" target="_blank">
+            João Antônio Lorenzzetti
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/0030922264947314" target="_blank">
+            Jorge Machado Damazio
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/4155308755013168" target="_blank">
+            Marco Aurélio dos Santos
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/8471974730664804" target="_blank">
+            Maria Elvira Piñeiro Maceira
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/5149356080083086" target="_blank">
+            Nelson Luís da Costa Dias
+          </LinkItem>
+        </BlockText>
       </Block>
 
       <Block>
         <BlockTitle>Manutenção do Sistema de Coleta de Dados</BlockTitle>
-        <div>Alexandre Donizetti da Silva (Neuron Eletrônica)</div>
-        <div>
-          <a href="http://lattes.cnpq.br/4915211809920432" target="_blank">
+        <BlockText>
+          Alexandre Donizetti da Silva (Neuron Eletrônica)
+          <LinkItem href="http://lattes.cnpq.br/4915211809920432" target="_blank">
             Carlos Alberto Sampaio de Araújo
-          </a>
-        </div>
-        <div>Geraldo Orlando Mendes</div>
-        <div>
-          <a href="http://lattes.cnpq.br/7596795539833144" target="_blank">
+          </LinkItem>
+          Geraldo Orlando Mendes
+          <LinkItem href="http://lattes.cnpq.br/7596795539833144" target="_blank">
             Joaquim Antônio Dionísio Leão
-          </a>
-        </div>
-        <div>
-          <a href="http://lattes.cnpq.br/6286335301335965" target="_blank">
+          </LinkItem>
+          <LinkItem href="http://lattes.cnpq.br/6286335301335965" target="_blank">
             Vitor Bruno
-          </a>
-        </div>
+          </LinkItem>
+        </BlockText>
       </Block>
 
       <Block>
         <BlockTitle>Gerente de Rede do Portal</BlockTitle>
-        <div>João Benedito Diehl</div>
+        <BlockText>João Benedito Diehl</BlockText>
       </Block>
 
       <Block>
         <BlockTitle>Web e Banco de Dados</BlockTitle>
-        <div>
-          <a href="http://lattes.cnpq.br/3013376353724630" target="_blank">
+        <BlockText>
+          <LinkItem href="http://lattes.cnpq.br/3013376353724630" target="_blank">
             Arley Ferreira de Souza (arley@dpi.inpe.br)
-          </a>
-        </div>
+          </LinkItem>
+        </BlockText>
       </Block>
     </Column>
   </TwoColumnContainer>
@@ -445,17 +499,23 @@ const EquipeContent = () => (
 
 const PublicacoesContent = () => {
   const Section = styled.div`
-    background-color: #e3e8f0;
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* faz todos os blocos da coluna terem altura igual */
     padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 6px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-sizing: border-box;
   `;
 
   const SectionTitle = styled.div`
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 18px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0a3d62;
+    margin-bottom: 0.75rem;
+    border-bottom: 2px solid #0a3d62;
+    padding-bottom: 0.3rem;
   `;
 
   const PublicationText = styled.div`
@@ -1263,27 +1323,27 @@ const App: React.FC = () => {
 
   return (
     <PageContainer>
-      {/* Header */}
-      <HeaderContainer>
-        <LogoSIMA />
-        <HeaderText>Sistema Integrado de Monitoramento Ambiental</HeaderText>
-        <HeaderBanner />
-      </HeaderContainer>
-
-      {/* Menu */}
-      <Menu>
-        <MenuItem active={page === "home"} onClick={() => setPage("home")}>
-          Home
-        </MenuItem>
-        <MenuItem active={page === "equipe"} onClick={() => setPage("equipe")}>
-          Equipe
-        </MenuItem>
-        <MenuItem active={page === "publicacoes"} onClick={() => setPage("publicacoes")}>
-          Publicações
-        </MenuItem>
-        <MenuItem onClick={openTutorial}>Tutorial SIMA</MenuItem>
-        <MenuItem onClick={openMapa}>Mapa SIMA</MenuItem> {/* NOVO LINK */}
-      </Menu>
+      {/* Header + Menu */}
+      <HeaderWrapper>
+        <HeaderSeparator />
+        <HeaderContainer>
+          <HeaderText>Sistema Integrado de Monitoramento Ambiental</HeaderText>
+        </HeaderContainer>
+        <Separator /> {/* linha branca separadora */}
+        <MenuContainer>
+          <MenuItem active={page === "home"} onClick={() => setPage("home")}>
+            Home
+          </MenuItem>
+          <MenuItem active={page === "equipe"} onClick={() => setPage("equipe")}>
+            Equipe
+          </MenuItem>
+          <MenuItem active={page === "publicacoes"} onClick={() => setPage("publicacoes")}>
+            Publicações
+          </MenuItem>
+          <MenuItem onClick={openTutorial}>Tutorial SIMA</MenuItem>
+          <MenuItem onClick={openMapa}>Mapa SIMA</MenuItem>
+        </MenuContainer>
+      </HeaderWrapper>
 
       {/* Conteúdo */}
       {page === "home" && <HomeContent />}
