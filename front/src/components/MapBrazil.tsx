@@ -1,7 +1,5 @@
-import MapSvg from './MapSvg.jsx'
+import MapSvg from "./MapSvg.jsx";
 
 export default function MapBrasil() {
-  return (
-      <MapSvg />
-  )
+  return <MapSvg />;
 }

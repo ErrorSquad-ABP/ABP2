@@ -370,7 +370,6 @@ const ZoomControls = styled.div`
   }
 `;
 
-
 /* ================= Component ================= */
 
 export default function TablesPage(): JSX.Element {
@@ -419,7 +418,6 @@ export default function TablesPage(): JSX.Element {
   const [zoom, setZoom] = useState<number>(1);
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-
 
   useEffect(() => {
     async function load() {
@@ -1044,13 +1042,12 @@ export default function TablesPage(): JSX.Element {
                       <button
                         aria-label="Center"
                         onClick={() => {
-                          setPan({ x: 0, y: 0 }); 
-                          setZoom(1); 
+                          setPan({ x: 0, y: 0 });
+                          setZoom(1);
                         }}
                       >
                         +
                       </button>
-
                     </div>
                   </ZoomControls>
 
@@ -1071,10 +1068,10 @@ export default function TablesPage(): JSX.Element {
                           height: "100%",
                           maxWidth: 1100,
                           display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
+                          justifyContent: "center",
+                          alignItems: "center",
                           transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
-                          cursor: 'grab',
+                          cursor: "grab",
                           transformOrigin: "center top",
                         }}
                       >
@@ -1093,7 +1090,7 @@ export default function TablesPage(): JSX.Element {
           </Panel>
         </RightPanel>
       </Container>
-    </Page >
+    </Page>
   );
 }
 
