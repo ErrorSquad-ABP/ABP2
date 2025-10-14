@@ -6,36 +6,94 @@ import PanoramaImg3 from "../assets/panorama3.png";
 import PanoramaImg4 from "../assets/panorama4.png";
 import UsinasImg1 from "../assets/usinashidreletricas1.png";
 import UsinasImg2 from "../assets/usinashidreletricas2.png";
+import logoCepel from "../assets/logoCepel.png";
+import logoCoppe from "../assets/logoCoppe.png";
+import logolie from "../assets/logoIie.png";
+import logoInpe from "../assets/logoInpe.png";
+import logoUfjf from "../assets/logoUfjf.png";
 // ================= Styled Components =================
 const PageContainer = styled.div`
-  flex: 1;
-  width: 1149px;
-  margin: 5px auto;
+  width: 100%;
+  min-height: 100vh;
   font-family: "Calibri", "Arial", "Helvetica", "Verdana", "sans-serif";
   font-size: 15px;
-  background-color: #f0f0f5;
-  padding: 1.5rem;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  padding: 0; /* aplicar padding apenas nos blocks */
+`;
+
+const HeaderWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding-bottom: 0; /* sem padding inferior, a separação será feita pela linha */
+`;
+
+const HeaderContainer = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 0 0.5rem 0; /* topo maior, bottom menor para aproximar da linha */
+  box-sizing: border-box;
+`;
+
+const HeaderText = styled.h1`
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+`;
+
+const HeaderSeparator = styled.div`
+  width: 100%; /* centralizada */
+  height: 3px; /* largura mais fina, visual moderno */
+  background-color: rgba(255, 255, 255, 0.7); /* branco translúcido, destaca sobre o gradiente */
+  margin: 0.5rem 0; /* separação entre headerText e menu */
+  border-radius: 2px; /* cantos levemente arredondados para ficar mais moderno */
+`;
+
+const Separator = styled.div`
+  width: 60%;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.5);
+  margin: 0.5rem 0 2rem 0; /* espaço inferior maior antes do corpo */
 `;
 
 const Menu = styled.div`
-  width: 100%;
-  height: 25px;
-  line-height: 25px;
-  font-size: 16px;
-  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  padding: 0.75rem 0;
 `;
 
 const MenuItem = styled.span<{ active?: boolean }>`
-  float: right;
-  height: 25px;
-  line-height: 25px;
-  padding: 0px 7px;
-  margin-right: 15px;
-  cursor: ${(props) => (props.active ? "default" : "pointer")};
-  color: ${(props) => (props.active ? "#333" : "#0081d8")};
-  border-bottom: 2px solid ${(props) => (props.active ? "#333" : "transparent")};
+  color: ${(props) => (props.active ? "#fff" : "#cce0ff")};
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+
   &:hover {
-    border-bottom-color: ${(props) => (props.active ? "#333" : "#0081d8")};
+    color: #fff;
+  }
+
+  &::after {
+    content: "";
+    display: block;
+    margin: 0 auto;
+    height: 3px;
+    width: ${(props) => (props.active ? "100%" : "0")};
+    background: #cce0ff;
+    transition: width 0.3s;
+  }
+
+  &:hover::after {
+    width: 100%;
   }
 `;
 
@@ -51,17 +109,31 @@ const Column = styled.div`
 `;
 
 const Block = styled.div`
-  background-color: #e3e8f0;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background-color: #fff;
+  margin: 20px; /* adiciona espaçamento em volta dos blocks, em vez de padding global */
+`;
+
+const LogosHeader = styled.div`
+  display: flex;
+  gap: 35px;
+  justify-content: center;
+  margin-top: 15px;
 `;
 
 const BlockTitle = styled.div`
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10px;
-  font-size: 18px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  padding: 1rem;
+  background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+  text-align: center;
 `;
 
 const BlockText = styled.div`
@@ -69,6 +141,7 @@ const BlockText = styled.div`
   text-align: justify;
   font-size: 15px;
   line-height: 1.5;
+  padding: 15px;
 `;
 
 const Image = styled.img`
@@ -98,27 +171,33 @@ const FurnasPage: React.FC = () => {
   return (
     <PageContainer>
       {/* MENU */}
-      <Menu>
-        {sections.map((sec) =>
-          sec.external ? (
-            <MenuItem key={sec.id}>
-              <a
-                href={sec.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
+      <HeaderWrapper>
+        <HeaderSeparator />
+        <HeaderContainer>
+          <HeaderText>Sistema Integrado de Monitoramento Ambiental</HeaderText>
+        </HeaderContainer>
+        <Separator /> {/* linha branca separadora */}
+        <Menu>
+          {sections.map((sec) =>
+            sec.external ? (
+              <MenuItem key={sec.id}>
+                <a
+                  href={sec.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  {sec.label}
+                </a>
+              </MenuItem>
+            ) : (
+              <MenuItem key={sec.id} active={active === sec.id} onClick={() => setActive(sec.id)}>
                 {sec.label}
-              </a>
-            </MenuItem>
-          ) : (
-            <MenuItem key={sec.id} active={active === sec.id} onClick={() => setActive(sec.id)}>
-              {sec.label}
-            </MenuItem>
-          ),
-        )}
-      </Menu>
-
+              </MenuItem>
+            ),
+          )}
+        </Menu>
+      </HeaderWrapper>
       {/* CONTEÚDO DA SEÇÃO ATIVA */}
       {active === "home" && (
         <TwoColumnContainer>
@@ -142,6 +221,13 @@ const FurnasPage: React.FC = () => {
           </Column>
 
           <Column>
+            <LogosHeader>
+              <img src={logoCepel} style={{ width: "115px", height: "51px" }} />
+              <img src={logoCoppe} style={{ width: "98px", height: "50px" }} />
+              <img src={logoUfjf} style={{ width: "75px", height: "55px" }} />
+              <img src={logolie} style={{ width: "108px", height: "40px" }} />
+              <img src={logoInpe} style={{ width: "62px", height: "52px" }} />
+            </LogosHeader>
             <Block>
               <BlockTitle>Introdução</BlockTitle>
               <BlockText>
@@ -187,7 +273,6 @@ const FurnasPage: React.FC = () => {
           </Column>
         </TwoColumnContainer>
       )}
-
       {active === "panorama" && (
         <Block>
           <BlockTitle>Panorama</BlockTitle>
@@ -414,96 +499,112 @@ const FurnasPage: React.FC = () => {
           </BlockText>
         </Block>
       )}
-
       {active === "metodologia" && (
-        <Block>
-          <BlockTitle>Metodologia</BlockTitle>
-          <BlockText>
-            O projeto será composto por quatro subprojetos a serem desenvolvidos em paralelo:
-          </BlockText>
+        <>
+          <TwoColumnContainer>
+            <Column>
+              <Block>
+                <BlockTitle>Metodologia</BlockTitle>
+                <BlockText>
+                  O projeto será composto por quatro subprojetos a serem desenvolvidos em paralelo:
+                </BlockText>
+              </Block>
 
-          {/* Subprojeto 1 */}
-          <Block>
-            <BlockTitle>
-              1. Aquisição de dados micrometeorológicos e limnológicos em tempo real
-            </BlockTitle>
-            <BlockText>
-              O Sistema Integrado de Monitoração Ambiental - SIMA - é um conjunto de hardware e
-              software desenhado para a coleta de dados e a monitoração em tempo real de sistemas
-              hidrológicos. Para a coleta dos dados, o SIMA faz uso de um sistema autônomo fundeado,
-              constituído de um toróide, onde são instalados sensores, eletrônica de armazenamento,
-              bateria, painel solar e antena de transmissão. Os dados coletados em intervalo de
-              tempo pré-programado são transmitidos via satélite, em tempo quase real, para um
-              usuário que pode estar situado até 2500 km distante do ponto de coleta. A associação
-              destas componentes fornece uma poderosa ferramenta que pode ser empregada no
-              gerenciamento e controle ambiental de recursos hídricos. Esse sistema foi desenvolvido
-              a partir de uma parceria entre a Universidade do Vale do Paraíba e o INPE. A partir de
-              1995, o projeto foi transferido para a Neuron Engenharia Ltda. Através de uma parceria
-              com a Diretoria de Hidrografia e Navegação (DHN) a Neuron construiu um protótipo do
-              SIMA, que ficou fundeado em águas do litoral do Rio de Janeiro durante um ano e os
-              dados coletados foram disponibilizados pelo Programa Nacional de Bóia. Os dados
-              coletados neste período foram comparados com dados in situ, o que confirmou o bom
-              desempenho do sistema.
-            </BlockText>
-
-            <BlockText>
-              <strong>Variáveis monitoradas:</strong>
-              <ul style={{ paddingLeft: "20px" }}>
-                <li>
-                  <strong>Água:</strong> temperatura, pH, turbidez, oxigênio e CO₂ dissolvidos,
-                  condutividade, nitrato, amônia, profundidade relativa.
-                </li>
-                <li>
-                  <strong>Atmosfera:</strong> temperatura do ar, pressão atmosférica, radiação
-                  solar, direção e intensidade do vento, corrente e profundidade relativa.
-                </li>
-              </ul>
-            </BlockText>
-          </Block>
+              <Block>
+                <BlockTitle>Variáveis monitoradas:</BlockTitle>
+                <BlockText>
+                  <ul style={{ paddingLeft: "20px" }}>
+                    <li>
+                      <strong>Água:</strong> temperatura, pH, turbidez, oxigênio e CO₂ dissolvidos,
+                      condutividade, nitrato, amônia, profundidade relativa.
+                    </li>
+                    <li>
+                      <strong>Atmosfera:</strong> temperatura do ar, pressão atmosférica, radiação
+                      solar, direção e intensidade do vento, corrente e profundidade relativa.
+                    </li>
+                  </ul>
+                </BlockText>
+              </Block>
+            </Column>
+            <Column>
+              {/* Subprojeto 1 */}
+              <Block>
+                <BlockTitle>
+                  1. Aquisição de dados micrometeorológicos e limnológicos em tempo real
+                </BlockTitle>
+                <BlockText>
+                  O Sistema Integrado de Monitoração Ambiental - SIMA - é um conjunto de hardware e
+                  software desenhado para a coleta de dados e a monitoração em tempo real de
+                  sistemas hidrológicos. Para a coleta dos dados, o SIMA faz uso de um sistema
+                  autônomo fundeado, constituído de um toróide, onde são instalados sensores,
+                  eletrônica de armazenamento, bateria, painel solar e antena de transmissão. Os
+                  dados coletados em intervalo de tempo pré-programado são transmitidos via
+                  satélite, em tempo quase real, para um usuário que pode estar situado até 2500 km
+                  distante do ponto de coleta. A associação destas componentes fornece uma poderosa
+                  ferramenta que pode ser empregada no gerenciamento e controle ambiental de
+                  recursos hídricos. Esse sistema foi desenvolvido a partir de uma parceria entre a
+                  Universidade do Vale do Paraíba e o INPE. A partir de 1995, o projeto foi
+                  transferido para a Neuron Engenharia Ltda. Através de uma parceria com a Diretoria
+                  de Hidrografia e Navegação (DHN) a Neuron construiu um protótipo do SIMA, que
+                  ficou fundeado em águas do litoral do Rio de Janeiro durante um ano e os dados
+                  coletados foram disponibilizados pelo Programa Nacional de Bóia. Os dados
+                  coletados neste período foram comparados com dados in situ, o que confirmou o bom
+                  desempenho do sistema.
+                </BlockText>
+              </Block>
+            </Column>
+          </TwoColumnContainer>
 
           {/* Subprojeto 2 */}
-          <Block>
-            <BlockTitle>
-              2. Estimativa de Fluxos de CO₂, CH₄ e N₂O na interface água-atmosfera e coluna d’água
-            </BlockTitle>
-            <BlockText>
-              O monitoramento envolve coletas de amostras de gases emitidos na interface
-              água-atmosfera, tanto sob a forma de bolhas como por difusão, utilizando funis de
-              captação e câmaras de difusão.
-            </BlockText>
-            <BlockText>
-              <strong>Regiões estudadas:</strong>
-              <ul style={{ paddingLeft: "20px" }}>
-                <li>Próximo à barragem (áreas profundas e desmatadas previamente).</li>
-                <li>Regiões abrigadas com vegetação não desmatada.</li>
-                <li>Áreas de tributários com maior carga orgânica e presença de macrófitas.</li>
-                <li>Região a jusante (água turbinada).</li>
-              </ul>
-            </BlockText>
-          </Block>
+          <TwoColumnContainer>
+            <Column>
+              <Block>
+                <BlockTitle>
+                  2. Estimativa de Fluxos de CO₂, CH₄ e N₂O na interface água-atmosfera e coluna
+                  d’água
+                </BlockTitle>
+                <BlockText>
+                  O monitoramento envolve coletas de amostras de gases emitidos na interface
+                  água-atmosfera, tanto sob a forma de bolhas como por difusão, utilizando funis de
+                  captação e câmaras de difusão.
+                </BlockText>
+                <BlockText>
+                  <strong>Regiões estudadas:</strong>
+                  <ul style={{ paddingLeft: "20px" }}>
+                    <li>Próximo à barragem (áreas profundas e desmatadas previamente).</li>
+                    <li>Regiões abrigadas com vegetação não desmatada.</li>
+                    <li>Áreas de tributários com maior carga orgânica e presença de macrófitas.</li>
+                    <li>Região a jusante (água turbinada).</li>
+                  </ul>
+                </BlockText>
+              </Block>
+            </Column>
 
-          {/* Subprojeto 3 */}
-          <Block>
-            <BlockTitle>3. Ciclo do Carbono na coluna d’água</BlockTitle>
-            <BlockText>
-              O estudo visa compreender os processos de respiração, fotossíntese e produção
-              bacteriana que regulam os fluxos de carbono em ecossistemas aquáticos, diferenciando
-              sistemas autotróficos (produção &gt; respiração) de heterotróficos (respiração &gt;
-              produção).
-            </BlockText>
-            <BlockText>
-              <strong>Dados obtidos:</strong>
-              <ul style={{ paddingLeft: "20px" }}>
-                <li>Estoques biológicos de carbono (fitoplâncton e bactérias).</li>
-                <li>Produção primária, produção bacteriana e respiração planctônica.</li>
-                <li>
-                  Parâmetros ambientais (DOC, DIC, POC, nutrientes, clorofila-a, pH, oxigênio,
-                  turbidez, temperatura).
-                </li>
-                <li>Entrada de material alóctone a partir dos tributários.</li>
-              </ul>
-            </BlockText>
-          </Block>
+            {/* Subprojeto 3 */}
+            <Column>
+              <Block>
+                <BlockTitle>3. Ciclo do Carbono na coluna d’água</BlockTitle>
+                <BlockText>
+                  O estudo visa compreender os processos de respiração, fotossíntese e produção
+                  bacteriana que regulam os fluxos de carbono em ecossistemas aquáticos,
+                  diferenciando sistemas autotróficos (produção &gt; respiração) de heterotróficos
+                  (respiração &gt; produção).
+                </BlockText>
+                <BlockText>
+                  <strong>Dados obtidos:</strong>
+                  <ul style={{ paddingLeft: "20px" }}>
+                    <li>Estoques biológicos de carbono (fitoplâncton e bactérias).</li>
+                    <li>Produção primária, produção bacteriana e respiração planctônica.</li>
+                    <li>
+                      Parâmetros ambientais (DOC, DIC, POC, nutrientes, clorofila-a, pH, oxigênio,
+                      turbidez, temperatura).
+                    </li>
+                    <li>Entrada de material alóctone a partir dos tributários.</li>
+                  </ul>
+                </BlockText>
+              </Block>
+            </Column>
+          </TwoColumnContainer>
 
           {/* Subprojeto 4 */}
           <Block>
@@ -525,16 +626,15 @@ const FurnasPage: React.FC = () => {
               </ul>
             </BlockText>
           </Block>
-        </Block>
+        </>
       )}
-
+      ;
       {active === "banco-dados" && (
         <Block>
           <BlockTitle>Banco de Dados</BlockTitle>
           <BlockText>Conteúdo da seção Banco de Dados...</BlockText>
         </Block>
       )}
-
       {active === "resultados" && (
         <TwoColumnContainer>
           <Column>
@@ -590,7 +690,6 @@ const FurnasPage: React.FC = () => {
           </Column>
         </TwoColumnContainer>
       )}
-
       {active === "participantes" && (
         <TwoColumnContainer>
           <Column>
@@ -644,7 +743,6 @@ const FurnasPage: React.FC = () => {
           </Column>
         </TwoColumnContainer>
       )}
-
       {active === "usinas" && (
         <Block>
           <BlockTitle>Usinas em Operação</BlockTitle>
@@ -655,7 +753,6 @@ const FurnasPage: React.FC = () => {
           <Image src={UsinasImg2} alt="Mapa Usinas Hidrelétricas 2" style={{ marginTop: "1rem" }} />
         </Block>
       )}
-
       {active === "pesquisas" && (
         <>
           <Block>
@@ -1657,7 +1754,6 @@ const FurnasPage: React.FC = () => {
           </Block>
         </>
       )}
-
       {active === "publicacoes" && (
         <PageContainer>
           <Block>
