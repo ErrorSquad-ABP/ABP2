@@ -610,13 +610,13 @@ export default function TablesPage(): JSX.Element {
   }, [chartData]);
 
   const handleMouseMove = (e) => {
-          if (e.buttons === 1) {
-              setPan((prevPan) => ({
-                  x: prevPan.x + e.movementX,
-                  y: prevPan.y + e.movementY,
-              }));
-          }
-      };
+    if (e.buttons === 1) {
+      setPan((prevPan) => ({
+        x: prevPan.x + e.movementX,
+        y: prevPan.y + e.movementY,
+      }));
+    }
+  };
 
   /*
   function normalizePoints(points: { lat: number; lon: number }[]) {
@@ -1041,15 +1041,23 @@ export default function TablesPage(): JSX.Element {
                       >
                         +
                       </button>
-                      
+                      <button
+                        aria-label="Center"
+                        onClick={() => {
+                          setPan({ x: 0, y: 0 }); 
+                          setZoom(1); 
+                        }}
+                      >
+                        +
+                      </button>
+
                     </div>
                   </ZoomControls>
 
                   {latLonPoints.length ? (
                     <div
-                    onMouseMove = {handleMouseMove}
+                      onMouseMove={handleMouseMove}
                       style={{
-                        padding: 12,
                         width: "100%",
                         height: "100%",
                         display: "flex",
@@ -1062,12 +1070,15 @@ export default function TablesPage(): JSX.Element {
                           width: "100%",
                           height: "100%",
                           maxWidth: 1100,
+                          display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
                           transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
                           cursor: 'grab',
                           transformOrigin: "center top",
                         }}
                       >
-                        <MapBrazil/>
+                        <MapBrazil />
                       </div>
                     </div>
                   ) : (
@@ -1082,7 +1093,7 @@ export default function TablesPage(): JSX.Element {
           </Panel>
         </RightPanel>
       </Container>
-    </Page>
+    </Page >
   );
 }
 
