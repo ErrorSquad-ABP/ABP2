@@ -1029,6 +1029,7 @@ export default function TablesPage(): JSX.Element {
                       >
                         +
                       </button>
+                      
                     </div>
                   </ZoomControls>
 
@@ -1043,26 +1044,16 @@ export default function TablesPage(): JSX.Element {
                         alignItems: "center",
                       }}
                     >
-                      {/* make map larger by using a bigger height and applying zoom as multiplier */}
                       <div
                         style={{
                           width: "100%",
+                          height: "100%",
                           maxWidth: 1100,
                           transform: `scale(${zoom})`,
                           transformOrigin: "center top",
                         }}
                       >
-                        <MapBrazil
-                          points={latLonPoints.map((p) => ({
-                            id: p.id,
-                            lat: p.lat,
-                            lon: p.lon,
-                            label: `Ponto ${p.id}`,
-                          }))}
-                          height={760}
-                          showPolygons={true}
-                          showStateNames={showStateNames}
-                        />
+                        <MapBrazil/>
                       </div>
                     </div>
                   ) : (
