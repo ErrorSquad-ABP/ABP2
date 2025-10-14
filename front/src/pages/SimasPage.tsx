@@ -95,13 +95,18 @@ const TwoColumnContainer = styled.div`
   display: flex;
   gap: 20px;
   flex-wrap: wrap; /* permite que as colunas se ajustem em telas menores */
+  justify-content: center;
 `;
 
 const Column = styled.div`
-  flex: 1 1 300px; /* cada coluna ocupa espaço igual, com largura mínima */
+  flex: 1 1 400px; /* largura mínima de 400px, flexível se houver mais espaço */
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 20px; /* espaço entre blocos dentro da coluna */
+
+  @media (max-width: 900px) {
+    flex: 1 1 100%; /* colunas ocupam toda a largura em telas menores */
+  }
 `;
 
 const Block = styled.div`
@@ -164,16 +169,34 @@ export const BlockText = styled.p`
   }
 `;
 
-const Footer = styled.div`
-  width: 100%;
-  clear: both;
-  height: 30px;
-  line-height: 30px;
-  border-top: 1px solid #777;
-  margin-top: 25px;
-  text-align: right;
-  font-weight: bold;
-  color: #222;
+const Footer = styled.footer`
+  margin-top: auto;
+  background: ${({ theme }) => theme.colors.primaryDark};
+  color: #e6f0ff;
+  padding: 18px 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  box-shadow: 0 -6px 18px rgba(7, 42, 89, 0.06);
+`;
+
+const FooterInner = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+
+  a {
+    color: rgba(230, 240, 255, 0.95);
+    text-decoration: none;
+  }
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+    gap: 8px;
+  }
 `;
 
 const ImageRow = styled.div`
@@ -1352,7 +1375,12 @@ const App: React.FC = () => {
 
       {/* Footer */}
       <Footer>
-        © <span id="ano"></span>&nbsp;Hidrosfera INPE
+        <FooterInner>
+          <div>© 2025 INPE – Instituto Nacional de Pesquisas Espaciais.</div>
+          <div>
+            <a href="#">Contato</a> | <a href="#">Política de Privacidade</a>
+          </div>
+        </FooterInner>
       </Footer>
     </PageContainer>
   );
