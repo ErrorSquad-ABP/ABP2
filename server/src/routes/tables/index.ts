@@ -2,7 +2,9 @@ import express from "express";
 import balcar from "./balcar.routes";
 import furnas from "./furnas.routes";
 import sima from "./sima.routes";
-{/*import { getTabela } from "../../controllers/data/getTabelaFromBalcar.controller";*/}
+{
+  /*import { getTabela } from "../../controllers/data/getTabelaFromBalcar.controller";*/
+}
 
 const router = express.Router();
 
