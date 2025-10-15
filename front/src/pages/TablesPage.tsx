@@ -496,8 +496,6 @@ export default function TablesPage(): JSX.Element {
         const results = await Promise.all(fetches);
         const combined = results.flat();
 
-        console.log(combined)
-
         // remover duplicadas por datainicio + datafim + idcampanha
         const uniqueDates = combined.reduce((acc: Campanha[], curr) => {
           const exists = acc.some(
@@ -506,11 +504,9 @@ export default function TablesPage(): JSX.Element {
               String(d.datafim).slice(0, 10) === String(curr.datafim).slice(0, 10) ||
               d.idcampanha === curr.idcampanha,
           );
-          console.log(exists)
           if (!exists) acc.push(curr);
           return acc;
         }, []);
-        console.log(uniqueDates)
 
         setCampanhas(uniqueDates);
       } catch (err) {
