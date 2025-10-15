@@ -496,17 +496,21 @@ export default function TablesPage(): JSX.Element {
         const results = await Promise.all(fetches);
         const combined = results.flat();
 
+        console.log(combined)
+
         // remover duplicadas por datainicio + datafim + idcampanha
         const uniqueDates = combined.reduce((acc: Campanha[], curr) => {
           const exists = acc.some(
             (d) =>
-              d.datainicio.slice(0, 10) === curr.datainicio.slice(0, 10) &&
-              d.datafim.slice(0, 10) === curr.datafim.slice(0, 10) &&
+              String(d.datainicio).slice(0, 10) === String(curr.datainicio).slice(0, 10) ||
+              String(d.datafim).slice(0, 10) === String(curr.datafim).slice(0, 10) ||
               d.idcampanha === curr.idcampanha,
           );
+          console.log(exists)
           if (!exists) acc.push(curr);
           return acc;
         }, []);
+        console.log(uniqueDates)
 
         setCampanhas(uniqueDates);
       } catch (err) {
@@ -516,6 +520,7 @@ export default function TablesPage(): JSX.Element {
 
     fetchCampanhas();
   }, [table, responsibleFromMetadata]);
+
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
@@ -903,7 +908,7 @@ export default function TablesPage(): JSX.Element {
                 <option value="">Selecione...</option>
                 {campanhas.map((c) => (
                   <option key={`ini-${c.idcampanha}`} value={c.datainicio.slice(0, 10)}>
-                    {new Date(c.datainicio).toLocaleDateString("pt-BR")}
+                    {c.datainicio.slice(0, 10).split('-').reverse().join('/')}
                   </option>
                 ))}
               </select>
@@ -924,7 +929,7 @@ export default function TablesPage(): JSX.Element {
                 <option value="">Selecione...</option>
                 {campanhas.map((c) => (
                   <option key={`fim-${c.idcampanha}`} value={c.datafim.slice(0, 10)}>
-                    {new Date(c.datafim).toLocaleDateString("pt-BR")}
+                    {c.datainicio.slice(0, 10).split('-').reverse().join('/')}
                   </option>
                 ))}
               </select>
