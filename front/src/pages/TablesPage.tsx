@@ -18,8 +18,12 @@ const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:30
 
 interface Campanha {
   idcampanha: number;
+  idreservatorio: number;
+  idinstituicao: number;
+  nrocampanha: number;
   datainicio: string;
   datafim: string;
+  responsible: string; // FURNAS ou BALCAR
 }
 
 type ColumnMeta = {
@@ -467,16 +471,38 @@ export default function TablesPage(): JSX.Element {
 
   useEffect(() => {
     const fetchCampanhas = async () => {
-      try {
-        const res = await axios.get("http://localhost:3001/furnas/campanha/all");
-        const data = res.data.data as Campanha[];
+      if (!table || !responsibleFromMetadata) return;
 
-        // remove duplicadas
-        const uniqueDates = data.reduce((acc: Campanha[], curr) => {
+      const responsible = responsibleFromMetadata[table];
+      const fetches: Promise<Campanha[]>[] = [];
+
+      if (responsible.includes("Furnas")) {
+        fetches.push(
+          axios
+            .get("http://localhost:3001/furnas/campanha/all")
+            .then((res) => res.data.data as Campanha[]),
+        );
+      }
+
+      if (responsible.includes("Balcar")) {
+        fetches.push(
+          axios
+            .get("http://localhost:3001/balcar/campanha") // sem /all
+            .then((res) => res.data.data as Campanha[]),
+        );
+      }
+
+      try {
+        const results = await Promise.all(fetches);
+        const combined = results.flat();
+
+        // remover duplicadas por datainicio + datafim + idcampanha
+        const uniqueDates = combined.reduce((acc: Campanha[], curr) => {
           const exists = acc.some(
             (d) =>
               d.datainicio.slice(0, 10) === curr.datainicio.slice(0, 10) &&
-              d.datafim.slice(0, 10) === curr.datafim.slice(0, 10),
+              d.datafim.slice(0, 10) === curr.datafim.slice(0, 10) &&
+              d.idcampanha === curr.idcampanha,
           );
           if (!exists) acc.push(curr);
           return acc;
@@ -489,7 +515,7 @@ export default function TablesPage(): JSX.Element {
     };
 
     fetchCampanhas();
-  }, []);
+  }, [table, responsibleFromMetadata]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
