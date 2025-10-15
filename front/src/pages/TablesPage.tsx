@@ -479,7 +479,7 @@ export default function TablesPage(): JSX.Element {
       if (responsible.includes("Furnas")) {
         fetches.push(
           axios
-            .get("http://localhost:3001/furnas/campanha/all")
+            .get("http://localhost:3001/tables/furnas/tbcampanha?all=true")
             .then((res) => res.data.data as Campanha[]),
         );
       }
