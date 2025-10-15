@@ -447,20 +447,22 @@ const FurnasPage: React.FC = () => {
             <p>Serão elaborados os seguintes documentos:</p>
           </BlockText>
           <BlockText>
-            <li>
-              relatórios de andamento, apresentando os resultados obtidos nas duas primeiras viagens
-              de campo de cada grupo de reservatórios, a serem apresentados nos meses de julho e
-              outubro;
-            </li>
-            <li>
-              {" "}
-              relatórios anuais concluindo sobre as emissões e os fatores predominantes do ciclo de
-              carbono de cada reservatório; a serem apresentados no mês de março de cada ano;
-            </li>
-            <li>
-              relatório síntese apresentando as conclusões gerais do projeto: o balanço do carbono
-              nos reservatórios de FURNAS Centrais Elétricas S.A,
-            </li>
+            <ul>
+              <li>
+                relatórios de andamento, apresentando os resultados obtidos nas duas primeiras
+                viagens de campo de cada grupo de reservatórios, a serem apresentados nos meses de
+                julho e outubro;
+              </li>
+              <li>
+                {" "}
+                relatórios anuais concluindo sobre as emissões e os fatores predominantes do ciclo
+                de carbono de cada reservatório; a serem apresentados no mês de março de cada ano;
+              </li>
+              <li>
+                relatório síntese apresentando as conclusões gerais do projeto: o balanço do carbono
+                nos reservatórios de FURNAS Centrais Elétricas S.A,
+              </li>
+            </ul>
           </BlockText>
           <BlockText>
             <p>
