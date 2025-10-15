@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getTabela } from "../../controllers/data/getTabelaFromBalcar.controller";
+import { getTabela } from "../../controllers/data/getTabelaFromFurnas.controller";
 import { health } from "../../controllers/data/health.controller";
 
 const router = Router();

@@ -1,4 +1,4 @@
-import { balcarPool } from "../../configs/db";
+import { simaPool } from "../../configs/db";
 import { Request, Response } from "express";
 import { logger } from "../../configs/logger";
 
@@ -18,10 +18,10 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
 
     const query = `SELECT ${columns} FROM ${tabela} LIMIT ${limit} OFFSET ${offset}`;
 
-    const result = await balcarPool.query(query);
+    const result = await simaPool.query(query);
     const resultData = result.rows;
 
-    const count = await balcarPool.query(`SELECT COUNT(*) FROM ${tabela}`);
+    const count = await simaPool.query(`SELECT COUNT(*) FROM ${tabela}`);
 
     res.status(200).json({
       colunas: queryColumns,

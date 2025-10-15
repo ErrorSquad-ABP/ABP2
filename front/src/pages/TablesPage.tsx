@@ -29,8 +29,12 @@ const INSTITUTION_FILL_COLORS: string[] = [
 
 interface Campanha {
   idcampanha: number;
+  idreservatorio: number;
+  idinstituicao: number;
+  nrocampanha: number;
   datainicio: string;
   datafim: string;
+  responsible: string; // FURNAS ou BALCAR
 }
 
 type ColumnMeta = {
@@ -415,6 +419,7 @@ export default function TablesPage(): JSX.Element {
   // zoom & labels
   const [zoom, setZoom] = useState<number>(1);
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     async function load() {
@@ -463,16 +468,38 @@ export default function TablesPage(): JSX.Element {
 
   useEffect(() => {
     const fetchCampanhas = async () => {
-      try {
-        const res = await axios.get("http://localhost:3001/furnas/campanha/all");
-        const data = res.data.data as Campanha[];
+      if (!table || !responsibleFromMetadata) return;
 
-        // remove duplicadas
-        const uniqueDates = data.reduce((acc: Campanha[], curr) => {
+      const responsible = responsibleFromMetadata[table];
+      const fetches: Promise<Campanha[]>[] = [];
+
+      if (responsible.includes("Furnas")) {
+        fetches.push(
+          axios
+            .get("http://localhost:3001/furnas/campanha/all")
+            .then((res) => res.data.data as Campanha[]),
+        );
+      }
+
+      if (responsible.includes("Balcar")) {
+        fetches.push(
+          axios
+            .get("http://localhost:3001/balcar/campanha") // sem /all
+            .then((res) => res.data.data as Campanha[]),
+        );
+      }
+
+      try {
+        const results = await Promise.all(fetches);
+        const combined = results.flat();
+
+        // remover duplicadas por datainicio + datafim + idcampanha
+        const uniqueDates = combined.reduce((acc: Campanha[], curr) => {
           const exists = acc.some(
             (d) =>
               d.datainicio.slice(0, 10) === curr.datainicio.slice(0, 10) &&
-              d.datafim.slice(0, 10) === curr.datafim.slice(0, 10),
+              d.datafim.slice(0, 10) === curr.datafim.slice(0, 10) &&
+              d.idcampanha === curr.idcampanha,
           );
           if (!exists) acc.push(curr);
           return acc;
@@ -485,7 +512,7 @@ export default function TablesPage(): JSX.Element {
     };
 
     fetchCampanhas();
-  }, []);
+  }, [table, responsibleFromMetadata]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
@@ -629,6 +656,34 @@ export default function TablesPage(): JSX.Element {
       .filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number")
       .map((r) => ({ lat: r.latitude, lon: r.longitude, id: r.id }));
   }, [chartData]);
+
+  const handleMouseMove = (e) => {
+    if (e.buttons === 1) {
+      setPan((prevPan) => ({
+        x: prevPan.x + e.movementX,
+        y: prevPan.y + e.movementY,
+      }));
+    }
+  };
+
+  /*
+  function normalizePoints(points: { lat: number; lon: number }[]) {
+    if (!points.length) return [];
+    const lats = points.map((p) => p.lat);
+    const lons = points.map((p) => p.lon);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons);
+    const maxLon = Math.max(...lons);
+    const latSpan = maxLat - minLat || 1;
+    const lonSpan = maxLon - minLon || 1;
+    return points.map((p) => ({
+      left: ((p.lon - minLon) / lonSpan) * 100,
+      top: 100 - ((p.lat - minLat) / latSpan) * 100,
+    }));
+  } */
+
+  /* const normalizedMarkers = useMemo(() => normalizePoints(latLonPoints), [latLonPoints]); */
 
   /* Multi-series SVG chart: plots all selected numeric columns on the same coordinate system
      and shows colored points per institution with tooltip on hover.
@@ -1118,13 +1173,22 @@ export default function TablesPage(): JSX.Element {
                       >
                         +
                       </button>
+                      <button
+                        aria-label="Center"
+                        onClick={() => {
+                          setPan({ x: 0, y: 0 });
+                          setZoom(1);
+                        }}
+                      >
+                        +
+                      </button>
                     </div>
                   </ZoomControls>
 
                   {latLonPoints.length ? (
                     <div
+                      onMouseMove={handleMouseMove}
                       style={{
-                        padding: 12,
                         width: "100%",
                         height: "100%",
                         display: "flex",
@@ -1132,26 +1196,20 @@ export default function TablesPage(): JSX.Element {
                         alignItems: "center",
                       }}
                     >
-                      {/* make map larger by using a bigger height and applying zoom as multiplier */}
                       <div
                         style={{
                           width: "100%",
+                          height: "100%",
                           maxWidth: 1100,
-                          transform: `scale(${zoom})`,
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+                          cursor: "grab",
                           transformOrigin: "center top",
                         }}
                       >
-                        <MapBrazil
-                          points={latLonPoints.map((p) => ({
-                            id: p.id,
-                            lat: p.lat,
-                            lon: p.lon,
-                            label: `Ponto ${p.id}`,
-                          }))}
-                          height={760}
-                          showPolygons={true}
-                          showStateNames={showStateNames}
-                        />
+                        <MapBrazil />
                       </div>
                     </div>
                   ) : (
