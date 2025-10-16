@@ -408,6 +408,8 @@ export default function TablesPage(): JSX.Element {
   const chartMainRef = useRef<HTMLDivElement | null>(null);
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
+  const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
+
 
   // tooltip state
   const [tooltip, setTooltip] = useState<{
@@ -496,6 +498,8 @@ export default function TablesPage(): JSX.Element {
         const results = await Promise.all(fetches);
         const combined = results.flat();
 
+        console.log("Flat; ", combined)
+
         // remover duplicadas por datainicio + datafim + idcampanha
         const uniqueDates = combined.reduce((acc: Campanha[], curr) => {
           const exists = acc.some(
@@ -508,6 +512,7 @@ export default function TablesPage(): JSX.Element {
           return acc;
         }, []);
 
+        console.log("Sem diplicatas; ", uniqueDates)
         setCampanhas(uniqueDates);
       } catch (err) {
         console.error("Erro ao carregar campanhas", err);
@@ -516,6 +521,24 @@ export default function TablesPage(): JSX.Element {
 
     fetchCampanhas();
   }, [table, responsibleFromMetadata]);
+
+  useEffect(()=>{ //Ordenar campanhas
+    if(campanhas){
+      setOrderedCampanhas(campanhas.sort((a:any, b:any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime()))
+    } else {
+      return
+    }
+  }, [campanhas])
+
+    function testDate(c)
+    {
+      if(!orderedCampanhas){
+        return
+      } else {
+      const newDate = c.datainicio.slice(0, 10).split('-').reverse().join('/')
+      return newDate
+      }
+    }
 
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -904,7 +927,7 @@ export default function TablesPage(): JSX.Element {
                 <option value="">Selecione...</option>
                 {campanhas.map((c) => (
                   <option key={`ini-${c.idcampanha}`} value={c.datainicio.slice(0, 10)}>
-                    {c.datainicio.slice(0, 10).split('-').reverse().join('/')}
+                    {testDate(c)}
                   </option>
                 ))}
               </select>
