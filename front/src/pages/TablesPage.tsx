@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // front/src/pages/TablesPage.tsx
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -5,7 +6,6 @@ import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
 
 import SimaTable from "../components/SimaTable";
-// import { getSima } from "../api/simaApi"; // removido: não era usado
 import axios from "axios";
 
 /**
@@ -388,7 +388,6 @@ export default function TablesPage(): JSX.Element {
   const [responsible, setResponsible] = useState<string>();
   const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
 
   const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
@@ -397,7 +396,6 @@ export default function TablesPage(): JSX.Element {
   > | null>(null);
 
   const [view, setView] = useState<"chart" | "map">("chart");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [chartData, setChartData] = useState<any[] | null>(null);
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
@@ -415,7 +413,6 @@ export default function TablesPage(): JSX.Element {
   }>({ visible: false, left: 0, top: 0 });
 
   // tabela preview state (dados da tabela e controle de exibição)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [showTable, setShowTable] = useState<boolean>(false);
@@ -428,19 +425,16 @@ export default function TablesPage(): JSX.Element {
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
   const [pan, setPan] = useState({ x: 0, y: 0 });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function handleGenerateTables(): Promise<void> {
-    setShowTable(false); // fecha a tabela se estiver aberta
+    setShowTable(false);
     setLoading(true);
     try {
-      // ajusta URL conforme seu backend — aqui usei um endpoint genérico /sima/all
       const res = await axios.get(`${API_BASE}/sima/all`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = res.data;
       setData(payload?.data ?? payload ?? []);
       setShowTable(true);
-      setChartData(null); // limpa os dados do gráfico
-      setView("chart"); // mantém o painel em gráfico (ou troque para 'map' se preferir)
+      setChartData(null);
+      setView("chart");
     } catch (err) {
       console.error("Erro ao carregar dados da SIMA:", err);
     } finally {
@@ -457,7 +451,6 @@ export default function TablesPage(): JSX.Element {
           const m = await metaRes.json();
           const data = m.data;
           setMetadata(data);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const tfm = data.map((item: any) => item.name);
           setTablesFromMetadata(tfm);
         }
@@ -519,7 +512,7 @@ export default function TablesPage(): JSX.Element {
       ) {
         fetches.push(
           axios
-            .get("http://localhost:3001/balcar/campanha") // sem /all
+            .get("http://localhost:3001/balcar/campanha")
             .then((res) => res.data.data as Campanha[]),
         );
       }
@@ -528,7 +521,6 @@ export default function TablesPage(): JSX.Element {
         const results = await Promise.all(fetches);
         const combined = results.flat();
 
-        // remover duplicadas por datainicio + datafim + idcampanha
         const uniqueDates = combined.reduce((acc: Campanha[], curr) => {
           const exists = acc.some(
             (d) =>
@@ -549,30 +541,23 @@ export default function TablesPage(): JSX.Element {
     fetchCampanhas();
   }, [table, responsibleFromMetadata]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const clms: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const clms: Record<string, any> = {};
     meta.forEach((tb: any) => {
       clms[tb.name] = tb.colunas;
     });
     return clms;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getResponsibleFromMetadata(meta: any) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const resp: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resp: Record<string, any> = {};
     meta.forEach((tb: any) => {
-      resp[tb.name] = tb.responsible; // Chave dinâmica e valor
+      resp[tb.name] = tb.responsible;
     });
     return resp;
   }
 
   function toggleColumn(name: string) {
-    // ensure required ids stay selected? (você pediu travar colunas depois — implementar quando quiser)
     setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
   }
 
@@ -594,14 +579,12 @@ export default function TablesPage(): JSX.Element {
     }
   }
 
-  // try backend aggregate, fallback to mock
   async function handleGenerate() {
     if (!selectedColumns.length) {
       alert("Selecione ao menos uma coluna para gerar o gráfico.");
       return;
     }
 
-    // use month range as x-axis sampling
     const months = monthsBetweenDatesISO(startDate, endDate);
     try {
       const params = new URLSearchParams();
@@ -619,7 +602,6 @@ export default function TablesPage(): JSX.Element {
         if (Array.isArray(rows) && rows.length) {
           setChartData(rows);
         } else {
-          // fallback: produce one row per month (kept for resilience)
           setChartData(makeMockMeasurementsForMonths(months));
         }
       } else {
@@ -694,8 +676,6 @@ export default function TablesPage(): JSX.Element {
   }, [chartData]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    // allow panning when left mouse is pressed
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ev = e as any;
     if (ev.buttons === 1) {
       setPan((prevPan) => ({
@@ -705,15 +685,10 @@ export default function TablesPage(): JSX.Element {
     }
   };
 
-  /* Multi-series SVG chart: plots all selected numeric columns on the same coordinate system
-     and shows colored points per institution with tooltip on hover.
-     X axis now uses monthsBetweenDatesISO(start,end) so we always show every month label in YYYY/MM/DD. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
     if (!rows || !rows.length || !columns || !columns.length)
       return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
 
-    // derive months from rows if datamedida exists or fallback to monthsBetweenDatesISO
     const months = (() => {
       const found = rows.map((r) => {
         if (!r.datamedida) return "";
@@ -727,14 +702,13 @@ export default function TablesPage(): JSX.Element {
       return monthsBetweenDatesISO(startDate, endDate);
     })();
 
-    const height = 520; // bigger chart
+    const height = 520;
     const viewBoxWidth = Math.max(1000, months.length * 100);
     const count = months.length;
     const xFor = (i: number) => (i / (count - 1 || 1)) * (viewBoxWidth - 100) + 50;
 
-    // build rowsByMonth aligned to months (first matching row per month)
     const rowsByMonth = months.map((m, i) => {
-      const ymd = m.replace(/\//g, "-").slice(0, 7); // YYYY-MM
+      const ymd = m.replace(/\//g, "-").slice(0, 7);
       const found = rows.find((r) => {
         if (!r.datamedida) return false;
         const d = new Date(r.datamedida);
@@ -752,14 +726,12 @@ export default function TablesPage(): JSX.Element {
       }),
     );
 
-    // compute global min/max across series ignoring NaN
     const allNumbers = seriesValues.flat().filter((v) => !Number.isNaN(v));
     const max = allNumbers.length ? Math.max(...allNumbers) : 1;
     const min = allNumbers.length ? Math.min(...allNumbers) : 0;
     const range = max - min || 1;
     const yFor = (v: number) => ((max - v) / range) * (height - 80) + 40;
 
-    // institution -> color mapping (fill)
     const uniqueInsts = Array.from(new Set(rows.map((r) => r.instituicao || "—")));
     const instColorMap: Record<string, string> = {};
     uniqueInsts.forEach((inst, idx) => {
@@ -774,7 +746,6 @@ export default function TablesPage(): JSX.Element {
           height={height}
           preserveAspectRatio="xMidYMid meet"
         >
-          {/* grid lines */}
           {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
             <line
               key={i}
@@ -787,7 +758,6 @@ export default function TablesPage(): JSX.Element {
             />
           ))}
 
-          {/* series lines */}
           {seriesValues.map((vals, sIdx) => {
             const points = vals
               .map((v, i) => {
@@ -855,7 +825,6 @@ export default function TablesPage(): JSX.Element {
             );
           })}
 
-          {/* x axis labels: show every month label (YYYY/MM/DD) */}
           {months.map((m, i) => (
             <text
               key={`lbl-${i}`}
@@ -869,7 +838,6 @@ export default function TablesPage(): JSX.Element {
             </text>
           ))}
 
-          {/* left axis labels */}
           <text x="14" y={34} fontSize="13" fill="#5b6b7a">
             {max}
           </text>
@@ -878,7 +846,6 @@ export default function TablesPage(): JSX.Element {
           </text>
         </svg>
 
-        {/* tooltip rendered over SVG using absolute positioning - only while hovered */}
         {tooltip.visible && tooltip.instituicao && (
           <Tooltip left={tooltip.left} top={tooltip.top} color={tooltip.color || "#ccc"}>
             <div className="title">
@@ -978,23 +945,20 @@ export default function TablesPage(): JSX.Element {
 
           <ColumnsBox aria-label="Lista de colunas">
             {columns &&
-              columns.map(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (c: any, index: number) => (
-                  <ColumnItem key={c.nome || `column-${index}`}>
-                    <input
-                      type="checkbox"
-                      checked={selectedColumns.includes(c.nome)}
-                      onChange={() => toggleColumn(c.nome)}
-                      id={`col-${c.nome || index}`}
-                    />
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                      <span style={{ fontWeight: 700 }}>{c.label || c.nome}</span>
-                      <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
-                    </div>
-                  </ColumnItem>
-                ),
-              )}
+              columns.map((c: any, index: number) => (
+                <ColumnItem key={c.nome || `column-${index}`}>
+                  <input
+                    type="checkbox"
+                    checked={selectedColumns.includes(c.nome)}
+                    onChange={() => toggleColumn(c.nome)}
+                    id={`col-${c.nome || index}`}
+                  />
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontWeight: 700 }}>{c.label || c.nome}</span>
+                    <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
+                  </div>
+                </ColumnItem>
+              ))}
           </ColumnsBox>
         </LeftColumn>
 
@@ -1048,10 +1012,8 @@ export default function TablesPage(): JSX.Element {
                 {view === "chart" ? "Ver mapa" : "Ver gráfico"}
               </Button>
 
-              {/* botão que você pediu apenas para gerar visualização em tabela (só o botão agora) */}
               <Button onClick={() => setShowTableView((s) => !s)}>Visualizar Tabela ▾</Button>
 
-              {/* botão que carrega dados SIMA em tabela simples */}
               <Button onClick={handleGenerateTables} disabled={loading} style={{ marginLeft: 6 }}>
                 {loading ? "Carregando..." : "Gerar Tabelas"}
               </Button>
@@ -1078,7 +1040,6 @@ export default function TablesPage(): JSX.Element {
                   </div>
                 </div>
 
-                {/* If the user toggled Visualizar Tabela, show a simple preview skeleton here */}
                 {showTableView && (
                   <TablePreview>
                     <TableElement>
@@ -1092,7 +1053,6 @@ export default function TablesPage(): JSX.Element {
                         </tr>
                       </thead>
                       <tbody>
-                        {/* show up to 5 preview rows from chartData if available, otherwise show placeholders */}
                         {chartData && chartData.length
                           ? chartData.slice(0, 5).map((row, i) => (
                               <tr key={`row-${i}`}>
@@ -1101,8 +1061,7 @@ export default function TablesPage(): JSX.Element {
                                 ))}
                               </tr>
                             ))
-                          : // placeholders
-                            Array.from({ length: 3 }).map((_, r) => (
+                          : Array.from({ length: 3 }).map((_, r) => (
                               <tr key={`ph-${r}`}>
                                 {selectedColumns && selectedColumns.length ? (
                                   selectedColumns.map((col) => <td key={`ph-${r}-${col}`}>—</td>)
@@ -1120,14 +1079,12 @@ export default function TablesPage(): JSX.Element {
                   <ChartMain
                     ref={chartMainRef}
                     onMouseLeave={() => {
-                      // ensure tooltip hides when mouse leaves chart area
                       setTooltip({ visible: false, left: 0, top: 0 });
                     }}
                   >
                     {chartData && chartData.length && plottedColumns.length ? (
                       <div style={{ width: "100%" }}>
                         <MultiSeriesSVG rows={chartData} columns={plottedColumns} />
-                        {/* legend placed under SVG */}
                         <Legend aria-hidden>
                           {plottedColumns.map((col, i) => (
                             <LegendItem key={col}>
@@ -1200,7 +1157,6 @@ export default function TablesPage(): JSX.Element {
                 </div>
 
                 <MapPlaceholder>
-                  {/* Zoom controls and label toggle */}
                   <ZoomControls>
                     <label>
                       <input
@@ -1259,7 +1215,6 @@ export default function TablesPage(): JSX.Element {
                           transformOrigin: "center top",
                         }}
                       >
-                        {/* Use alias any para evitar erro de tipagem temporário */}
                         <MapBrazilAny
                           points={latLonPoints.map((p) => ({
                             id: p.id,
@@ -1293,12 +1248,10 @@ export default function TablesPage(): JSX.Element {
 /**
  * Produz um array de objetos mock, um por mês (usado apenas como fallback).
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function makeMockMeasurementsForMonths(months: string[]) {
   return months.map((m, i) => {
     const inst = ["INPE", "FURNAS", "BALCAR", "UFRJ", "USP"][i % 5];
     const reserv = `Represa ${String.fromCharCode(65 + (i % 6))}`;
-    // produza datamedida como primeiro dia do mês (YYYY-MM-DD)
     const datamedida = m.replace(/\//g, "-").slice(0, 10);
     return {
       id: i + 1,
