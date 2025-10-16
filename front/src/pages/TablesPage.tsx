@@ -404,7 +404,6 @@ export default function TablesPage(): JSX.Element {
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
-  const [loadingDates, setLoadingDates] = useState<Boolean>(true);
 
   // tooltip state
   const [tooltip, setTooltip] = useState<{
@@ -554,9 +553,8 @@ export default function TablesPage(): JSX.Element {
           (a: any, b: any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime(),
         ),
       );
-      setLoadingDates(false);
     } else {
-      setLoadingDates(true);
+      return;
     }
   }, [campanhas]);
 
