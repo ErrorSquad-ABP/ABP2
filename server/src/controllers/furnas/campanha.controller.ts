@@ -2,11 +2,8 @@ import { Request, Response } from "express";
 import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 
-
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   try {
-
-
     // consulta com paginação
     const result = await furnasPool.query(
       `
@@ -27,7 +24,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
       LEFT JOIN tbreservatorio AS c 
         ON a.idreservatorio = c.idreservatorio
       ORDER BY a.datainicio
-      `
+      `,
     );
 
     // consulta total de registros
