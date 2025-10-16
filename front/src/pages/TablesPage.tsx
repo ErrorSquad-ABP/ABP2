@@ -404,6 +404,7 @@ export default function TablesPage(): JSX.Element {
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
+  const [loadingDates, setLoadingDates] = useState<Boolean>(true);
 
 
   // tooltip state
@@ -549,18 +550,19 @@ export default function TablesPage(): JSX.Element {
   useEffect(()=>{ //Ordenar campanhas
     if(campanhas){
       setOrderedCampanhas(campanhas.sort((a:any, b:any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime()))
+      setLoadingDates(false)
     } else {
-      return
+      setLoadingDates(true)
     }
   }, [campanhas])
 
-  useEffect(()=>{ //Ordenar campanhas
-    if(campanhas){
-      setOrderedCampanhas(campanhas.sort((a:any, b:any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime()))
+  function testDates(c) {
+    if(!orderedCampanhas){
+      return 'Carregando...'
     } else {
-      return
+      return c.datainicio.slice(0, 10).split('-').reverse().join('/')
     }
-  }, [campanhas])
+  }
 
   function getColumnsFromMetadata(meta: any) {
     const clms: Record<string, any> = {};
@@ -911,7 +913,7 @@ export default function TablesPage(): JSX.Element {
                 <option value="">Selecione...</option>
                 {campanhas.map((c) => (
                   <option key={`ini-${c.idcampanha}`} value={c.datainicio.slice(0, 10)}>
-                    {testDate(c)}
+                    {testDates(c)}
                   </option>
                 ))}
               </select>
@@ -932,7 +934,7 @@ export default function TablesPage(): JSX.Element {
                 <option value="">Selecione...</option>
                 {campanhas.map((c) => (
                   <option key={`fim-${c.idcampanha}`} value={c.datafim.slice(0, 10)}>
-                    {c.datainicio.slice(0, 10).split('-').reverse().join('/')}
+                    {testDates(c)}
                   </option>
                 ))}
               </select>
