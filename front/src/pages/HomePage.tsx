@@ -311,7 +311,9 @@ const SimaCard = styled.article`
   gap: 12px;
   box-shadow: 0 20px 50px rgba(37, 99, 235, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 
   &:hover {
     transform: translateY(-8px) scale(1.01);
