@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // front/src/pages/TablesPage.tsx
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
+
+import SimaTable from "../components/SimaTable";
 import axios from "axios";
 
 /**
@@ -15,6 +18,17 @@ import axios from "axios";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
+
+// paleta de cores para séries (linhas) e preenchimento por instituição
+const SERIES_COLORS: string[] = ["#0b5394", "#2563EB", "#06B6D4", "#F59E0B", "#EF4444", "#10B981"];
+const INSTITUTION_FILL_COLORS: string[] = [
+  "#ffd6d6",
+  "#fff0d6",
+  "#d6ffe8",
+  "#dff4ff",
+  "#f0e6ff",
+  "#fff8d6",
+];
 
 interface Campanha {
   idcampanha: number;
@@ -58,45 +72,6 @@ function monthsBetweenDatesISO(startISO: string, endISO: string) {
   }
   return res;
 }
-
-/* ================= Mock / Defaults ================= */
-/* NOTE: datamedida removed from selectable columns as requested */
-const mockColumns: ColumnMeta[] = [
-  { name: "dic", label: "DIC (mg/L)", type: "number" },
-  { name: "ph", label: "pH", type: "number" },
-  { name: "profundidade", label: "Profundidade (m)", type: "number" },
-];
-
-//ARRUMAR MOCK / TIRAR O QUE USA
-/*
-const mockMetadata: any = 
-   [
-    {
-      id: "tbabioticocoluna",
-      name: "tbabioticocoluna",
-      description: "Medições na coluna d'água (profundidade, DIC, delta15N, etc.)",
-      colunas: [
-        {
-          nome: "nomedacoluna",
-          label: "Nome Formatado",
-          type: "tipodacoluna"
-        }
-      ]
-    },
-    {
-      id: "tbabioticosuperficie",
-      name: "tbabioticosuperficie",
-      description: "Medições na superfície",
-      colunas: []
-    }
-  ]
-;
-*/
-const MOCK_INSTITUTIONS = ["INPE", "FURNAS", "BALCAR", "UFRJ", "USP"];
-/*
- simple color palette for multiple series */
-const SERIES_COLORS = ["#0b5394", "#2563EB", "#06B6D4", "#F59E0B", "#EF4444", "#10B981"];
-const INSTITUTION_FILL_COLORS = ["#ffd6d6", "#fff0d6", "#d6ffe8", "#dff4ff", "#f0e6ff", "#fff8d6"];
 
 /* ================= Styled ================= */
 
@@ -374,6 +349,29 @@ const ZoomControls = styled.div`
   }
 `;
 
+/* small table preview skeleton */
+const TablePreview = styled.div`
+  margin-top: 12px;
+  border-radius: 8px;
+  overflow: auto;
+  border: 1px solid #e6eefb;
+  background: #fff;
+`;
+
+const TableElement = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  td,
+  th {
+    padding: 8px;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: left;
+  }
+  thead th {
+    background: #f8fafc;
+    font-weight: 700;
+  }
+`;
 /* ================= Component ================= */
 
 export default function TablesPage(): JSX.Element {
@@ -385,24 +383,19 @@ export default function TablesPage(): JSX.Element {
   );
   const [endDate, setEndDate] = useState<string>(() => isoDate(new Date()));
   const [table, setTable] = useState<string>("");
-  const [columns, setColumns] = useState<ColumnMeta[]>(mockColumns);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>(() =>
-    mockColumns.slice(0, 3).map((c) => c.name),
-  );
+  const [columns, setColumns] = useState<ColumnMeta[]>([]);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [responsible, setResponsible] = useState<string>();
   const [metadata, setMetadata] = useState<TableMetadata | null>();
-  const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>([]);
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
 
   const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
     string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   > | null>(null);
 
   const [view, setView] = useState<"chart" | "map">("chart");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [chartData, setChartData] = useState<any[] | null>(null);
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
@@ -421,10 +414,35 @@ export default function TablesPage(): JSX.Element {
     color?: string;
   }>({ visible: false, left: 0, top: 0 });
 
+  // tabela preview state (dados da tabela e controle de exibição)
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [showTable, setShowTable] = useState<boolean>(false);
+
+  // novo: controle de exibição do preview de tabela (botão Visualizar Tabela)
+  const [showTableView, setShowTableView] = useState<boolean>(false);
+
   // zoom & labels
   const [zoom, setZoom] = useState<number>(1);
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+
+  async function handleGenerateTables(): Promise<void> {
+    setShowTable(false);
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/sima/all`);
+      const payload: any = res.data;
+      setData(payload?.data ?? payload ?? []);
+      setShowTable(true);
+      setChartData(null);
+      setView("chart");
+    } catch (err) {
+      console.error("Erro ao carregar dados da SIMA:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -435,7 +453,6 @@ export default function TablesPage(): JSX.Element {
           const m = await metaRes.json();
           const data = m.data;
           setMetadata(data);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const tfm = data.map((item: any) => item.name);
           setTablesFromMetadata(tfm);
         }
@@ -466,8 +483,8 @@ export default function TablesPage(): JSX.Element {
 
   useEffect(() => {
     if (table) {
-      setColumns(columnsFromMetadata[table]);
-      setResponsible(responsibleFromMetadata[table]);
+      setColumns(columnsFromMetadata[table] || []);
+      setResponsible(responsibleFromMetadata ? responsibleFromMetadata[table] : undefined);
     }
   }, [table, columnsFromMetadata, responsibleFromMetadata]);
 
@@ -475,10 +492,14 @@ export default function TablesPage(): JSX.Element {
     const fetchCampanhas = async () => {
       if (!table || !responsibleFromMetadata) return;
 
-      const responsible = responsibleFromMetadata[table];
+      const responsibleVal = responsibleFromMetadata[table];
       const fetches: Promise<Campanha[]>[] = [];
 
-      if (responsible.includes("Furnas")) {
+      if (
+        responsibleVal &&
+        typeof responsibleVal === "string" &&
+        responsibleVal.includes("Furnas")
+      ) {
         fetches.push(
           axios
             .get("http://localhost:3001/tables/furnas/tbcampanha?all=true")
@@ -486,10 +507,14 @@ export default function TablesPage(): JSX.Element {
         );
       }
 
-      if (responsible.includes("Balcar")) {
+      if (
+        responsibleVal &&
+        typeof responsibleVal === "string" &&
+        responsibleVal.includes("Balcar")
+      ) {
         fetches.push(
           axios
-            .get("http://localhost:3001/balcar/campanha") // sem /all
+            .get("http://localhost:3001/balcar/campanha")
             .then((res) => res.data.data as Campanha[]),
         );
       }
@@ -498,9 +523,6 @@ export default function TablesPage(): JSX.Element {
         const results = await Promise.all(fetches);
         const combined = results.flat();
 
-        console.log("Flat; ", combined)
-
-        // remover duplicadas por datainicio + datafim + idcampanha
         const uniqueDates = combined.reduce((acc: Campanha[], curr) => {
           const exists = acc.some(
             (d) =>
@@ -543,22 +565,17 @@ export default function TablesPage(): JSX.Element {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getColumnsFromMetadata(meta: any) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const clms: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const clms: Record<string, any> = {};
     meta.forEach((tb: any) => {
       clms[tb.name] = tb.colunas;
     });
     return clms;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getResponsibleFromMetadata(meta: any) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const resp: Record<string, any> = {}; // Define que o objeto terá chaves do tipo string e valores de qualquer tipo
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resp: Record<string, any> = {};
     meta.forEach((tb: any) => {
-      resp[tb.name] = tb.responsible; // Chave dinâmica e valor
+      resp[tb.name] = tb.responsible;
     });
     return resp;
   }
@@ -585,14 +602,12 @@ export default function TablesPage(): JSX.Element {
     }
   }
 
-  // try backend aggregate, fallback to mock
   async function handleGenerate() {
     if (!selectedColumns.length) {
       alert("Selecione ao menos uma coluna para gerar o gráfico.");
       return;
     }
 
-    // use month range as x-axis sampling
     const months = monthsBetweenDatesISO(startDate, endDate);
     try {
       const params = new URLSearchParams();
@@ -605,12 +620,11 @@ export default function TablesPage(): JSX.Element {
       const res = await fetch(url);
 
       if (res.ok) {
-        const data = await res.json();
-        const rows = Array.isArray(data) ? data : data?.rows || data?.data || [];
+        const dataRes = await res.json();
+        const rows = Array.isArray(dataRes) ? dataRes : dataRes?.rows || dataRes?.data || [];
         if (Array.isArray(rows) && rows.length) {
           setChartData(rows);
         } else {
-          // fallback: produce one row per month
           setChartData(makeMockMeasurementsForMonths(months));
         }
       } else {
@@ -684,43 +698,20 @@ export default function TablesPage(): JSX.Element {
       .map((r) => ({ lat: r.latitude, lon: r.longitude, id: r.id }));
   }, [chartData]);
 
-  const handleMouseMove = (e) => {
-    if (e.buttons === 1) {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const ev = e as any;
+    if (ev.buttons === 1) {
       setPan((prevPan) => ({
-        x: prevPan.x + e.movementX,
-        y: prevPan.y + e.movementY,
+        x: prevPan.x + (ev.movementX || 0),
+        y: prevPan.y + (ev.movementY || 0),
       }));
     }
   };
 
-  /*
-  function normalizePoints(points: { lat: number; lon: number }[]) {
-    if (!points.length) return [];
-    const lats = points.map((p) => p.lat);
-    const lons = points.map((p) => p.lon);
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLon = Math.min(...lons);
-    const maxLon = Math.max(...lons);
-    const latSpan = maxLat - minLat || 1;
-    const lonSpan = maxLon - minLon || 1;
-    return points.map((p) => ({
-      left: ((p.lon - minLon) / lonSpan) * 100,
-      top: 100 - ((p.lat - minLat) / latSpan) * 100,
-    }));
-  } */
-
-  /* const normalizedMarkers = useMemo(() => normalizePoints(latLonPoints), [latLonPoints]); */
-
-  /* Multi-series SVG chart: plots all selected numeric columns on the same coordinate system
-     and shows colored points per institution with tooltip on hover.
-     X axis now uses monthsBetweenDatesISO(start,end) so we always show every month label in YYYY/MM/DD. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
     if (!rows || !rows.length || !columns || !columns.length)
       return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
 
-    // derive months from rows if datamedida exists or fallback to monthsBetweenDatesISO
     const months = (() => {
       const found = rows.map((r) => {
         if (!r.datamedida) return "";
@@ -734,14 +725,13 @@ export default function TablesPage(): JSX.Element {
       return monthsBetweenDatesISO(startDate, endDate);
     })();
 
-    const height = 520; // bigger chart
+    const height = 520;
     const viewBoxWidth = Math.max(1000, months.length * 100);
     const count = months.length;
     const xFor = (i: number) => (i / (count - 1 || 1)) * (viewBoxWidth - 100) + 50;
 
-    // build rowsByMonth aligned to months (first matching row per month)
     const rowsByMonth = months.map((m, i) => {
-      const ymd = m.replace(/\//g, "-").slice(0, 7); // YYYY-MM
+      const ymd = m.replace(/\//g, "-").slice(0, 7);
       const found = rows.find((r) => {
         if (!r.datamedida) return false;
         const d = new Date(r.datamedida);
@@ -759,14 +749,12 @@ export default function TablesPage(): JSX.Element {
       }),
     );
 
-    // compute global min/max across series ignoring NaN
     const allNumbers = seriesValues.flat().filter((v) => !Number.isNaN(v));
     const max = allNumbers.length ? Math.max(...allNumbers) : 1;
     const min = allNumbers.length ? Math.min(...allNumbers) : 0;
     const range = max - min || 1;
     const yFor = (v: number) => ((max - v) / range) * (height - 80) + 40;
 
-    // institution -> color mapping (fill)
     const uniqueInsts = Array.from(new Set(rows.map((r) => r.instituicao || "—")));
     const instColorMap: Record<string, string> = {};
     uniqueInsts.forEach((inst, idx) => {
@@ -781,7 +769,6 @@ export default function TablesPage(): JSX.Element {
           height={height}
           preserveAspectRatio="xMidYMid meet"
         >
-          {/* grid lines */}
           {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
             <line
               key={i}
@@ -794,7 +781,6 @@ export default function TablesPage(): JSX.Element {
             />
           ))}
 
-          {/* series lines */}
           {seriesValues.map((vals, sIdx) => {
             const points = vals
               .map((v, i) => {
@@ -862,7 +848,6 @@ export default function TablesPage(): JSX.Element {
             );
           })}
 
-          {/* x axis labels: show every month label (YYYY/MM/DD) */}
           {months.map((m, i) => (
             <text
               key={`lbl-${i}`}
@@ -876,7 +861,6 @@ export default function TablesPage(): JSX.Element {
             </text>
           ))}
 
-          {/* left axis labels */}
           <text x="14" y={34} fontSize="13" fill="#5b6b7a">
             {max}
           </text>
@@ -885,7 +869,6 @@ export default function TablesPage(): JSX.Element {
           </text>
         </svg>
 
-        {/* tooltip rendered over SVG using absolute positioning - only while hovered */}
         {tooltip.visible && tooltip.instituicao && (
           <Tooltip left={tooltip.left} top={tooltip.top} color={tooltip.color || "#ccc"}>
             <div className="title">
@@ -906,6 +889,9 @@ export default function TablesPage(): JSX.Element {
   );
   const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.name === s));
   const plottedColumns = plotColumns.length ? plotColumns : [selectedColumns[0]].filter(Boolean);
+
+  // criar alias any para MapBrazil para evitar erro de tipagem temporariamente
+  const MapBrazilAny = MapBrazil as any;
 
   return (
     <Page>
@@ -964,13 +950,14 @@ export default function TablesPage(): JSX.Element {
                     </option>
                   ))
                 ) : (
-                  <option value={[]}>Carregando tabelas...</option>
-                )}{" "}
+                  <option value={[] as any}>Carregando tabelas...</option>
+                )}
               </Select>
               <div style={{ fontSize: 12, color: "#0b2740", marginLeft: 8 }}>
                 * Obrigatório selecionar tabela
               </div>
             </Row>
+
             <div style={{ fontSize: 13, color: "#475569", marginTop: 6 }}>
               <strong>Colunas disponíveis</strong>
               <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
@@ -980,9 +967,8 @@ export default function TablesPage(): JSX.Element {
           </Controls>
 
           <ColumnsBox aria-label="Lista de colunas">
-            {columns.map(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (c: any, index: number) => (
+            {columns &&
+              columns.map((c: any, index: number) => (
                 <ColumnItem key={c.nome || `column-${index}`}>
                   <input
                     type="checkbox"
@@ -995,8 +981,7 @@ export default function TablesPage(): JSX.Element {
                     <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
                   </div>
                 </ColumnItem>
-              ),
-            )}
+              ))}
           </ColumnsBox>
         </LeftColumn>
 
@@ -1049,6 +1034,12 @@ export default function TablesPage(): JSX.Element {
               <Button onClick={() => setView((v) => (v === "chart" ? "map" : "chart"))}>
                 {view === "chart" ? "Ver mapa" : "Ver gráfico"}
               </Button>
+
+              <Button onClick={() => setShowTableView((s) => !s)}>Visualizar Tabela ▾</Button>
+
+              <Button onClick={handleGenerateTables} disabled={loading} style={{ marginLeft: 6 }}>
+                {loading ? "Carregando..." : "Gerar Tabelas"}
+              </Button>
             </div>
           </ControlsTopRight>
 
@@ -1072,18 +1063,51 @@ export default function TablesPage(): JSX.Element {
                   </div>
                 </div>
 
+                {showTableView && (
+                  <TablePreview>
+                    <TableElement>
+                      <thead>
+                        <tr>
+                          {selectedColumns && selectedColumns.length ? (
+                            selectedColumns.map((col) => <th key={col}>{col}</th>)
+                          ) : (
+                            <th>Sem colunas selecionadas</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {chartData && chartData.length
+                          ? chartData.slice(0, 5).map((row, i) => (
+                              <tr key={`row-${i}`}>
+                                {selectedColumns.map((col) => (
+                                  <td key={`${i}-${col}`}>{String(row[col] ?? "—")}</td>
+                                ))}
+                              </tr>
+                            ))
+                          : Array.from({ length: 3 }).map((_, r) => (
+                              <tr key={`ph-${r}`}>
+                                {selectedColumns && selectedColumns.length ? (
+                                  selectedColumns.map((col) => <td key={`ph-${r}-${col}`}>—</td>)
+                                ) : (
+                                  <td>—</td>
+                                )}
+                              </tr>
+                            ))}
+                      </tbody>
+                    </TableElement>
+                  </TablePreview>
+                )}
+
                 <ChartWrapper>
                   <ChartMain
                     ref={chartMainRef}
                     onMouseLeave={() => {
-                      // ensure tooltip hides when mouse leaves chart area
                       setTooltip({ visible: false, left: 0, top: 0 });
                     }}
                   >
                     {chartData && chartData.length && plottedColumns.length ? (
                       <div style={{ width: "100%" }}>
                         <MultiSeriesSVG rows={chartData} columns={plottedColumns} />
-                        {/* legend placed under SVG */}
                         <Legend aria-hidden>
                           {plottedColumns.map((col, i) => (
                             <LegendItem key={col}>
@@ -1103,8 +1127,39 @@ export default function TablesPage(): JSX.Element {
                       </div>
                     ) : (
                       <div style={{ padding: 16, color: "#64748b" }}>
-                        Clique em <strong>Gerar Gráfico</strong> para criar uma visualização
-                        (protótipo).
+                        {showTable ? (
+                          <div
+                            style={{
+                              background: "#fff",
+                              borderRadius: 10,
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                              padding: "16px",
+                              maxWidth: "95%",
+                              maxHeight: "600px",
+                              overflowY: "auto",
+                              margin: "0 auto",
+                            }}
+                          >
+                            <SimaTable
+                              columns={[
+                                { key: "idsima", label: "ID SIMA" },
+                                { key: "idestacao", label: "Estação" },
+                                { key: "datahora", label: "Data e Hora" },
+                                { key: "tempar", label: "Temperatura" },
+                                { key: "precipitacao", label: "Precipitação" },
+                              ]}
+                              data={data}
+                              page={1}
+                              pageSize={10}
+                              onPageChange={() => {}}
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            Clique em <strong>Gerar Tabelas</strong> para criar uma visualização
+                            (protótipo).
+                          </>
+                        )}
                       </div>
                     )}
                   </ChartMain>
@@ -1125,7 +1180,6 @@ export default function TablesPage(): JSX.Element {
                 </div>
 
                 <MapPlaceholder>
-                  {/* Zoom controls and label toggle */}
                   <ZoomControls>
                     <label>
                       <input
@@ -1151,11 +1205,11 @@ export default function TablesPage(): JSX.Element {
                       <button
                         aria-label="Center"
                         onClick={() => {
-                          setPan({ x: 0, y: 0 });
                           setZoom(1);
+                          setPan({ x: 0, y: 0 });
                         }}
                       >
-                        +
+                        ⤾
                       </button>
                     </div>
                   </ZoomControls>
@@ -1184,7 +1238,17 @@ export default function TablesPage(): JSX.Element {
                           transformOrigin: "center top",
                         }}
                       >
-                        <MapBrazil />
+                        <MapBrazilAny
+                          points={latLonPoints.map((p) => ({
+                            id: p.id,
+                            lat: p.lat,
+                            lon: p.lon,
+                            label: `Ponto ${p.id}`,
+                          }))}
+                          height={760}
+                          showPolygons={true}
+                          showStateNames={showStateNames}
+                        />
                       </div>
                     </div>
                   ) : (
@@ -1202,14 +1266,15 @@ export default function TablesPage(): JSX.Element {
     </Page>
   );
 }
-
 /* ================= helpers (mock) ================= */
 
+/**
+ * Produz um array de objetos mock, um por mês (usado apenas como fallback).
+ */
 function makeMockMeasurementsForMonths(months: string[]) {
   return months.map((m, i) => {
-    const inst = MOCK_INSTITUTIONS[i % MOCK_INSTITUTIONS.length];
+    const inst = ["INPE", "FURNAS", "BALCAR", "UFRJ", "USP"][i % 5];
     const reserv = `Represa ${String.fromCharCode(65 + (i % 6))}`;
-    // produce a datamedida as first day of month in ISO-ish
     const datamedida = m.replace(/\//g, "-").slice(0, 10);
     return {
       id: i + 1,
