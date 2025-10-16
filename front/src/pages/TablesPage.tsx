@@ -388,10 +388,12 @@ export default function TablesPage(): JSX.Element {
   const [responsible, setResponsible] = useState<string>();
   const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
 
   const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
     string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   > | null>(null);
 
@@ -401,6 +403,7 @@ export default function TablesPage(): JSX.Element {
   const chartMainRef = useRef<HTMLDivElement | null>(null);
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
+  const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
 
   // tooltip state
   const [tooltip, setTooltip] = useState<{
@@ -500,7 +503,7 @@ export default function TablesPage(): JSX.Element {
       ) {
         fetches.push(
           axios
-            .get("http://localhost:3001/furnas/campanha/all")
+            .get("http://localhost:3001/tables/furnas/tbcampanha?all=true")
             .then((res) => res.data.data as Campanha[]),
         );
       }
@@ -524,14 +527,15 @@ export default function TablesPage(): JSX.Element {
         const uniqueDates = combined.reduce((acc: Campanha[], curr) => {
           const exists = acc.some(
             (d) =>
-              d.datainicio.slice(0, 10) === curr.datainicio.slice(0, 10) &&
-              d.datafim.slice(0, 10) === curr.datafim.slice(0, 10) &&
+              String(d.datainicio).slice(0, 10) === String(curr.datainicio).slice(0, 10) ||
+              String(d.datafim).slice(0, 10) === String(curr.datafim).slice(0, 10) ||
               d.idcampanha === curr.idcampanha,
           );
           if (!exists) acc.push(curr);
           return acc;
         }, []);
 
+        console.log("Sem diplicatas; ", uniqueDates);
         setCampanhas(uniqueDates);
       } catch (err) {
         console.error("Erro ao carregar campanhas", err);
@@ -540,6 +544,27 @@ export default function TablesPage(): JSX.Element {
 
     fetchCampanhas();
   }, [table, responsibleFromMetadata]);
+
+  useEffect(() => {
+    //Ordenar campanhas
+    if (campanhas) {
+      setOrderedCampanhas(
+        campanhas.sort(
+          (a: any, b: any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime(),
+        ),
+      );
+    } else {
+      return;
+    }
+  }, [campanhas]);
+
+  function testDates(c) {
+    if (!orderedCampanhas) {
+      return "Carregando...";
+    } else {
+      return c.datainicio.slice(0, 10).split("-").reverse().join("/");
+    }
+  }
 
   function getColumnsFromMetadata(meta: any) {
     const clms: Record<string, any> = {};
@@ -890,7 +915,7 @@ export default function TablesPage(): JSX.Element {
                 <option value="">Selecione...</option>
                 {campanhas.map((c) => (
                   <option key={`ini-${c.idcampanha}`} value={c.datainicio.slice(0, 10)}>
-                    {new Date(c.datainicio).toLocaleDateString("pt-BR")}
+                    {testDates(c)}
                   </option>
                 ))}
               </select>
@@ -911,7 +936,7 @@ export default function TablesPage(): JSX.Element {
                 <option value="">Selecione...</option>
                 {campanhas.map((c) => (
                   <option key={`fim-${c.idcampanha}`} value={c.datafim.slice(0, 10)}>
-                    {new Date(c.datafim).toLocaleDateString("pt-BR")}
+                    {testDates(c)}
                   </option>
                 ))}
               </select>
