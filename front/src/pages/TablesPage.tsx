@@ -3,6 +3,8 @@ import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
+import SimaTable from "../components/SimaTable";
+import { getSima } from "../api/simaApi";
 
 /**
  * TablesPage
@@ -413,6 +415,26 @@ export default function TablesPage(): JSX.Element {
     reservatorio?: string;
     color?: string;
   }>({ visible: false, left: 0, top: 0 });
+
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showTable, setShowTable] = useState(false);
+
+  async function handleGenerateTables() {
+    setShowTable(false); // fecha a tabela se estiver aberta
+    setLoading(true);
+    try {
+      const response = await getSima(); // busca os dados da API
+      setData(response.data || []);
+      setShowTable(true);
+      setChartData(null); // limpa os dados do gráfico
+      setView("chart"); // garante que a tabela apareça no painel certo
+    } catch (err) {
+      console.error("Erro ao carregar dados da SIMA:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // zoom & labels
   const [zoom, setZoom] = useState<number>(1);
@@ -888,6 +910,11 @@ export default function TablesPage(): JSX.Element {
                 Gerar Gráfico
               </Button>
 
+              <Button $primary onClick={handleGenerateTables}>
+                Gerar Tabelas
+              </Button>
+              {loading && <p>Carregando dados...</p>}
+
               <div style={{ position: "relative" }}>
                 <Button onClick={() => setShowExportOptions((s) => !s)}>Exportar ▾</Button>
                 {showExportOptions && (
@@ -984,8 +1011,39 @@ export default function TablesPage(): JSX.Element {
                       </div>
                     ) : (
                       <div style={{ padding: 16, color: "#64748b" }}>
-                        Clique em <strong>Gerar Gráfico</strong> para criar uma visualização
-                        (protótipo).
+                        {showTable ? (
+                          <div
+                            style={{
+                              background: "#fff",
+                              borderRadius: 10,
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                              padding: "16px",
+                              maxWidth: "95%",
+                              maxHeight: "600px",
+                              overflowY: "auto",
+                              margin: "0 auto",
+                            }}
+                          >
+                            <SimaTable
+                              columns={[
+                                { key: "idsima", label: "ID SIMA" },
+                                { key: "idestacao", label: "Estação" },
+                                { key: "datahora", label: "Data e Hora" },
+                                { key: "tempar", label: "Temperatura" },
+                                { key: "precipitacao", label: "Precipitação" },
+                              ]}
+                              data={data}
+                              page={1}
+                              pageSize={10}
+                              onPageChange={() => {}}
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            Clique em <strong>Gerar Tabelas</strong> para criar uma visualização
+                            (protótipo).
+                          </>
+                        )}
                       </div>
                     )}
                   </ChartMain>

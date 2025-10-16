@@ -1,8 +1,7 @@
-/*
 //SimaPage.tsx
 import { useEffect, useState } from "react";
 import { getSima } from "../api/simaApi";
-import SimaTable from "../components/SimaTable"
+import SimaTable from "../components/SimaTable";
 import type { Sima, PaginatedResponse } from "../types/sima";
 import styled from "styled-components";
 
@@ -21,7 +20,6 @@ const Title = styled.h1`
   margin-bottom: 1rem;
   color: #111827;
 `;
-
 
 // Tabela
 const Table = styled.table`
@@ -107,11 +105,11 @@ function SimaPage() {
         columns={[
           { key: "idsima", label: "ID", sortable: true },
           { key: "idestacao", label: "Estação", sortable: true },
-          { 
-            key: "datahora", 
-            label: "Data/Hora", 
-            sortable: true, 
-            render: (v) => new Date(v as string).toLocaleString() 
+          {
+            key: "datahora",
+            label: "Data/Hora",
+            sortable: true,
+            render: (v) => new Date(v as string).toLocaleString(),
           },
           { key: "tempar", label: "Temperatura", sortable: true },
           { key: "precipitacao", label: "Precipitação", sortable: true },
@@ -122,4 +120,3 @@ function SimaPage() {
 }
 
 export default SimaPage;
-*/
