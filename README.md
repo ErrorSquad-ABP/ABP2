@@ -308,7 +308,7 @@ Para melhor estruturação do projeto, modelamos o diagrama de casos de uso:
 
 #### Diagrama de Casos de Uso
 
-![Casos de Uso](./SCRUM/diagramas/DIAGRAMA_CASOS_DE_USO.png)
+![Casos de Uso](./SCRUM/diagramas/diagramas-assets/DIAGRAMA_CASOS_DE_USO.png)
 
 **Funcionalidades Principais**
 - Pesquisador / Usuário — filtra, gera gráficos, visualiza mapa, exporta dados.  
