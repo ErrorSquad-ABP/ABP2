@@ -388,12 +388,12 @@ export default function TablesPage(): JSX.Element {
   const [responsible, setResponsible] = useState<string>();
   const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>([]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
 
   const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
     string,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   > | null>(null);
 
@@ -405,7 +405,6 @@ export default function TablesPage(): JSX.Element {
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
   const [loadingDates, setLoadingDates] = useState<Boolean>(true);
-
 
   // tooltip state
   const [tooltip, setTooltip] = useState<{
@@ -537,7 +536,7 @@ export default function TablesPage(): JSX.Element {
           return acc;
         }, []);
 
-        console.log("Sem diplicatas; ", uniqueDates)
+        console.log("Sem diplicatas; ", uniqueDates);
         setCampanhas(uniqueDates);
       } catch (err) {
         console.error("Erro ao carregar campanhas", err);
@@ -547,20 +546,25 @@ export default function TablesPage(): JSX.Element {
     fetchCampanhas();
   }, [table, responsibleFromMetadata]);
 
-  useEffect(()=>{ //Ordenar campanhas
-    if(campanhas){
-      setOrderedCampanhas(campanhas.sort((a:any, b:any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime()))
-      setLoadingDates(false)
+  useEffect(() => {
+    //Ordenar campanhas
+    if (campanhas) {
+      setOrderedCampanhas(
+        campanhas.sort(
+          (a: any, b: any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime(),
+        ),
+      );
+      setLoadingDates(false);
     } else {
-      setLoadingDates(true)
+      setLoadingDates(true);
     }
-  }, [campanhas])
+  }, [campanhas]);
 
   function testDates(c) {
-    if(!orderedCampanhas){
-      return 'Carregando...'
+    if (!orderedCampanhas) {
+      return "Carregando...";
     } else {
-      return c.datainicio.slice(0, 10).split('-').reverse().join('/')
+      return c.datainicio.slice(0, 10).split("-").reverse().join("/");
     }
   }
 
