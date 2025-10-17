@@ -1,4 +1,3 @@
-
 export interface ToastMessageConfig {
   message: string;
   color: string;

@@ -11,12 +11,7 @@ interface ToastItem {
 }
 
 interface ToastContextType {
-  showToast: (
-    codigo?: number | null,
-    conteudo?: string,
-    cor?: string,
-    emoji?: string
-  ) => void;
+  showToast: (codigo?: number | null, conteudo?: string, cor?: string, emoji?: string) => void;
 }
 
 export const ToastContext = createContext<ToastContextType | null>(null);
@@ -39,7 +34,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setToasts((prev) => [...prev, toast]);
       setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
     },
-    []
+    [],
   );
 
   return (
