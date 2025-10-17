@@ -7,7 +7,6 @@ import MapBrazil from "../components/MapBrazil";
 
 import SimaTable from "../components/SimaTable";
 import axios from "axios";
-
 /**
  * TablesPage
  *
