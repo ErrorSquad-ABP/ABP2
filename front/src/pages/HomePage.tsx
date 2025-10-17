@@ -12,6 +12,13 @@ type Category = {
 
 const CATEGORIES: Category[] = [
   {
+    id: "sima",
+    title: "SIMA — Monitoramento",
+    description: "Dados automaticamente coletados pelo SIMA (séries temporais).",
+    icon: "📡",
+    href: "/tables/sima",
+  },
+  {
     id: "abioticos",
     title: "Abióticos",
     description: "Parâmetros físico-químicos da coluna d'água e superfície.",
@@ -42,7 +49,7 @@ const CATEGORIES: Category[] = [
   {
     id: "campomedidas",
     title: "Campo Medidas",
-    description: "Medidas realizadas em campo (equipamentos, anotações).",
+    description: "Medes realizadas em campo (equipamentos, anotações).",
     icon: "📋",
     href: "/tables/campo-medidas",
   },
@@ -77,6 +84,8 @@ const CATEGORIES: Category[] = [
 ];
 
 export default function HomePage(): JSX.Element {
+  const otherCategories = CATEGORIES.filter((c) => c.id !== "sima");
+  const sima = CATEGORIES.find((c) => c.id === "sima")!;
   return (
     <Page>
       <Hero>
@@ -90,15 +99,25 @@ export default function HomePage(): JSX.Element {
       </Hero>
 
       <Content>
+        <TopSpot>
+          <SimaCardLink href={sima.href} target="_blank" rel="noopener noreferrer">
+            <SimaCard>
+              <SimaIcon aria-hidden>{sima.icon}</SimaIcon>
+              <SimaCardTitle>{sima.title}</SimaCardTitle>
+              <SimaCardDesc>{sima.description}</SimaCardDesc>
+              <SimaCardCTA>Abrir →</SimaCardCTA>
+            </SimaCard>
+          </SimaCardLink>
+        </TopSpot>
+
         <Cards role="list">
-          {CATEGORIES.map((c) => {
+          {otherCategories.map((c) => {
             return (
               <CardLink key={c.id} href={c.href} target="_blank" rel="noopener noreferrer">
                 <Card>
                   <Icon aria-hidden>{c.icon}</Icon>
                   <CardTitle>{c.title}</CardTitle>
                   <CardDesc>{c.description}</CardDesc>
-
                   <CardCTA>Abrir →</CardCTA>
                 </Card>
               </CardLink>
@@ -158,6 +177,35 @@ const Content = styled.main`
   margin: 28px auto;
   padding: 0 18px 28px;
   width: 100%;
+`;
+
+const TopSpot = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 360px);
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 20px;
+
+  a {
+    grid-column: 2 / 3;
+    justify-self: center;
+    width: 100%;
+  }
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    a {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    a {
+      grid-column: 1 / -1;
+    }
+  }
 `;
 
 const Cards = styled.div`
@@ -235,24 +283,7 @@ const CardDesc = styled.p`
   line-height: 1.3;
   max-width: 88%;
 `;
-/*
-const MetaArea = styled.div`
-  margin-top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-`;
 
-const MetaText = styled.span`
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-const MetaTextError = styled(MetaText)`
-  color: #c84b4b;
-`;
-*/
 const CardCTA = styled.div`
   margin-top: auto;
   color: ${({ theme }) => theme.colors.primary};
@@ -261,7 +292,72 @@ const CardCTA = styled.div`
   padding-top: 8px;
 `;
 
-/* Footer */
+/* SIMA highlighted card styles */
+const SimaCardLink = styled.a`
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+`;
+
+const SimaCard = styled.article`
+  background: linear-gradient(180deg, #0b5394 0%, #2563eb 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 28px 22px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 20px 50px rgba(37, 99, 235, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+
+  &:hover {
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 34px 80px rgba(37, 99, 235, 0.22);
+  }
+`;
+
+const SimaIcon = styled.div`
+  font-size: 48px;
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 -6px 10px rgba(0, 0, 0, 0.08);
+`;
+
+const SimaCardTitle = styled.h3`
+  margin: 0;
+  font-size: 18px;
+  text-align: center;
+  color: #ffffff;
+  font-weight: 800;
+`;
+
+const SimaCardDesc = styled.p`
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+  color: #ffffff; /* branco */
+  line-height: 1.3;
+  max-width: 88%;
+`;
+
+const SimaCardCTA = styled.div`
+  margin-top: auto;
+  color: #ffffff; /* branco */
+  font-weight: 700;
+  font-size: 13px;
+  padding-top: 8px;
+`;
+
 const Footer = styled.footer`
   margin-top: auto;
   background: ${({ theme }) => theme.colors.primaryDark};

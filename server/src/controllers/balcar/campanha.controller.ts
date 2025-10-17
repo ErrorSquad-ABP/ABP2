@@ -14,7 +14,7 @@ export const getCampaigns = async (req: Request, res: Response): Promise<void> =
         datainicio,
         datafim
       FROM tbcampanha
-      ORDER BY idcampanha
+      ORDER BY datainicio
       `,
     );
 
