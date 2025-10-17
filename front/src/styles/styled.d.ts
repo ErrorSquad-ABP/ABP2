@@ -3,6 +3,12 @@ import "styled-components";
 
 declare module "styled-components" {
   export interface DefaultTheme {
+    /** 
+     * Define o modo de cor ativo do tema 
+     * (útil para componentes que mudam aparência dinamicamente)
+     */
+    mode: "light" | "dark";
+
     colors: {
       primary: string;
       primaryDark: string;
@@ -13,6 +19,7 @@ declare module "styled-components" {
         inverse: string;
       };
     };
+
     fonts: {
       body: string;
       size: {
@@ -25,8 +32,11 @@ declare module "styled-components" {
         bold: number;
       };
     };
+
     spacing: (factor: number) => string;
+
     borderRadius: string;
+
     shadows: {
       small: string;
       medium: string;
