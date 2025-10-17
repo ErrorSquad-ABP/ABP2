@@ -1216,7 +1216,6 @@ export default function TablesPage(): JSX.Element {
                     </div>
                   </ZoomControls>
 
-                  {latLonPoints.length ? (
                     <div
                       onMouseMove={handleMouseMove}
                       style={{
@@ -1253,12 +1252,6 @@ export default function TablesPage(): JSX.Element {
                         />
                       </div>
                     </div>
-                  ) : (
-                    <div style={{ padding: 16, color: "#334155" }}>
-                      Não há coordenadas disponíveis. Gere o gráfico com colunas contendo{" "}
-                      <code>latitude</code> / <code>longitude</code>.
-                    </div>
-                  )}
                 </MapPlaceholder>
               </>
             )}
