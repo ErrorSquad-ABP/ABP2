@@ -1216,42 +1216,42 @@ export default function TablesPage(): JSX.Element {
                     </div>
                   </ZoomControls>
 
+                  <div
+                    onMouseMove={handleMouseMove}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     <div
-                      onMouseMove={handleMouseMove}
                       style={{
                         width: "100%",
                         height: "100%",
+                        maxWidth: 1100,
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
+                        transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+                        cursor: "grab",
+                        transformOrigin: "center top",
                       }}
                     >
-                      <div
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          maxWidth: 1100,
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
-                          cursor: "grab",
-                          transformOrigin: "center top",
-                        }}
-                      >
-                        <MapBrazilAny
-                          points={latLonPoints.map((p) => ({
-                            id: p.id,
-                            lat: p.lat,
-                            lon: p.lon,
-                            label: `Ponto ${p.id}`,
-                          }))}
-                          height={760}
-                          showPolygons={true}
-                          showStateNames={showStateNames}
-                        />
-                      </div>
+                      <MapBrazilAny
+                        points={latLonPoints.map((p) => ({
+                          id: p.id,
+                          lat: p.lat,
+                          lon: p.lon,
+                          label: `Ponto ${p.id}`,
+                        }))}
+                        height={760}
+                        showPolygons={true}
+                        showStateNames={showStateNames}
+                      />
                     </div>
+                  </div>
                 </MapPlaceholder>
               </>
             )}
