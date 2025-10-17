@@ -1,6 +1,6 @@
-// front/src/pages/HomePage.tsx
 import { JSX } from "react";
 import styled from "styled-components";
+import { Link } from "react-router-dom"; // ✅ Import do Link para navegação SPA
 
 type Category = {
   id: string;
@@ -49,7 +49,7 @@ const CATEGORIES: Category[] = [
   {
     id: "campomedidas",
     title: "Campo Medidas",
-    description: "Medes realizadas em campo (equipamentos, anotações).",
+    description: "Medidas realizadas em campo (equipamentos, anotações).",
     icon: "📋",
     href: "/tables/campo-medidas",
   },
@@ -86,21 +86,22 @@ const CATEGORIES: Category[] = [
 export default function HomePage(): JSX.Element {
   const otherCategories = CATEGORIES.filter((c) => c.id !== "sima");
   const sima = CATEGORIES.find((c) => c.id === "sima")!;
+
   return (
     <Page>
       <Hero>
         <HeroInner>
           <h1>Repositório de Dados Limnológicos</h1>
           <p>
-            Explore os tópicos e acesse as tabelas para visualização, filtragem e exportação dos
-            dados.
+            Explore os tópicos e acesse as tabelas para visualização, filtragem e exportação dos dados.
           </p>
         </HeroInner>
       </Hero>
 
       <Content>
+        {/* ✅ Card SIMA redireciona via Link para /tables/sima */}
         <TopSpot>
-          <SimaCardLink href={sima.href} target="_blank" rel="noopener noreferrer">
+          <SimaCardLink to={sima.href}>
             <SimaCard>
               <SimaIcon aria-hidden>{sima.icon}</SimaIcon>
               <SimaCardTitle>{sima.title}</SimaCardTitle>
@@ -111,18 +112,16 @@ export default function HomePage(): JSX.Element {
         </TopSpot>
 
         <Cards role="list">
-          {otherCategories.map((c) => {
-            return (
-              <CardLink key={c.id} href={c.href} target="_blank" rel="noopener noreferrer">
-                <Card>
-                  <Icon aria-hidden>{c.icon}</Icon>
-                  <CardTitle>{c.title}</CardTitle>
-                  <CardDesc>{c.description}</CardDesc>
-                  <CardCTA>Abrir →</CardCTA>
-                </Card>
-              </CardLink>
-            );
-          })}
+          {otherCategories.map((c) => (
+            <CardLink key={c.id} href={c.href} target="_blank" rel="noopener noreferrer">
+              <Card>
+                <Icon aria-hidden>{c.icon}</Icon>
+                <CardTitle>{c.title}</CardTitle>
+                <CardDesc>{c.description}</CardDesc>
+                <CardCTA>Abrir →</CardCTA>
+              </Card>
+            </CardLink>
+          ))}
         </Cards>
       </Content>
 
@@ -293,7 +292,7 @@ const CardCTA = styled.div`
 `;
 
 /* SIMA highlighted card styles */
-const SimaCardLink = styled.a`
+const SimaCardLink = styled(Link)`
   text-decoration: none;
   color: inherit;
   width: 100%;
