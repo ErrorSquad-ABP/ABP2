@@ -383,9 +383,10 @@ export default function SimaTablesPage(): JSX.Element {
   const [metadata, setMetadata] = useState<TableMetadata | null>();
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>([]);
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
-  const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<string, any> | null>(
-    null,
-  );
+  const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
+    string,
+    any
+  > | null>(null);
 
   const [view, setView] = useState<"chart" | "map">("chart");
   const [chartData, setChartData] = useState<any[] | null>(null);

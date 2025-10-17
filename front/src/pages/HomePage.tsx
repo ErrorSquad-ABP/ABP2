@@ -93,7 +93,8 @@ export default function HomePage(): JSX.Element {
         <HeroInner>
           <h1>Repositório de Dados Limnológicos</h1>
           <p>
-            Explore os tópicos e acesse as tabelas para visualização, filtragem e exportação dos dados.
+            Explore os tópicos e acesse as tabelas para visualização, filtragem e exportação dos
+            dados.
           </p>
         </HeroInner>
       </Hero>

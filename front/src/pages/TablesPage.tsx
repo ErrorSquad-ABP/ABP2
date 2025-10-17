@@ -401,10 +401,10 @@ export default function TablesPage(): JSX.Element {
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
   const [showExportOptions, setShowExportOptions] = useState(false);
-  const [campanhas, setCampanhas] = useState<Campanha[]>([]);
+  const [campanhas, setCampanhas] = useState<Campanha[]>([] as Campanha[]);
   const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
 
-  // tooltip state
+  // tooltip state (usado no MultiSeriesSVG)
   const [tooltip, setTooltip] = useState<{
     visible: boolean;
     left: number;
@@ -455,6 +455,8 @@ export default function TablesPage(): JSX.Element {
           setMetadata(data);
           const tfm = data.map((item: any) => item.name);
           setTablesFromMetadata(tfm);
+        } else {
+          console.error("metadata responded with non-ok status", metaRes.status);
         }
       } catch (err) {
         console.log("Error fetching metadata: ", err);
@@ -534,7 +536,6 @@ export default function TablesPage(): JSX.Element {
           return acc;
         }, []);
 
-        console.log("Sem diplicatas; ", uniqueDates);
         setCampanhas(uniqueDates);
       } catch (err) {
         console.error("Erro ao carregar campanhas", err);
@@ -548,17 +549,15 @@ export default function TablesPage(): JSX.Element {
     //Ordenar campanhas
     if (campanhas) {
       setOrderedCampanhas(
-        campanhas.sort(
+        [...campanhas].sort(
           (a: any, b: any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime(),
         ),
       );
-    } else {
-      return;
     }
   }, [campanhas]);
 
-  function testDates(c) {
-    if (!orderedCampanhas) {
+  function testDates(c: Campanha) {
+    if (!orderedCampanhas || !c) {
       return "Carregando...";
     } else {
       return c.datainicio.slice(0, 10).split("-").reverse().join("/");
@@ -601,43 +600,6 @@ export default function TablesPage(): JSX.Element {
     } else {
       alert("Data final deve ser menor que data de início!");
     }
-  }
-
-  async function handleGenerate() {
-    if (!selectedColumns.length) {
-      alert("Selecione ao menos uma coluna para gerar o gráfico.");
-      return;
-    }
-
-    const months = monthsBetweenDatesISO(startDate, endDate);
-    try {
-      const params = new URLSearchParams();
-      params.set("start", startDate);
-      params.set("end", endDate);
-      params.set("cols", selectedColumns.join(","));
-      params.set("aggregate_by", "month");
-
-      const url = `${API_BASE}/tables/${encodeURIComponent(table)}/aggregate?${params.toString()}`;
-      const res = await fetch(url);
-
-      if (res.ok) {
-        const dataRes = await res.json();
-        const rows = Array.isArray(dataRes) ? dataRes : dataRes?.rows || dataRes?.data || [];
-        if (Array.isArray(rows) && rows.length) {
-          setChartData(rows);
-        } else {
-          setChartData(makeMockMeasurementsForMonths(months));
-        }
-      } else {
-        setChartData(makeMockMeasurementsForMonths(months));
-      }
-    } catch (err) {
-      setChartData(makeMockMeasurementsForMonths(months));
-      console.log(err);
-    }
-
-    setView("chart");
-    chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   function downloadCSV() {
@@ -989,7 +951,6 @@ export default function TablesPage(): JSX.Element {
         <RightPanel>
           <ControlsTopRight>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-
               <div style={{ position: "relative" }}>
                 <Button onClick={() => setShowExportOptions((s) => !s)}>Exportar ▾</Button>
                 {showExportOptions && (
@@ -1095,6 +1056,73 @@ export default function TablesPage(): JSX.Element {
                     </TableElement>
                   </TablePreview>
                 )}
+
+                <ChartWrapper>
+                  <ChartMain
+                    ref={chartMainRef}
+                    onMouseLeave={() => {
+                      setTooltip({ visible: false, left: 0, top: 0 });
+                    }}
+                  >
+                    {chartData && chartData.length && plottedColumns.length ? (
+                      <div style={{ width: "100%" }}>
+                        <MultiSeriesSVG rows={chartData} columns={plottedColumns} />
+                        <Legend aria-hidden>
+                          {plottedColumns.map((col, i) => (
+                            <LegendItem key={col}>
+                              <div
+                                style={{
+                                  width: 14,
+                                  height: 14,
+                                  borderRadius: 3,
+                                  background: SERIES_COLORS[i % SERIES_COLORS.length],
+                                  border: "1px solid rgba(0,0,0,0.06)",
+                                }}
+                              />
+                              <div>{col}</div>
+                            </LegendItem>
+                          ))}
+                        </Legend>
+                      </div>
+                    ) : (
+                      <div style={{ padding: 16, color: "#64748b" }}>
+                        {showTable ? (
+                          <div
+                            style={{
+                              background: "#fff",
+                              borderRadius: 10,
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                              padding: "16px",
+                              maxWidth: "95%",
+                              maxHeight: "600px",
+                              overflowY: "auto",
+                              margin: "0 auto",
+                            }}
+                          >
+                            <SimaTable
+                              columns={[
+                                { key: "idsima", label: "ID SIMA" },
+                                { key: "idestacao", label: "Estação" },
+                                { key: "datahora", label: "Data e Hora" },
+                                { key: "tempar", label: "Temperatura" },
+                                { key: "precipitacao", label: "Precipitação" },
+                              ]}
+                              data={data}
+                              page={1}
+                              pageSize={10}
+                              onPageChange={() => {}}
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            Clique em <strong>Gerar Tabelas</strong> para criar uma visualização
+                            (protótipo).
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </ChartMain>
+                </ChartWrapper>
               </>
             ) : (
               <>
@@ -1145,42 +1173,49 @@ export default function TablesPage(): JSX.Element {
                     </div>
                   </ZoomControls>
 
-                  <div
-                    onMouseMove={handleMouseMove}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
+                  {latLonPoints.length ? (
                     <div
+                      onMouseMove={handleMouseMove}
                       style={{
                         width: "100%",
                         height: "100%",
-                        maxWidth: 1100,
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
-                        transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
-                        cursor: "grab",
-                        transformOrigin: "center top",
                       }}
                     >
-                      <MapBrazilAny
-                        points={latLonPoints.map((p) => ({
-                          id: p.id,
-                          lat: p.lat,
-                          lon: p.lon,
-                          label: `Ponto ${p.id}`,
-                        }))}
-                        height={760}
-                        showPolygons={true}
-                        showStateNames={showStateNames}
-                      />
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          maxWidth: 1100,
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+                          cursor: "grab",
+                          transformOrigin: "center top",
+                        }}
+                      >
+                        <MapBrazilAny
+                          points={latLonPoints.map((p) => ({
+                            id: p.id,
+                            lat: p.lat,
+                            lon: p.lon,
+                            label: `Ponto ${p.id}`,
+                          }))}
+                          height={760}
+                          showPolygons={true}
+                          showStateNames={showStateNames}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div style={{ padding: 16, color: "#334155" }}>
+                      Não há coordenadas disponíveis. Gere o gráfico com colunas contendo{" "}
+                      <code>latitude</code> / <code>longitude</code>.
+                    </div>
+                  )}
                 </MapPlaceholder>
               </>
             )}
@@ -1195,6 +1230,7 @@ export default function TablesPage(): JSX.Element {
 /**
  * Produz um array de objetos mock, um por mês (usado apenas como fallback).
  */
+/**
 function makeMockMeasurementsForMonths(months: string[]) {
   return months.map((m, i) => {
     const inst = ["INPE", "FURNAS", "BALCAR", "UFRJ", "USP"][i % 5];
@@ -1213,3 +1249,4 @@ function makeMockMeasurementsForMonths(months: string[]) {
     };
   });
 }
+*/
