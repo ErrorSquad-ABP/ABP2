@@ -322,6 +322,7 @@ export default function TablesPage(): JSX.Element {
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
+  const [reservatorios, setReservatorios] = useState([]);
 
   // tabela preview state (dados da tabela e controle de exibição)
   const [data, setData] = useState<any[]>([]);
@@ -466,6 +467,23 @@ export default function TablesPage(): JSX.Element {
     }
   }, [campanhas]);
 
+  useEffect(() => {
+    const fetchReservatorios = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/furnas/reservatorio/all");
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setReservatorios(json.data);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar reservatórios:", err);
+      }
+    };
+
+    fetchReservatorios();
+  }, []);
+
+  function testDates(c) {
   function testDates(c: Campanha) {
     if (!orderedCampanhas) {
       return "Carregando...";
@@ -565,11 +583,15 @@ export default function TablesPage(): JSX.Element {
   }
 
   const latLonPoints = useMemo(() => {
-    if (!chartData || !chartData.length) return [];
-    return chartData
-      .filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number")
-      .map((r) => ({ lat: r.latitude, lon: r.longitude, id: r.id }));
-  }, [chartData]);
+    return reservatorios
+      .filter((r) => typeof r.lat === "number" && typeof r.lng === "number")
+      .map((r) => ({
+        latitude: r.lat,
+        longitude: r.lng,
+        id: r.idreservatorio,
+        nome: r.nome,
+      }));
+  }, [reservatorios]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const ev = e as any;
@@ -581,6 +603,209 @@ export default function TablesPage(): JSX.Element {
     }
   };
 
+  function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
+    if (!rows || !rows.length || !columns || !columns.length)
+      return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
+
+    const months = (() => {
+      const found = rows.map((r) => {
+        if (!r.datamedida) return "";
+        const d = new Date(r.datamedida);
+        if (!isNaN(d.getTime()))
+          return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/01`;
+        const s = String(r.datamedida).slice(0, 10).replace(/-/g, "/");
+        return s.length ? s : "";
+      });
+      if (found.every((m) => m)) return found;
+      return monthsBetweenDatesISO(startDate, endDate);
+    })();
+
+    const height = 520;
+    const viewBoxWidth = Math.max(1000, months.length * 100);
+    const count = months.length;
+    const xFor = (i: number) => (i / (count - 1 || 1)) * (viewBoxWidth - 100) + 50;
+
+    const rowsByMonth = months.map((m, i) => {
+      const ymd = m.replace(/\//g, "-").slice(0, 7);
+      const found = rows.find((r) => {
+        if (!r.datamedida) return false;
+        const d = new Date(r.datamedida);
+        if (isNaN(d.getTime())) return false;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        return key === ymd;
+      });
+      return found || rows[Math.min(rows.length - 1, i)] || rows[0];
+    });
+
+    const seriesValues = columns.map((col) =>
+      rowsByMonth.map((r) => {
+        const v = Number(r[col]);
+        return Number.isFinite(v) ? v : NaN;
+      }),
+    );
+
+    const allNumbers = seriesValues.flat().filter((v) => !Number.isNaN(v));
+    const max = allNumbers.length ? Math.max(...allNumbers) : 1;
+    const min = allNumbers.length ? Math.min(...allNumbers) : 0;
+    const range = max - min || 1;
+    const yFor = (v: number) => ((max - v) / range) * (height - 80) + 40;
+
+    const uniqueInsts = Array.from(new Set(rows.map((r) => r.instituicao || "—")));
+    const instColorMap: Record<string, string> = {};
+    uniqueInsts.forEach((inst, idx) => {
+      instColorMap[inst] = INSTITUTION_FILL_COLORS[idx % INSTITUTION_FILL_COLORS.length];
+    });
+
+    return (
+      <div style={{ width: "100%", position: "relative" }}>
+        <svg
+          viewBox={`0 0 ${viewBoxWidth} ${height}`}
+          width="100%"
+          height={height}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
+            <line
+              key={i}
+              x1={50}
+              x2={viewBoxWidth - 50}
+              y1={40 + t * (height - 80)}
+              y2={40 + t * (height - 80)}
+              stroke="#e6eefb"
+              strokeWidth={1}
+            />
+          ))}
+
+          {seriesValues.map((vals, sIdx) => {
+            const points = vals
+              .map((v, i) => {
+                if (Number.isNaN(v)) return null;
+                return `${xFor(i)},${yFor(v)}`;
+              })
+              .filter(Boolean) as string[];
+            if (!points.length) return null;
+            const stroke = SERIES_COLORS[sIdx % SERIES_COLORS.length];
+            return (
+              <g key={sIdx}>
+                <polyline
+                  points={points.join(" ")}
+                  fill="none"
+                  stroke={stroke}
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {points.map((pt, i) => {
+                  const [xStr, yStr] = pt.split(",");
+                  const repRow = rowsByMonth[i] || {};
+                  return (
+                    <circle
+                      key={i}
+                      cx={+xStr}
+                      cy={+yStr}
+                      r={6}
+                      fill={instColorMap[repRow.instituicao || "—"] || "#fff"}
+                      stroke={stroke}
+                      strokeWidth={2}
+                      style={{ cursor: "pointer" }}
+                      onMouseEnter={(ev) => {
+                        const rect = (chartMainRef.current &&
+                          chartMainRef.current.getBoundingClientRect()) || {
+                          left: 0,
+                          top: 0,
+                        };
+                        setTooltip({
+                          visible: true,
+                          left: ev.clientX - rect.left,
+                          top: ev.clientY - rect.top,
+                          instituicao: repRow.instituicao,
+                          reservatorio: repRow.reservatorio,
+                          color: instColorMap[repRow.instituicao || "—"],
+                        });
+                      }}
+                      onMouseMove={(ev) => {
+                        const rect = (chartMainRef.current &&
+                          chartMainRef.current.getBoundingClientRect()) || {
+                          left: 0,
+                          top: 0,
+                        };
+                        setTooltip((t) => ({
+                          ...t,
+                          left: ev.clientX - rect.left,
+                          top: ev.clientY - rect.top,
+                        }));
+                      }}
+                      onMouseLeave={() => setTooltip({ visible: false, left: 0, top: 0 })}
+                    />
+                  );
+                })}
+              </g>
+            );
+          })}
+
+          {/* --- Pontos de Reservatórios (FURNAS) --- */}
+          {latLonPoints &&
+            latLonPoints.length > 0 &&
+            latLonPoints.map((p) => {
+              const x = ((p.longitude + 74) / (-34 + 74)) * (viewBoxWidth - 100) + 50;
+              const y = ((-p.latitude + 34) / (-34 + 5)) * (height - 80) + 40;
+
+              return (
+                <circle
+                  key={p.id}
+                  cx={x}
+                  cy={y}
+                  r={5}
+                  fill="#2563eb"
+                  stroke="#fff"
+                  strokeWidth={1.5}
+                >
+                  <title>{`Ponto ${p.id}`}</title>
+                </circle>
+              );
+            })}
+
+          {months.map((m, i) => (
+            <text
+              key={`lbl-${i}`}
+              x={xFor(i)}
+              y={height - 10}
+              fontSize="12"
+              fill="#5b6b7a"
+              textAnchor="middle"
+            >
+              {m}
+            </text>
+          ))}
+
+          <text x="14" y={34} fontSize="13" fill="#5b6b7a">
+            {max}
+          </text>
+          <text x="14" y={height - 22} fontSize="13" fill="#5b6b7a">
+            {min}
+          </text>
+        </svg>
+
+        {tooltip.visible && tooltip.instituicao && (
+          <Tooltip left={tooltip.left} top={tooltip.top} color={tooltip.color || "#ccc"}>
+            <div className="title">
+              <span className="color" />
+              {tooltip.instituicao}
+            </div>
+            <div className="meta">
+              Reservatório: <strong>{tooltip.reservatorio || "—"}</strong>
+            </div>
+          </Tooltip>
+        )}
+      </div>
+    );
+  }
+
+  const numericColumns = columns.filter(
+    (c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name),
+  );
+  const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.name === s));
+  const plottedColumns = plotColumns.length ? plotColumns : [selectedColumns[0]].filter(Boolean);
   // criar alias any para MapBrazil para evitar erro de tipagem temporariamente
   const MapBrazilAny = MapBrazil as any;
 
@@ -910,15 +1135,21 @@ export default function TablesPage(): JSX.Element {
                       }}
                     >
                       <MapBrazilAny
-                        points={latLonPoints.map((p) => ({
-                          id: p.id,
-                          lat: p.lat,
-                          lon: p.lon,
-                          label: `Ponto ${p.id}`,
-                        }))}
                         height={760}
                         showPolygons={true}
                         showStateNames={showStateNames}
+                        points={latLonPoints
+                          .filter(
+                            (p) =>
+                              typeof p.latitude === "number" && typeof p.longitude === "number",
+                          )
+                          .map((p) => ({
+                            id: p.id,
+                            lat: Number(p.latitude),
+                            lon: Number(p.longitude),
+                            label: p.nome || `Reservatório ${p.id}`,
+                          }))}
+                        showPoints={true}
                       />
                     </div>
                   </div>

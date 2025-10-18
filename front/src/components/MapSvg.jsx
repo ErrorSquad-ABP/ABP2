@@ -1,36 +1,47 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 
-function MapSvg({ onClickState }) {
-  // RECEBENDO A FUNÇÃO COMO PROP
+function MapSvg({ onClickState, reservatorios }) {
   const [hoveredState, setHoveredState] = useState(null);
-  const svgRef = useRef(null);
+
+  // Calcula limites automaticamente a partir dos reservatórios
+  const lats = reservatorios.map((r) => r.lat);
+  const lngs = reservatorios.map((r) => r.lng);
+
+  const minLat = Math.min(...lats, -34);
+  const maxLat = Math.max(...lats, 3);
+  const minLng = Math.min(...lngs, -74);
+  const maxLng = Math.max(...lngs, -30);
+
+  // viewBox="0 0 700 650"
+  const project = ([lng, lat]) => {
+    // Limites geográficos aproximados do Brasi
+
+    const width = 700;
+    const height = 650;
+
+    const x = ((lng - minLng) / (maxLng - minLng)) * width;
+    const y = ((maxLat - lat) / (maxLat - minLat)) * height;
+
+    return [x, y];
+  };
 
   const handleMouseEnter = (e) => {
-    e.target.style.fill = "Red";
-    setHoveredState(e.target.id); // opcional: mostrar tooltip com id do estado
+    e.target.style.fill = "red";
+    setHoveredState(e.target.id);
   };
 
   const handleMouseLeave = (e) => {
-    e.target.style.fill = "White";
+    e.target.style.fill = "white";
     setHoveredState(null);
-  };
-
-  // Função auxiliar que chama a prop
-  const handleClick = (sigla) => {
-    if (onClickState) onClickState(sigla);
   };
 
   return (
     <>
       <div className="tooltip" style={{ display: hoveredState ? "block" : "none" }}></div>
       <svg
-        ref={svgRef}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 700 650"
-        style={{
-          cursor: "grab",
-          fill: "white",
-        }}
+        style={{ cursor: "grab", fill: "white" }}
       >
         <path
           id="BR-AC"
@@ -221,6 +232,14 @@ function MapSvg({ onClickState }) {
           onClick={() => onClickState("TO")}
           d="m433.613 282.081-5.36 1.42-1.74 1.34-2.56 1.1h-1.55l-4.53 1-2.52 2.08-1.78.9-.46-.24-1.51-2.62-.55-.03-.51 3.3-.69.08-3.35-.68-3.13-1.47.56-1.56-.22-.74-4.53.53-2.76-.34-.56.54-.3 1-.75.75-1.14-.05-.61-3.1-1.11-3.71-1.04-1.88-1.15-1.31-1.18.97-1.47 2.39-1.63 5.94-.63.23-4.07-1.43-3.09-1.71-3.93-.4-2.2-1.03-2.4-.4.52-2.34 1.22-1.88.03-1.71-.56.3-1.81 2.09-.66 1.23-.2 1.88-.34.45-.8-.02-.96-.51-.98-3.34.74-2.76-.44-3.05-.52-.58-.01-1.57.47-3.31-1.1-2.25.05-.5.82-.89.16-.87-1.39-1.34-.06-.86 1.88-5.99.04-2.95.54-2.97 1.94-5.29.37-.27.43-.85.44-3.14 1.1-1.25.56-1.89.65-1.02 1.62-3.69 1.13-4.45 1.15-1.58 1.19-1.1 1.21-1.68 1.03-1.92 1.37-.92 1.05-.16.73-.85.94-1.54.18-.99 1.7-3.24 1.09-.8 1.76-5.15.66-4.04-.15-.3-.74-.32-1.67-1.74-.6-.95-.16-.88.14-.57 1.41-1.69 1.29-2.1-.06-2.67-.43-2.18.19-.35 2.47-1.78 3.41-1.14 2.5-1.21.24-.5-.15-1.51.86-1.27 1.51-1.34 1.29-.15.19-1.34-.29-1.2.25-.46 1.46-.46.64-.48.93-2.75-1.02-1.34-.09-1.4.29-.28.97-.08.72-.37.37-.66.03-.64-1.26-1.17-.87-.14-.39-.31-1.02-1.66-1.29-.12-1.87.25-2.29-.81.53-.64 2.62-1.85 1.96-.53.87.05 2.78 1.52 1.4.08.95-.52 1.74.29.59.69.08 1.03.28.32 1.22.03 3.4 1.43.84 1.03.47 3.5.64 1.5-.21 3.72.23 1.08.67 1.13-.01.44-1.77 6.15-.31 2.37.28 1-.25 1.59-1.75 2.04-1.76.67-.18.71 1.94 1.32.42-.27 1.37.24.25.35.11.88-.62 1.19.85 1.44.88-.07 3 4.16.91.85 2.28 3.02 2.14-1.34 4.27-.94 1.8 1.22.08 1.75-.64 3.25.39 1.35-3.39.35-1.34.54-.57.55-.68 1.43-.73 2.68.37 1.3-2.63 2.55-.26.7.2.42 2.08.29.94.69.74 1.59.06 1.66.62 1.04 3.88 1.95.09.53-1.64 1.81.13 1.65 2.14 1.62.99 2.87 1.34 2 .71.18 1.78-.21 1 .3.82.44.61.82 1.28.66 2.94.21-.69.65-.22.98-.56.47-3.82 2.02-3.21 2.62-.19.37 1.29 1.8-.36.39-1.01.27-.9.61-1.52 3.49-1.01.72-.5 1.16.23.92 1.86 1.95 3.59.67 1.87.99.05.76-.56.45-2.04.81-.43.96.09.5.35.33 1.03-.18.92.29.58.51.29.64-.96.71-1.15.42-1.95 1.67-.19.85-.05 2.92.35 1.25.94.66 1.05.24.41.25.17.42.05 1.06-1.36 2.38z"
         ></path>
+
+        {reservatorios &&
+          reservatorios.map((r, index) => {
+            if (!r.lat || !r.lng) return null;
+
+            const [cx, cy] = project([r.lng, r.lat]);
+            return <circle key={index} cx={cx} cy={cy} r={4} fill="blue" />;
+          })}
       </svg>
     </>
   );
