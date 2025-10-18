@@ -483,7 +483,6 @@ export default function TablesPage(): JSX.Element {
     fetchReservatorios();
   }, []);
 
-  function testDates(c) {
   function testDates(c: Campanha) {
     if (!orderedCampanhas) {
       return "Carregando...";
@@ -1162,4 +1161,3 @@ export default function TablesPage(): JSX.Element {
     </Page>
   );
 }
-//prettier//
