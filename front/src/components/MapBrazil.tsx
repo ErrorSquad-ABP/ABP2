@@ -7,6 +7,7 @@ export default function MapBrasil() {
   const [reservatorios, setReservatorios] = useState([]);
   const brStates = brStatesJson.features;
 
+  // Carrega os reservatórios
   useEffect(() => {
     fetch("http://localhost:3001/furnas/reservatorio/all")
       .then((res) => res.json())
@@ -27,8 +28,12 @@ export default function MapBrasil() {
 
     console.log(`Reservatórios em ${state.properties.Estado}:`, reservatoriosNoEstado);
   };
-  <MapSvg onClickState={handleStateClick} />;
-  // ⚠️ Aqui está a linha chave:
-  // você passa a função handleStateClick como prop "onClickState"
-  return <MapSvg onClickState={handleStateClick} />;
+
+  // Passa os reservatórios para o MapSvg
+  return (
+    <MapSvg
+      onClickState={handleStateClick}
+      reservatorios={reservatorios.filter((r) => r.lat && r.lng)}
+    />
+  );
 }

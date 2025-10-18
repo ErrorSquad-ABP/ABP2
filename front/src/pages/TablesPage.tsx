@@ -403,6 +403,7 @@ export default function TablesPage(): JSX.Element {
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
+  const [reservatorios, setReservatorios] = useState([]);
 
   // tooltip state
   const [tooltip, setTooltip] = useState<{
@@ -557,6 +558,22 @@ export default function TablesPage(): JSX.Element {
     }
   }, [campanhas]);
 
+  useEffect(() => {
+    const fetchReservatorios = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/furnas/reservatorio/all");
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setReservatorios(json.data);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar reservatórios:", err);
+      }
+    };
+
+    fetchReservatorios();
+  }, []);
+
   function testDates(c) {
     if (!orderedCampanhas) {
       return "Carregando...";
@@ -693,11 +710,15 @@ export default function TablesPage(): JSX.Element {
   }
 
   const latLonPoints = useMemo(() => {
-    if (!chartData || !chartData.length) return [];
-    return chartData
-      .filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number")
-      .map((r) => ({ lat: r.latitude, lon: r.longitude, id: r.id }));
-  }, [chartData]);
+    return reservatorios
+      .filter((r) => typeof r.lat === "number" && typeof r.lng === "number")
+      .map((r) => ({
+        latitude: r.lat,
+        longitude: r.lng,
+        id: r.idreservatorio,
+        nome: r.nome,
+      }));
+  }, [reservatorios]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const ev = e as any;
@@ -848,6 +869,28 @@ export default function TablesPage(): JSX.Element {
               </g>
             );
           })}
+
+          {/* --- Pontos de Reservatórios (FURNAS) --- */}
+          {latLonPoints &&
+            latLonPoints.length > 0 &&
+            latLonPoints.map((p) => {
+              const x = ((p.longitude + 74) / (-34 + 74)) * (viewBoxWidth - 100) + 50;
+              const y = ((-p.latitude + 34) / (-34 + 5)) * (height - 80) + 40;
+
+              return (
+                <circle
+                  key={p.id}
+                  cx={x}
+                  cy={y}
+                  r={5}
+                  fill="#2563eb"
+                  stroke="#fff"
+                  strokeWidth={1.5}
+                >
+                  <title>{`Ponto ${p.id}`}</title>
+                </circle>
+              );
+            })}
 
           {months.map((m, i) => (
             <text
@@ -1239,15 +1282,21 @@ export default function TablesPage(): JSX.Element {
                       }}
                     >
                       <MapBrazilAny
-                        points={latLonPoints.map((p) => ({
-                          id: p.id,
-                          lat: p.lat,
-                          lon: p.lon,
-                          label: `Ponto ${p.id}`,
-                        }))}
                         height={760}
                         showPolygons={true}
                         showStateNames={showStateNames}
+                        points={latLonPoints
+                          .filter(
+                            (p) =>
+                              typeof p.latitude === "number" && typeof p.longitude === "number",
+                          )
+                          .map((p) => ({
+                            id: p.id,
+                            lat: Number(p.latitude),
+                            lon: Number(p.longitude),
+                            label: p.nome || `Reservatório ${p.id}`,
+                          }))}
+                        showPoints={true}
                       />
                     </div>
                   </div>
