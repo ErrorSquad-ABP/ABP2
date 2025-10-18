@@ -1,6 +1,7 @@
 // front/src/pages/HomePage.tsx
 import { JSX } from "react";
 import styled from "styled-components";
+import { Link } from "react-router-dom";
 
 type Category = {
   id: string;
@@ -100,7 +101,7 @@ export default function HomePage(): JSX.Element {
 
       <Content>
         <TopSpot>
-          <SimaCardLink href={sima.href} target="_blank" rel="noopener noreferrer">
+          <SimaCardLink to={sima.href}>
             <SimaCard>
               <SimaIcon aria-hidden>{sima.icon}</SimaIcon>
               <SimaCardTitle>{sima.title}</SimaCardTitle>
@@ -113,7 +114,7 @@ export default function HomePage(): JSX.Element {
         <Cards role="list">
           {otherCategories.map((c) => {
             return (
-              <CardLink key={c.id} href={c.href} target="_blank" rel="noopener noreferrer">
+              <CardLink key={c.id} to={c.href}>
                 <Card>
                   <Icon aria-hidden>{c.icon}</Icon>
                   <CardTitle>{c.title}</CardTitle>
@@ -179,6 +180,7 @@ const Content = styled.main`
   width: 100%;
 `;
 
+/* Top spot uses same 3-column layout but only contains the SIMA card centered on column 2 */
 const TopSpot = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 360px);
@@ -195,7 +197,7 @@ const TopSpot = styled.div`
   @media (max-width: 1100px) {
     grid-template-columns: repeat(2, minmax(260px, 1fr));
     a {
-      grid-column: 1 / -1;
+      grid-column: 1 / -1; /* span full width on smaller screens */
     }
   }
 
@@ -226,7 +228,8 @@ const Cards = styled.div`
   }
 `;
 
-const CardLink = styled.a`
+/* use react-router-dom Link so we can navigate SPA-style */
+const CardLink = styled(Link)`
   text-decoration: none;
   color: inherit;
   width: 100%;
@@ -293,7 +296,7 @@ const CardCTA = styled.div`
 `;
 
 /* SIMA highlighted card styles */
-const SimaCardLink = styled.a`
+const SimaCardLink = styled(Link)`
   text-decoration: none;
   color: inherit;
   width: 100%;
@@ -358,6 +361,7 @@ const SimaCardCTA = styled.div`
   padding-top: 8px;
 `;
 
+/* Footer */
 const Footer = styled.footer`
   margin-top: auto;
   background: ${({ theme }) => theme.colors.primaryDark};

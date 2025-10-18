@@ -37,9 +37,7 @@ const ToastContainer = styled.div<{ $color: string; $isDark: boolean }>`
   border-radius: 12px;
   min-width: 260px;
   box-shadow: ${({ $isDark }) =>
-    $isDark
-      ? "0 4px 16px rgba(0,0,0,0.6)"
-      : "0 4px 16px rgba(0,0,0,0.15)"};
+    $isDark ? "0 4px 16px rgba(0,0,0,0.6)" : "0 4px 16px rgba(0,0,0,0.15)"};
   display: flex;
   align-items: center;
   gap: 0.5rem;
