@@ -16,7 +16,7 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
 
     const columns = queryColumns ? `${queryColumns}` : "*";
 
-    const query = `SELECT ${columns} FROM ${tabela} LIMIT ${limit} OFFSET ${offset}`;
+    const query = `SELECT ${columns} FROM ${tabela}`;
 
     const result = await balcarPool.query(query);
     const resultData = result.rows;

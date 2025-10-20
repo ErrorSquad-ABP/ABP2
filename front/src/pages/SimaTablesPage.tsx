@@ -17,16 +17,6 @@ import axios from "axios";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
 
-interface Campanha {
-  idcampanha: number;
-  idreservatorio: number;
-  idinstituicao: number;
-  nrocampanha: number;
-  datainicio: string;
-  datafim: string;
-  responsible: string; // FURNAS ou BALCAR
-}
-
 type ColumnMeta = {
   name: string;
   label?: string;
@@ -46,7 +36,7 @@ function isoDate(date: Date) {
 
 /* ------------------ ADDITIONAL HELPERS & CONSTANTS FOR GRAPH ------------------ */
 
-const SERIES_COLORS: string[] = ["#0b5394", "#2563EB", "#06B6D4", "#F59E0B", "#EF4444", "#10B981"];
+const SERIES_COLORS: string[] = ["#0b5394", "#2563EB", "#06B6D4", "#10B981", "#F59E0B", "#EF4444"];
 const INSTITUTION_FILL_COLORS: string[] = [
   "#ffd6d6",
   "#fff0d6",
@@ -122,7 +112,7 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: minmax(300px, 460px) minmax(0, 1fr);
   gap: 24px;
-  align-items: stretch; /* ensure both columns stretch to same height */
+  align-items: stretch;
   min-height: 640px;
 
   @media (max-width: 1100px) {
@@ -131,7 +121,6 @@ const Container = styled.div`
   }
 `;
 
-/* left column wrapper so controls + columns share the same full height */
 const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
@@ -188,7 +177,7 @@ const ColumnsBox = styled.div`
   flex-direction: column;
   gap: 8px;
   overflow: auto;
-  flex: 1 1 auto; /* take remaining height so left column matches right */
+  flex: 1 1 auto;
 `;
 
 const ColumnItem = styled.label`
@@ -248,7 +237,6 @@ const Panel = styled.div`
   background: #fff;
   padding: 20px;
   border-radius: 12px;
-  /* make panel stretch to full left column height */
   height: 100%;
   box-shadow: 0 12px 36px rgba(9, 30, 66, 0.06);
   display: flex;
@@ -271,18 +259,17 @@ const ChartMain = styled.div`
   flex: 1 1 0;
   min-width: 0;
   display: flex;
-  align-items: flex-start; /* align top so legend (if any) lines up */
+  align-items: flex-start;
   justify-content: center;
   padding: 12px;
   border-radius: 8px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   box-shadow: inset 0 4px 14px rgba(2, 6, 23, 0.02);
-  position: relative; /* for tooltip placement */
+  position: relative;
   overflow: auto;
   min-height: 440px;
 `;
 
-/* tooltip */
 const Tooltip = styled.div<{ left: number; top: number; color: string }>`
   position: absolute;
   left: ${(p) => p.left}px;
@@ -339,14 +326,13 @@ const LegendItem = styled.div`
 const MapPlaceholder = styled.div`
   position: relative;
   flex: 1;
-  background: linear-gradient(180deg, #0b2340 0%, #082033 100%); /* darker backdrop */
+  background: linear-gradient(180deg, #0b2340 0%, #082033 100%);
   border-radius: 8px;
   overflow: hidden;
   min-height: 260px;
   padding: 12px;
 `;
 
-/* zoom controls positioned on top-right of map */
 const ZoomControls = styled.div`
   position: absolute;
   right: 18px;
@@ -405,7 +391,6 @@ const TableElement = styled.table`
 export default function TablesPage(): JSX.Element {
   const topicSlug = "sima";
 
-  // start/end initially empty — user must pick after table loaded
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [table, setTable] = useState<string>("");
@@ -414,13 +399,11 @@ export default function TablesPage(): JSX.Element {
   const [responsible, setResponsible] = useState<string>();
   const [metadata, setMetadata] = useState<TableMetadata[] | null>(null);
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
   const [tableIdMap, setTableIdMap] = useState<Record<string, string>>({}); // displayName -> realTableName
 
   const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
     string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   > | null>(null);
 
@@ -431,8 +414,6 @@ export default function TablesPage(): JSX.Element {
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
   const [showExportOptions, setShowExportOptions] = useState(false);
-  const [campanhas, setCampanhas] = useState<Campanha[]>([]);
-  const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
 
   const [tooltip, setTooltip] = useState<{
     visible: boolean;
@@ -471,6 +452,8 @@ export default function TablesPage(): JSX.Element {
 
   /* ================= UPDATED handleGenerate: try direct ?all endpoints first ================= */
   async function handleGenerate() {
+    console.debug("[generate] start", { table, selectedColumns, startDate, endDate });
+
     if (!selectedColumns.length) {
       alert("Selecione ao menos uma coluna para gerar o gráfico.");
       return;
@@ -492,31 +475,37 @@ export default function TablesPage(): JSX.Element {
 
     // real table name via metadata map (display -> real)
     const realTableName = tableIdMap[table] ?? table;
-    const colsParam = encodeURIComponent(selectedColumns.join(","));
 
-    // try endpoint that returns all rows (no pagination) for the chosen table
+    // IMPORTANT: encode each column individually but keep comma characters literal between them
+    const colsParam = selectedColumns.map((c) => encodeURIComponent(c)).join(",");
+
     const candidateMeasurementUrls = [
       `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(realTableName)}?all=true&colunas=${colsParam}`,
-      // offline variant (some tables have offline variant named like tbsomethingoffline)
       `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(realTableName + "offline")}?all=true&colunas=${colsParam}`,
-      // fallback to tbestacao at topic level (some data lives there)
       `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/tbestacao?all=true&colunas=${colsParam}`,
     ];
 
-    // Try each candidate until we get rows
     for (const url of candidateMeasurementUrls) {
       try {
+        console.debug("[generate] trying url:", url);
         const resp = await fetch(url);
         if (!resp.ok) {
           continue;
         }
         const json = await resp.json();
         const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+        console.debug("[generate] rows length from url:", rows?.length ?? 0);
         if (Array.isArray(rows) && rows.length) {
-          // filter by date range if date column exists
-          const dateKeys = ["dataHora", "datahora", "datamedida", "data", "dataHoraUTC"];
+          const dateKeys = [
+            "dataHora",
+            "datahora",
+            "datamedida",
+            "data",
+            "dataHoraUTC",
+            "inicio",
+            "fim",
+          ];
           const normalized = rows.filter((r: any) => {
-            // if no date cols present, keep all
             const presentKey = dateKeys.find(
               (k) => r[k] !== undefined || r[k?.toLowerCase?.()] !== undefined,
             );
@@ -544,15 +533,18 @@ export default function TablesPage(): JSX.Element {
       const params = new URLSearchParams();
       params.set("start", startDate);
       params.set("end", endDate);
-      params.set("cols", selectedColumns.join(","));
+      // aggregate endpoint expects 'cols' without encoding of commas as well; we encode each column individually
+      params.set("cols", selectedColumns.map((c) => encodeURIComponent(c)).join(","));
       params.set("aggregate_by", "month");
 
       const url = `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(realTableName)}/aggregate?${params.toString()}`;
+      console.debug("[generate] trying url:", url);
       const res = await fetch(url);
 
       if (res.ok) {
         const dataRes = await res.json();
         const rows = Array.isArray(dataRes) ? dataRes : dataRes?.rows || dataRes?.data || [];
+        console.debug("[generate] rows length from aggregate:", rows?.length ?? 0);
         if (Array.isArray(rows) && rows.length) {
           setChartData(rows);
         } else {
@@ -630,7 +622,6 @@ export default function TablesPage(): JSX.Element {
       const newResp = getResponsibleFromMetadata(metadata);
       setColumnsFromMetadata(newColumns);
       setResponsibleFromMetadata(newResp);
-      // set table to first display name (if not already set)
       setTable((prev) => prev || Object.keys(newColumns)[0] || tablesFromMetadata[0] || "");
     }
   }, [metadata]);
@@ -644,15 +635,12 @@ export default function TablesPage(): JSX.Element {
 
   useEffect(() => {
     if (table) {
-      // guard against undefined columnsFromMetadata
       setColumns(columnsFromMetadata?.[table] ?? []);
       setResponsible(responsibleFromMetadata ? responsibleFromMetadata[table] : undefined);
     }
   }, [table, columnsFromMetadata, responsibleFromMetadata]);
 
-  // fetch available dates for the selected table, used to populate the date selects
   useEffect(() => {
-    // substitua apenas a função fetchAvailableDatesForTable dentro do useEffect correspondente
     async function fetchAvailableDatesForTable() {
       console.debug("[dates] fetchAvailableDatesForTable start for table:", table);
       if (!table) {
@@ -663,7 +651,6 @@ export default function TablesPage(): JSX.Element {
       const display = table;
       const mapped = tableIdMap[display];
 
-      // explicit mapping per-table to requested date columns (exact string to send to backend)
       const tableToDateCols: Record<string, string | null> = {
         tbestacao: "inicio,fim",
         tbsima: "dataHora",
@@ -676,7 +663,6 @@ export default function TablesPage(): JSX.Element {
       const explicit = tableToDateCols[realNameLower];
 
       if (explicit === null) {
-        // tabela conhecida sem colunas de data
         console.debug(
           "[dates] explicit mapping indicates no date columns for table:",
           display,
@@ -688,14 +674,12 @@ export default function TablesPage(): JSX.Element {
         return;
       }
 
-      // colsParam deve SER EXATAMENTE como o backend espera (vírgula normal)
       const dateColsRaw = explicit ?? "dataHora,datahora,datamedida,inicio,fim,data";
-      const colsParamForUrl = encodeURIComponent(dateColsRaw).replace(/%2C/g, ","); // mantém as vírgulas "normais" na query
+      const colsParamForUrl = encodeURIComponent(dateColsRaw).replace(/%2C/g, ",");
 
       const normalizeISODate = (val: any): string | null => {
         if (val === null || val === undefined) return null;
         const s = String(val).trim();
-        // Try Date
         const d = new Date(s);
         if (!isNaN(d.getTime())) return isoDate(d);
         const onlyDate = s.split(" ")[0];
@@ -705,7 +689,6 @@ export default function TablesPage(): JSX.Element {
 
       const foundDates = new Set<string>();
 
-      // urls candidatas (preferir real table name se mapeado)
       const candidatesBase: string[] = [];
       if (mapped && mapped !== "undefined") {
         candidatesBase.push(
@@ -721,7 +704,6 @@ export default function TablesPage(): JSX.Element {
       candidatesBase.push(
         `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(String(display).toLowerCase().replace(/\s+/g, ""))}?all=true&colunas=${colsParamForUrl}`,
       );
-      // fallbacks
       candidatesBase.push(
         `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/tbsima?all=true&colunas=${colsParamForUrl}`,
       );
@@ -749,11 +731,9 @@ export default function TablesPage(): JSX.Element {
             continue;
           }
           const json = await resp.json();
-          // backend fornece data em json.data (ou json)
           const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
           const totalCount = Number(json?.count?.count ?? rows.length ?? 0);
 
-          // se veio poucas linhas mas count é grande -> tentar paginação
           if (totalCount > rows.length) {
             console.debug(
               "[dates] detected partial sample (count:",
@@ -763,11 +743,10 @@ export default function TablesPage(): JSX.Element {
               ") — will paginate:",
               url,
             );
-            // tentar paginação com limit/offset — usar tamanho razoável por página
-            const pageLimit = 20000; // ajuste se necessário
+            const pageLimit = 20000;
             let offset = 0;
             let iterations = 0;
-            const maxIterations = Math.ceil(Math.min(totalCount, 2000000) / pageLimit) + 5; // segura
+            const maxIterations = Math.ceil(Math.min(totalCount, 2000000) / pageLimit) + 5;
             while (offset < totalCount && iterations < maxIterations) {
               const pageUrl = url + `&limit=${pageLimit}&offset=${offset}`;
               console.debug("[dates] paginating, fetching:", pageUrl);
@@ -781,7 +760,6 @@ export default function TablesPage(): JSX.Element {
                 const prows = Array.isArray(pjson) ? pjson : pjson?.data || pjson?.rows || [];
                 for (const r of prows) {
                   if (!r || typeof r !== "object") continue;
-                  // se explicit (ex.: "inicio,fim") use essas colunas; senão, varre valores
                   if (explicit) {
                     for (const rc of explicit.split(",")) {
                       const v = r[rc] ?? r[rc.toLowerCase?.()];
@@ -803,8 +781,6 @@ export default function TablesPage(): JSX.Element {
                 }
                 offset += prows.length;
                 iterations++;
-                // se já temos uma boa quantidade de datas (ex.: todas entre min/max), podemos encerrar mais cedo:
-                // aqui paramos se já coletamos >= 365 dias (configurável)
                 if (foundDates.size >= 366) {
                   console.debug("[dates] collected >=366 distinct dates, stopping early");
                   break;
@@ -816,7 +792,6 @@ export default function TablesPage(): JSX.Element {
               }
             }
           } else {
-            // resposta curta: processar rows retornados
             for (const r of rows) {
               if (!r || typeof r !== "object") continue;
               if (explicit) {
@@ -842,7 +817,7 @@ export default function TablesPage(): JSX.Element {
 
           if (foundDates.size) {
             console.debug("[dates] foundDates size after url:", foundDates.size);
-            break; // não precisa tentar outros candidatos
+            break;
           }
         } catch (err) {
           console.warn("[dates] error trying url:", url, err);
@@ -868,86 +843,9 @@ export default function TablesPage(): JSX.Element {
     fetchAvailableDatesForTable();
   }, [table, tableIdMap, topicSlug]);
 
-  useEffect(() => {
-    const fetchCampanhas = async () => {
-      if (!table || !responsibleFromMetadata) return;
-
-      const responsibleVal = responsibleFromMetadata[table];
-      const fetches: Promise<Campanha[]>[] = [];
-
-      if (
-        responsibleVal &&
-        typeof responsibleVal === "string" &&
-        responsibleVal.includes("Furnas")
-      ) {
-        fetches.push(
-          axios
-            .get("http://localhost:3001/tables/furnas/tbcampanha?all=true")
-            .then((res) => res.data.data as Campanha[]),
-        );
-      }
-
-      if (
-        responsibleVal &&
-        typeof responsibleVal === "string" &&
-        responsibleVal.includes("Balcar")
-      ) {
-        fetches.push(
-          axios
-            .get("http://localhost:3001/balcar/campanha")
-            .then((res) => res.data.data as Campanha[]),
-        );
-      }
-
-      try {
-        const results = await Promise.all(fetches);
-        const combined = results.flat();
-
-        const uniqueDates = combined.reduce((acc: Campanha[], curr) => {
-          const exists = acc.some(
-            (d) =>
-              String(d.datainicio).slice(0, 10) === String(curr.datainicio).slice(0, 10) ||
-              String(d.datafim).slice(0, 10) === String(curr.datafim).slice(0, 10) ||
-              d.idcampanha === curr.idcampanha,
-          );
-          if (!exists) acc.push(curr);
-          return acc;
-        }, []);
-
-        console.log("Sem diplicatas; ", uniqueDates);
-        setCampanhas(uniqueDates);
-      } catch (err) {
-        console.error("Erro ao carregar campanhas", err);
-      }
-    };
-
-    fetchCampanhas();
-  }, [table, responsibleFromMetadata]);
-
-  useEffect(() => {
-    if (campanhas) {
-      setOrderedCampanhas(
-        campanhas.sort(
-          (a: any, b: any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime(),
-        ),
-      );
-    } else {
-      return;
-    }
-  }, [campanhas]);
-
-  function testDates(c: Campanha) {
-    if (!orderedCampanhas) {
-      return "Carregando...";
-    } else {
-      return c.datainicio.slice(0, 10).split("-").reverse().join("/");
-    }
-  }
-
   function getColumnsFromMetadata(meta: any) {
     const clms: Record<string, any> = {};
     meta.forEach((tb: any) => {
-      // tb.name is used as display name in UI; keep that as key
       clms[tb.name] = tb.colunas;
     });
     return clms;
@@ -1058,7 +956,6 @@ export default function TablesPage(): JSX.Element {
     if (!rows || !rows.length || !columns || !columns.length)
       return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
 
-    // determine start/end from props (use selected range if set, otherwise from data)
     const dataDates: string[] = rows
       .map((r) => {
         const val = r.datamedida ?? r.datahora ?? r.dataHora ?? r.inicio ?? r.fim ?? r.data;
@@ -1075,7 +972,6 @@ export default function TablesPage(): JSX.Element {
     const startForLabels = startDate || minDataDate || isoDate(new Date());
     const endForLabels = endDate || maxDataDate || isoDate(new Date());
 
-    // gather unique day strings from rows within the selected/derived interval
     const uniqueDays = Array.from(
       new Set(
         rows
@@ -1090,7 +986,6 @@ export default function TablesPage(): JSX.Element {
       ),
     ).sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime());
 
-    // choose daily labels if data contains multiple distinct days within reasonable span
     const daysSpan = Math.ceil(
       (new Date(endForLabels).getTime() - new Date(startForLabels).getTime()) /
         (1000 * 60 * 60 * 24),
@@ -1102,14 +997,13 @@ export default function TablesPage(): JSX.Element {
       : monthsBetweenDatesISO(startForLabels, endForLabels);
 
     const height = 520;
-    const viewBoxWidth = Math.max(1000, labels.length * 40); // narrower spacing for daily
+    const viewBoxWidth = Math.max(1000, labels.length * 40);
     const count = labels.length;
     const xFor = (i: number) => (i / (count - 1 || 1)) * (viewBoxWidth - 100) + 50;
 
     const rowsByLabel = labels.map((lab, i) => {
-      // lab is 'YYYY/MM/DD' or 'YYYY/MM/01'
       if (useDaily) {
-        const ymd = lab.replace(/\//g, "-").slice(0, 10); // YYYY-MM-DD
+        const ymd = lab.replace(/\//g, "-").slice(0, 10);
         const found = rows.find((r) => {
           const dv = r.datamedida ?? r.datahora ?? r.dataHora ?? r.inicio ?? r.fim ?? r.data;
           if (!dv) return false;
@@ -1120,7 +1014,7 @@ export default function TablesPage(): JSX.Element {
         });
         return found || rows[Math.min(rows.length - 1, i)] || rows[0];
       } else {
-        const ymd = lab.replace(/\//g, "-").slice(0, 7); // YYYY-MM
+        const ymd = lab.replace(/\//g, "-").slice(0, 7);
         const found = rows.find((r) => {
           const dv = r.datamedida ?? r.datahora ?? r.dataHora ?? r.inicio ?? r.fim ?? r.data;
           if (!dv) return false;
@@ -1133,6 +1027,7 @@ export default function TablesPage(): JSX.Element {
       }
     });
 
+    // seriesValues: uma série por coluna selecionada (ordem = columns param)
     const seriesValues = columns.map((col) =>
       rowsByLabel.map((r) => {
         const v = Number(r[col]);
@@ -1206,10 +1101,7 @@ export default function TablesPage(): JSX.Element {
                       style={{ cursor: "pointer" }}
                       onMouseEnter={(ev) => {
                         const rect = (chartMainRef.current &&
-                          chartMainRef.current.getBoundingClientRect()) || {
-                          left: 0,
-                          top: 0,
-                        };
+                          chartMainRef.current.getBoundingClientRect()) || { left: 0, top: 0 };
                         setTooltip({
                           visible: true,
                           left: ev.clientX - rect.left,
@@ -1221,10 +1113,7 @@ export default function TablesPage(): JSX.Element {
                       }}
                       onMouseMove={(ev) => {
                         const rect = (chartMainRef.current &&
-                          chartMainRef.current.getBoundingClientRect()) || {
-                          left: 0,
-                          top: 0,
-                        };
+                          chartMainRef.current.getBoundingClientRect()) || { left: 0, top: 0 };
                         setTooltip((t) => ({
                           ...t,
                           left: ev.clientX - rect.left,
@@ -1276,11 +1165,8 @@ export default function TablesPage(): JSX.Element {
   }
   /* ================= end MultiSeriesSVG ================= */
 
-  const numericColumns = columns.filter(
-    (c) => c.type === "number" || /dic|ph|profundidade|temp|conduct|sonda/i.test(String(c.name)),
-  );
-  const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.name === s));
-  const plottedColumns = plotColumns.length ? plotColumns : [selectedColumns[0]].filter(Boolean);
+  // Plot exactly the selectedColumns (so each selected column -> one line)
+  const plottedColumns = selectedColumns.slice();
 
   return (
     <Page>
