@@ -3,8 +3,8 @@ import "styled-components";
 
 declare module "styled-components" {
   export interface DefaultTheme {
-    /** 
-     * Define o modo de cor ativo do tema 
+    /**
+     * Define o modo de cor ativo do tema
      * (útil para componentes que mudam aparência dinamicamente)
      */
     mode: "light" | "dark";

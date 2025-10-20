@@ -15,7 +15,6 @@ import axios from "axios";
  * - This file uses a small runtime-safe access to import.meta.env to avoid TS/Bundler errors.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
 
 interface Campanha {
