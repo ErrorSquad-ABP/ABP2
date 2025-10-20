@@ -931,4 +931,3 @@ export default function TablesPage(): JSX.Element {
     </Page>
   );
 }
-//prettier//

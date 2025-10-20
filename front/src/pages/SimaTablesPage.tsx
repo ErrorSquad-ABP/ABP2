@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// front/src/pages/TablesPage.tsx
+// front/src/pages/SimaTablesPage.tsx
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
@@ -71,6 +71,19 @@ function monthsBetweenDatesISO(startISO: string, endISO: string) {
   return res;
 }
 
+function daysBetweenDatesISO(startISO: string, endISO: string) {
+  const start = new Date(startISO + "T00:00:00");
+  const end = new Date(endISO + "T00:00:00");
+  const res: string[] = [];
+  for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+    const y = dt.getFullYear();
+    const m = (dt.getMonth() + 1).toString().padStart(2, "0");
+    const d = dt.getDate().toString().padStart(2, "0");
+    res.push(`${y}/${m}/${d}`);
+  }
+  return res;
+}
+
 function makeMockMeasurementsForMonths(months: string[]) {
   return months.map((m, i) => {
     const inst = ["INPE", "FURNAS", "BALCAR", "UFRJ", "USP"][i % 5];
@@ -109,7 +122,7 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: minmax(300px, 460px) minmax(0, 1fr);
   gap: 24px;
-  align-items: stretch;
+  align-items: stretch; /* ensure both columns stretch to same height */
   min-height: 640px;
 
   @media (max-width: 1100px) {
@@ -118,6 +131,7 @@ const Container = styled.div`
   }
 `;
 
+/* left column wrapper so controls + columns share the same full height */
 const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
@@ -174,7 +188,7 @@ const ColumnsBox = styled.div`
   flex-direction: column;
   gap: 8px;
   overflow: auto;
-  flex: 1 1 auto;
+  flex: 1 1 auto; /* take remaining height so left column matches right */
 `;
 
 const ColumnItem = styled.label`
@@ -234,6 +248,7 @@ const Panel = styled.div`
   background: #fff;
   padding: 20px;
   border-radius: 12px;
+  /* make panel stretch to full left column height */
   height: 100%;
   box-shadow: 0 12px 36px rgba(9, 30, 66, 0.06);
   display: flex;
@@ -256,17 +271,18 @@ const ChartMain = styled.div`
   flex: 1 1 0;
   min-width: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: flex-start; /* align top so legend (if any) lines up */
   justify-content: center;
   padding: 12px;
   border-radius: 8px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   box-shadow: inset 0 4px 14px rgba(2, 6, 23, 0.02);
-  position: relative;
+  position: relative; /* for tooltip placement */
   overflow: auto;
   min-height: 440px;
 `;
 
+/* tooltip */
 const Tooltip = styled.div<{ left: number; top: number; color: string }>`
   position: absolute;
   left: ${(p) => p.left}px;
@@ -323,13 +339,14 @@ const LegendItem = styled.div`
 const MapPlaceholder = styled.div`
   position: relative;
   flex: 1;
-  background: linear-gradient(180deg, #0b2340 0%, #082033 100%);
+  background: linear-gradient(180deg, #0b2340 0%, #082033 100%); /* darker backdrop */
   border-radius: 8px;
   overflow: hidden;
   min-height: 260px;
   padding: 12px;
 `;
 
+/* zoom controls positioned on top-right of map */
 const ZoomControls = styled.div`
   position: absolute;
   right: 18px;
@@ -388,24 +405,26 @@ const TableElement = styled.table`
 export default function TablesPage(): JSX.Element {
   const topicSlug = "sima";
 
-  const [startDate, setStartDate] = useState<string>(() =>
-    isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)),
-  );
-  const [endDate, setEndDate] = useState<string>(() => isoDate(new Date()));
-  const [table, setTable] = useState<string>("sima");
+  // start/end initially empty — user must pick after table loaded
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [table, setTable] = useState<string>("");
   const [columns, setColumns] = useState<ColumnMeta[]>([]);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [responsible, setResponsible] = useState<string>();
-  const [metadata, setMetadata] = useState<TableMetadata | null>();
+  const [metadata, setMetadata] = useState<TableMetadata[] | null>(null);
   const [tablesFromMetadata, setTablesFromMetadata] = useState<Array<string>>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>();
+  const [tableIdMap, setTableIdMap] = useState<Record<string, string>>({}); // displayName -> realTableName
 
   const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
     string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   > | null>(null);
+
+  const [availableDates, setAvailableDates] = useState<string[]>([]);
 
   const [view, setView] = useState<"chart" | "map">("chart");
   const [chartData, setChartData] = useState<any[] | null>(null);
@@ -450,7 +469,7 @@ export default function TablesPage(): JSX.Element {
     }
   }
 
-  /* ================= UPDATED handleGenerate: try tbestacao?all=true&colunas=... first ================= */
+  /* ================= UPDATED handleGenerate: try direct ?all endpoints first ================= */
   async function handleGenerate() {
     if (!selectedColumns.length) {
       alert("Selecione ao menos uma coluna para gerar o gráfico.");
@@ -460,34 +479,66 @@ export default function TablesPage(): JSX.Element {
       alert("Selecione uma tabela primeiro.");
       return;
     }
+    if (!startDate || !endDate) {
+      alert("Selecione data de início e data de fim.");
+      return;
+    }
 
+    // ensure start <= end
+    if (new Date(startDate).getTime() > new Date(endDate).getTime()) {
+      alert("Data de início deve ser menor ou igual à data final.");
+      return;
+    }
+
+    // real table name via metadata map (display -> real)
+    const realTableName = tableIdMap[table] ?? table;
     const colsParam = encodeURIComponent(selectedColumns.join(","));
-    // endpoint sem paginação conforme solicitado
-    const tbestacaoUrl = `${API_BASE}/tables/${encodeURIComponent(table)}/tbestacao?all=true&colunas=${colsParam}`;
 
-    try {
-      // primeiro tentamos o endpoint tbestacao (sem paginação)
-      const resp = await fetch(tbestacaoUrl);
-      if (resp.ok) {
+    // try endpoint that returns all rows (no pagination) for the chosen table
+    const candidateMeasurementUrls = [
+      `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(realTableName)}?all=true&colunas=${colsParam}`,
+      // offline variant (some tables have offline variant named like tbsomethingoffline)
+      `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(realTableName + "offline")}?all=true&colunas=${colsParam}`,
+      // fallback to tbestacao at topic level (some data lives there)
+      `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/tbestacao?all=true&colunas=${colsParam}`,
+    ];
+
+    // Try each candidate until we get rows
+    for (const url of candidateMeasurementUrls) {
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) {
+          continue;
+        }
         const json = await resp.json();
-        // o endpoint pode retornar { data: [...] } ou [...] — normalizamos
         const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
         if (Array.isArray(rows) && rows.length) {
-          setChartData(rows);
+          // filter by date range if date column exists
+          const dateKeys = ["dataHora", "datahora", "datamedida", "data", "dataHoraUTC"];
+          const normalized = rows.filter((r: any) => {
+            // if no date cols present, keep all
+            const presentKey = dateKeys.find(
+              (k) => r[k] !== undefined || r[k?.toLowerCase?.()] !== undefined,
+            );
+            if (!presentKey) return true;
+            const val = r[presentKey] ?? r[presentKey.toLowerCase?.()];
+            if (!val) return true;
+            const d = new Date(String(val));
+            if (isNaN(d.getTime())) return true;
+            const day = isoDate(d);
+            return day >= startDate && day <= endDate;
+          });
+          setChartData(normalized);
           setView("chart");
           chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
           return;
         }
-        // se veio vazio, caímos para o aggregate (fallback)
-        console.info("tbestacao retornou vazio — usando aggregate como fallback");
-      } else {
-        console.warn("tbestacao não disponível (status != 200), usando aggregate fallback");
+      } catch (err) {
+        console.warn("Erro em candidate url:", url, err);
       }
-    } catch (err) {
-      console.warn("Erro ao chamar tbestacao:", err);
     }
 
-    // fallback: chamar aggregate (mantive seu comportamento antigo)
+    // fallback to aggregate endpoint (monthly aggregate)
     const months = monthsBetweenDatesISO(startDate, endDate);
     try {
       const params = new URLSearchParams();
@@ -496,7 +547,7 @@ export default function TablesPage(): JSX.Element {
       params.set("cols", selectedColumns.join(","));
       params.set("aggregate_by", "month");
 
-      const url = `${API_BASE}/tables/${encodeURIComponent(table)}/aggregate?${params.toString()}`;
+      const url = `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(realTableName)}/aggregate?${params.toString()}`;
       const res = await fetch(url);
 
       if (res.ok) {
@@ -529,8 +580,41 @@ export default function TablesPage(): JSX.Element {
           const m = await metaRes.json();
           const dataM = m.data;
           setMetadata(dataM);
-          const tfm = dataM.map((item: any) => item.name);
-          setTablesFromMetadata(tfm);
+
+          // Build display list and map display -> real table name (id)
+          const displayNames: string[] = [];
+          const map: Record<string, string> = {};
+          (dataM || []).forEach((item: any) => {
+            const displayName =
+              item.name ??
+              item.title ??
+              item.display ??
+              item.label ??
+              String(item.id ?? item.name ?? "");
+            displayNames.push(displayName);
+
+            const realName =
+              item.id ??
+              item.slug ??
+              item.table ??
+              item.tablename ??
+              item.realName ??
+              item.nome ??
+              item.tabela ??
+              (typeof item.name === "string" && /^tb/i.test(item.name) ? item.name : undefined) ??
+              (typeof displayName === "string"
+                ? displayName.toLowerCase().replace(/\s+/g, "")
+                : displayName);
+
+            map[displayName] = String(realName);
+          });
+
+          setTablesFromMetadata(displayNames);
+          setTableIdMap(map);
+
+          if (!table && displayNames.length) {
+            setTable(displayNames[0]);
+          }
         }
       } catch (err) {
         console.log("Error fetching metadata: ", err);
@@ -546,7 +630,8 @@ export default function TablesPage(): JSX.Element {
       const newResp = getResponsibleFromMetadata(metadata);
       setColumnsFromMetadata(newColumns);
       setResponsibleFromMetadata(newResp);
-      setTable((prev) => prev || Object.keys(newColumns)[0] || "sima");
+      // set table to first display name (if not already set)
+      setTable((prev) => prev || Object.keys(newColumns)[0] || tablesFromMetadata[0] || "");
     }
   }, [metadata]);
 
@@ -559,10 +644,229 @@ export default function TablesPage(): JSX.Element {
 
   useEffect(() => {
     if (table) {
-      setColumns(columnsFromMetadata[table] || []);
+      // guard against undefined columnsFromMetadata
+      setColumns(columnsFromMetadata?.[table] ?? []);
       setResponsible(responsibleFromMetadata ? responsibleFromMetadata[table] : undefined);
     }
   }, [table, columnsFromMetadata, responsibleFromMetadata]);
+
+  // fetch available dates for the selected table, used to populate the date selects
+  useEffect(() => {
+    // substitua apenas a função fetchAvailableDatesForTable dentro do useEffect correspondente
+    async function fetchAvailableDatesForTable() {
+      console.debug("[dates] fetchAvailableDatesForTable start for table:", table);
+      if (!table) {
+        setAvailableDates([]);
+        return;
+      }
+
+      const display = table;
+      const mapped = tableIdMap[display];
+
+      // explicit mapping per-table to requested date columns (exact string to send to backend)
+      const tableToDateCols: Record<string, string | null> = {
+        tbestacao: "inicio,fim",
+        tbsima: "dataHora",
+        tbsimaoffline: "dataHora",
+        tbsensor: null,
+        tbcampotabela: null,
+      };
+
+      const realNameLower = String(mapped ?? display).toLowerCase();
+      const explicit = tableToDateCols[realNameLower];
+
+      if (explicit === null) {
+        // tabela conhecida sem colunas de data
+        console.debug(
+          "[dates] explicit mapping indicates no date columns for table:",
+          display,
+          realNameLower,
+        );
+        setAvailableDates([]);
+        setStartDate("");
+        setEndDate("");
+        return;
+      }
+
+      // colsParam deve SER EXATAMENTE como o backend espera (vírgula normal)
+      const dateColsRaw = explicit ?? "dataHora,datahora,datamedida,inicio,fim,data";
+      const colsParamForUrl = encodeURIComponent(dateColsRaw).replace(/%2C/g, ","); // mantém as vírgulas "normais" na query
+
+      const normalizeISODate = (val: any): string | null => {
+        if (val === null || val === undefined) return null;
+        const s = String(val).trim();
+        // Try Date
+        const d = new Date(s);
+        if (!isNaN(d.getTime())) return isoDate(d);
+        const onlyDate = s.split(" ")[0];
+        if (/^\d{4}-\d{2}-\d{2}$/.test(onlyDate)) return onlyDate;
+        return null;
+      };
+
+      const foundDates = new Set<string>();
+
+      // urls candidatas (preferir real table name se mapeado)
+      const candidatesBase: string[] = [];
+      if (mapped && mapped !== "undefined") {
+        candidatesBase.push(
+          `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(String(mapped))}?all=true&colunas=${colsParamForUrl}`,
+        );
+        candidatesBase.push(
+          `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(String(mapped))}offline?all=true&colunas=${colsParamForUrl}`,
+        );
+      }
+      candidatesBase.push(
+        `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(String(display))}?all=true&colunas=${colsParamForUrl}`,
+      );
+      candidatesBase.push(
+        `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/${encodeURIComponent(String(display).toLowerCase().replace(/\s+/g, ""))}?all=true&colunas=${colsParamForUrl}`,
+      );
+      // fallbacks
+      candidatesBase.push(
+        `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/tbsima?all=true&colunas=${colsParamForUrl}`,
+      );
+      candidatesBase.push(
+        `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/tbsimaoffline?all=true&colunas=${colsParamForUrl}`,
+      );
+      candidatesBase.push(
+        `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/tbestacao?all=true&colunas=${colsParamForUrl}`,
+      );
+      candidatesBase.push(
+        `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/tbsensor?all=true&colunas=${colsParamForUrl}`,
+      );
+      candidatesBase.push(
+        `${API_BASE}/tables/${encodeURIComponent(topicSlug)}/tbcampotabela?all=true&colunas=${colsParamForUrl}`,
+      );
+
+      console.debug("[dates] candidates to try:", candidatesBase.slice(0, 6));
+
+      for (const url of candidatesBase) {
+        try {
+          console.debug("[dates] trying url:", url);
+          const resp = await fetch(url);
+          if (!resp.ok) {
+            console.debug("[dates] response not ok:", resp.status, url);
+            continue;
+          }
+          const json = await resp.json();
+          // backend fornece data em json.data (ou json)
+          const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+          const totalCount = Number(json?.count?.count ?? rows.length ?? 0);
+
+          // se veio poucas linhas mas count é grande -> tentar paginação
+          if (totalCount > rows.length) {
+            console.debug(
+              "[dates] detected partial sample (count:",
+              totalCount,
+              "rows:",
+              rows.length,
+              ") — will paginate:",
+              url,
+            );
+            // tentar paginação com limit/offset — usar tamanho razoável por página
+            const pageLimit = 20000; // ajuste se necessário
+            let offset = 0;
+            let iterations = 0;
+            const maxIterations = Math.ceil(Math.min(totalCount, 2000000) / pageLimit) + 5; // segura
+            while (offset < totalCount && iterations < maxIterations) {
+              const pageUrl = url + `&limit=${pageLimit}&offset=${offset}`;
+              console.debug("[dates] paginating, fetching:", pageUrl);
+              try {
+                const presp = await fetch(pageUrl);
+                if (!presp.ok) {
+                  console.debug("[dates] page not ok:", presp.status, pageUrl);
+                  break;
+                }
+                const pjson = await presp.json();
+                const prows = Array.isArray(pjson) ? pjson : pjson?.data || pjson?.rows || [];
+                for (const r of prows) {
+                  if (!r || typeof r !== "object") continue;
+                  // se explicit (ex.: "inicio,fim") use essas colunas; senão, varre valores
+                  if (explicit) {
+                    for (const rc of explicit.split(",")) {
+                      const v = r[rc] ?? r[rc.toLowerCase?.()];
+                      const nd = normalizeISODate(v);
+                      if (nd) foundDates.add(nd);
+                    }
+                  } else {
+                    const tryCols = ["dataHora", "datahora", "datamedida", "inicio", "fim", "data"];
+                    for (const dc of tryCols) {
+                      const v = r[dc] ?? r[dc.toLowerCase?.()];
+                      const nd = normalizeISODate(v);
+                      if (nd) foundDates.add(nd);
+                    }
+                    for (const v of Object.values(r)) {
+                      const nd = normalizeISODate(v);
+                      if (nd) foundDates.add(nd);
+                    }
+                  }
+                }
+                offset += prows.length;
+                iterations++;
+                // se já temos uma boa quantidade de datas (ex.: todas entre min/max), podemos encerrar mais cedo:
+                // aqui paramos se já coletamos >= 365 dias (configurável)
+                if (foundDates.size >= 366) {
+                  console.debug("[dates] collected >=366 distinct dates, stopping early");
+                  break;
+                }
+                if (prows.length === 0) break;
+              } catch (err) {
+                console.warn("[dates] pagination error for", pageUrl, err);
+                break;
+              }
+            }
+          } else {
+            // resposta curta: processar rows retornados
+            for (const r of rows) {
+              if (!r || typeof r !== "object") continue;
+              if (explicit) {
+                for (const rc of explicit.split(",")) {
+                  const v = r[rc] ?? r[rc.toLowerCase?.()];
+                  const nd = normalizeISODate(v);
+                  if (nd) foundDates.add(nd);
+                }
+              } else {
+                const tryCols = ["dataHora", "datahora", "datamedida", "inicio", "fim", "data"];
+                for (const dc of tryCols) {
+                  const v = r[dc] ?? r[dc.toLowerCase?.()];
+                  const nd = normalizeISODate(v);
+                  if (nd) foundDates.add(nd);
+                }
+                for (const v of Object.values(r)) {
+                  const nd = normalizeISODate(v);
+                  if (nd) foundDates.add(nd);
+                }
+              }
+            }
+          }
+
+          if (foundDates.size) {
+            console.debug("[dates] foundDates size after url:", foundDates.size);
+            break; // não precisa tentar outros candidatos
+          }
+        } catch (err) {
+          console.warn("[dates] error trying url:", url, err);
+          continue;
+        }
+      }
+
+      const arr = Array.from(foundDates).sort(
+        (a: string, b: string) => new Date(a).getTime() - new Date(b).getTime(),
+      );
+      console.debug("[dates] final dates count:", arr.length);
+      setAvailableDates(arr);
+
+      if (arr.length) {
+        setStartDate((prev) => (prev && prev !== "" ? prev : arr[0]));
+        setEndDate((prev) => (prev && prev !== "" ? prev : arr[arr.length - 1]));
+      } else {
+        setStartDate("");
+        setEndDate("");
+      }
+    }
+
+    fetchAvailableDatesForTable();
+  }, [table, tableIdMap, topicSlug]);
 
   useEffect(() => {
     const fetchCampanhas = async () => {
@@ -643,6 +947,7 @@ export default function TablesPage(): JSX.Element {
   function getColumnsFromMetadata(meta: any) {
     const clms: Record<string, any> = {};
     meta.forEach((tb: any) => {
+      // tb.name is used as display name in UI; keep that as key
       clms[tb.name] = tb.colunas;
     });
     return clms;
@@ -662,7 +967,7 @@ export default function TablesPage(): JSX.Element {
 
   function handleStartDate(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void {
     const date: string = e.target.value;
-    if (date <= endDate) {
+    if (!endDate || date <= endDate) {
       setStartDate(date);
     } else {
       alert("Data de início deve ser menor que data final!");
@@ -671,7 +976,7 @@ export default function TablesPage(): JSX.Element {
 
   function handleEndDate(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void {
     const date: string = e.target.value;
-    if (date >= startDate) {
+    if (!startDate || date >= startDate) {
       setEndDate(date);
     } else {
       alert("Data final deve ser menor que data de início!");
@@ -753,38 +1058,83 @@ export default function TablesPage(): JSX.Element {
     if (!rows || !rows.length || !columns || !columns.length)
       return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
 
-    const months = (() => {
-      const found = rows.map((r) => {
-        if (!r.datamedida) return "";
-        const d = new Date(r.datamedida);
-        if (!isNaN(d.getTime()))
-          return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/01`;
-        const s = String(r.datamedida).slice(0, 10).replace(/-/g, "/");
-        return s.length ? s : "";
-      });
-      if (found.every((m) => m)) return found;
-      return monthsBetweenDatesISO(startDate, endDate);
-    })();
+    // determine start/end from props (use selected range if set, otherwise from data)
+    const dataDates: string[] = rows
+      .map((r) => {
+        const val = r.datamedida ?? r.datahora ?? r.dataHora ?? r.inicio ?? r.fim ?? r.data;
+        if (!val) return null;
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return null;
+        return isoDate(d);
+      })
+      .filter(Boolean) as string[];
+
+    const minDataDate = dataDates.length ? dataDates.reduce((a, b) => (a < b ? a : b)) : null;
+    const maxDataDate = dataDates.length ? dataDates.reduce((a, b) => (a > b ? a : b)) : null;
+
+    const startForLabels = startDate || minDataDate || isoDate(new Date());
+    const endForLabels = endDate || maxDataDate || isoDate(new Date());
+
+    // gather unique day strings from rows within the selected/derived interval
+    const uniqueDays = Array.from(
+      new Set(
+        rows
+          .map((r) => {
+            const val = r.datamedida ?? r.datahora ?? r.dataHora ?? r.inicio ?? r.fim ?? r.data;
+            if (!val) return null;
+            const d = new Date(val);
+            if (isNaN(d.getTime())) return null;
+            return isoDate(d);
+          })
+          .filter(Boolean),
+      ),
+    ).sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime());
+
+    // choose daily labels if data contains multiple distinct days within reasonable span
+    const daysSpan = Math.ceil(
+      (new Date(endForLabels).getTime() - new Date(startForLabels).getTime()) /
+        (1000 * 60 * 60 * 24),
+    );
+    const useDaily = uniqueDays.length > 1 && daysSpan <= 366;
+
+    const labels = useDaily
+      ? daysBetweenDatesISO(startForLabels, endForLabels)
+      : monthsBetweenDatesISO(startForLabels, endForLabels);
 
     const height = 520;
-    const viewBoxWidth = Math.max(1000, months.length * 100);
-    const count = months.length;
+    const viewBoxWidth = Math.max(1000, labels.length * 40); // narrower spacing for daily
+    const count = labels.length;
     const xFor = (i: number) => (i / (count - 1 || 1)) * (viewBoxWidth - 100) + 50;
 
-    const rowsByMonth = months.map((m, i) => {
-      const ymd = m.replace(/\//g, "-").slice(0, 7);
-      const found = rows.find((r) => {
-        if (!r.datamedida) return false;
-        const d = new Date(r.datamedida);
-        if (isNaN(d.getTime())) return false;
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        return key === ymd;
-      });
-      return found || rows[Math.min(rows.length - 1, i)] || rows[0];
+    const rowsByLabel = labels.map((lab, i) => {
+      // lab is 'YYYY/MM/DD' or 'YYYY/MM/01'
+      if (useDaily) {
+        const ymd = lab.replace(/\//g, "-").slice(0, 10); // YYYY-MM-DD
+        const found = rows.find((r) => {
+          const dv = r.datamedida ?? r.datahora ?? r.dataHora ?? r.inicio ?? r.fim ?? r.data;
+          if (!dv) return false;
+          const d = new Date(dv);
+          if (isNaN(d.getTime())) return false;
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+          return key === ymd;
+        });
+        return found || rows[Math.min(rows.length - 1, i)] || rows[0];
+      } else {
+        const ymd = lab.replace(/\//g, "-").slice(0, 7); // YYYY-MM
+        const found = rows.find((r) => {
+          const dv = r.datamedida ?? r.datahora ?? r.dataHora ?? r.inicio ?? r.fim ?? r.data;
+          if (!dv) return false;
+          const d = new Date(dv);
+          if (isNaN(d.getTime())) return false;
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          return key === ymd;
+        });
+        return found || rows[Math.min(rows.length - 1, i)] || rows[0];
+      }
     });
 
     const seriesValues = columns.map((col) =>
-      rowsByMonth.map((r) => {
+      rowsByLabel.map((r) => {
         const v = Number(r[col]);
         return Number.isFinite(v) ? v : NaN;
       }),
@@ -843,7 +1193,7 @@ export default function TablesPage(): JSX.Element {
                 />
                 {points.map((pt, i) => {
                   const [xStr, yStr] = pt.split(",");
-                  const repRow = rowsByMonth[i] || {};
+                  const repRow = rowsByLabel[i] || {};
                   return (
                     <circle
                       key={i}
@@ -889,7 +1239,7 @@ export default function TablesPage(): JSX.Element {
             );
           })}
 
-          {months.map((m, i) => (
+          {labels.map((m, i) => (
             <text
               key={`lbl-${i}`}
               x={xFor(i)}
@@ -924,6 +1274,7 @@ export default function TablesPage(): JSX.Element {
       </div>
     );
   }
+  /* ================= end MultiSeriesSVG ================= */
 
   const numericColumns = columns.filter(
     (c) => c.type === "number" || /dic|ph|profundidade|temp|conduct|sonda/i.test(String(c.name)),
@@ -949,9 +1300,9 @@ export default function TablesPage(): JSX.Element {
                 }}
               >
                 <option value="">Selecione...</option>
-                {campanhas.map((c) => (
-                  <option key={`ini-${c.idcampanha}`} value={c.datainicio.slice(0, 10)}>
-                    {testDates(c)}
+                {availableDates.map((d) => (
+                  <option key={`start-${d}`} value={d}>
+                    {d.split("-").reverse().join("/")}
                   </option>
                 ))}
               </select>
@@ -970,9 +1321,9 @@ export default function TablesPage(): JSX.Element {
                 }}
               >
                 <option value="">Selecione...</option>
-                {campanhas.map((c) => (
-                  <option key={`fim-${c.idcampanha}`} value={c.datafim.slice(0, 10)}>
-                    {testDates(c)}
+                {availableDates.map((d) => (
+                  <option key={`end-${d}`} value={d}>
+                    {d.split("-").reverse().join("/")}
                   </option>
                 ))}
               </select>
