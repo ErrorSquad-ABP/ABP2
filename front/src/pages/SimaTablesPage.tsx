@@ -21,6 +21,8 @@ type ColumnMeta = {
   name: string;
   label?: string;
   type?: "number" | "string" | "date" | "geom";
+  // some metadata may use 'nome'
+  nome?: string;
 };
 
 type TableMetadata = {
@@ -91,6 +93,30 @@ function makeMockMeasurementsForMonths(months: string[]) {
       reservatorio: reserv,
     };
   });
+}
+
+/* ------------------ NEW HELPER: detect ID columns (não plottáveis) ------------------ */
+/**
+ * Detecta colunas que representam identificadores ou não são relevantes para plotagem.
+ * Usa heurísticas: começa com id, termina com id, contém regno/nro/num/idx/uid, ou padrões comuns.
+ */
+// helper: detecta colunas "id" / não plottáveis, agora incluindo a coluna de dataHora
+function isIdColumn(name?: string): boolean {
+  if (!name) return false;
+  const n = String(name).toLowerCase().trim();
+
+  // 1) Identificadores comuns (id..., ...id, regno, nro, num, idx, uid, etc)
+  if (/^id/.test(n) || /id$/.test(n)) return true;
+  if (/\b(regno|reg_no|nro|numero|num|idx|uid|registro)\b/.test(n)) return true;
+  if (/(^|_)?id(_|$)/.test(n) || /^idestacao$/.test(n) || /^idsima$/.test(n)) return true;
+
+  // 2) Colunas de data/hora que não devem ser selecionáveis para plot
+  // (ex.: dataHora, datahora, dataHoraUTC, datetime, timestamp)
+  if (/\bdatahora\b/.test(n) || /\bdatahorau?tc?\b/.test(n) || /\b(datetime|timestamp)\b/.test(n)) {
+    return true;
+  }
+
+  return false;
 }
 
 /* ================= Styled ================= */
@@ -859,7 +885,12 @@ export default function TablesPage(): JSX.Element {
     return resp;
   }
 
+  // ================= REPLACED toggleColumn: IGNORA colunas ID =================
   function toggleColumn(name: string) {
+    if (isIdColumn(name)) {
+      console.debug("[columns] prevented toggle on id column:", name);
+      return;
+    }
     setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
   }
 
@@ -1165,8 +1196,39 @@ export default function TablesPage(): JSX.Element {
   }
   /* ================= end MultiSeriesSVG ================= */
 
-  // Plot exactly the selectedColumns (so each selected column -> one line)
-  const plottedColumns = selectedColumns.slice();
+  // ================= REPLACED: compute plottedColumns excluindo colunas ID =================
+  // Filtra selectedColumns removendo colunas id (não plottáveis)
+  const nonIdSelected = selectedColumns.filter((col) => !isIdColumn(col));
+  if (selectedColumns.length !== nonIdSelected.length) {
+    console.debug(
+      "[columns] id columns ignored for plotting:",
+      selectedColumns.filter((c) => isIdColumn(c)),
+    );
+  }
+
+  // detectar colunas numéricas a partir do metadata (heurística)
+  const numericColumns = columns.filter(
+    (c) =>
+      c.type === "number" ||
+      /dic|ph|profundidade|temp|conduct|sonda|precipitacao|rad|turb|chl|do|co2|u_vel|v_vel|pressat/i.test(
+        String((c as any).nome ?? (c as any).name ?? ""),
+      ),
+  );
+
+  // manter apenas as selecionadas que são numéricas
+  const plotColumns = nonIdSelected.filter((s) =>
+    numericColumns.some((c) => {
+      const cname = String((c as any).nome ?? (c as any).name ?? "");
+      return cname === s || cname.toLowerCase() === s.toLowerCase();
+    }),
+  );
+
+  // Fallback: se usuário selecionou nonIdSelected mas nenhuma foi detectada como numérica,
+  // permitir pelo menos tentar plotar as nonIdSelected
+  const plottedColumns = plotColumns.length
+    ? plotColumns
+    : nonIdSelected.slice(0, selectedColumns.length);
+  console.debug("[columns] plottedColumns final:", plottedColumns);
 
   return (
     <Page>
@@ -1243,20 +1305,32 @@ export default function TablesPage(): JSX.Element {
 
           <ColumnsBox aria-label="Lista de colunas">
             {columns &&
-              columns.map((c: any, index: number) => (
-                <ColumnItem key={c.nome || `column-${index}`}>
-                  <input
-                    type="checkbox"
-                    checked={selectedColumns.includes(c.nome)}
-                    onChange={() => toggleColumn(c.nome)}
-                    id={`col-${c.nome || index}`}
-                  />
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontWeight: 700 }}>{c.label || c.nome}</span>
-                    <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
-                  </div>
-                </ColumnItem>
-              ))}
+              columns.map((c: any, index: number) => {
+                const colName = c.nome ?? c.name ?? `column-${index}`;
+                const isId = isIdColumn(colName);
+                return (
+                  <ColumnItem
+                    key={colName}
+                    style={{ opacity: isId ? 0.6 : 1, cursor: isId ? "not-allowed" : "pointer" }}
+                    title={isId ? "Coluna de identificação — não plottável" : undefined}
+                  >
+                    <input
+                      type="checkbox"
+                      disabled={isId}
+                      checked={selectedColumns.includes(colName)}
+                      onChange={() => toggleColumn(colName)}
+                      id={`col-${colName}`}
+                    />
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontWeight: 700 }}>{c.label || colName}</span>
+                        {isId && <small style={{ color: "#9ca3af" }}>(não plottável)</small>}
+                      </div>
+                      <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
+                    </div>
+                  </ColumnItem>
+                );
+              })}
           </ColumnsBox>
         </LeftColumn>
 
@@ -1533,5 +1607,3 @@ export default function TablesPage(): JSX.Element {
     </Page>
   );
 }
-
-//teste
