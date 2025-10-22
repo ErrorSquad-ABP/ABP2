@@ -15,7 +15,6 @@ import axios from "axios";
  * - This file uses a small runtime-safe access to import.meta.env to avoid TS/Bundler errors.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
 
 interface Campanha {
@@ -29,7 +28,8 @@ interface Campanha {
 }
 
 type ColumnMeta = {
-  name: string;
+  name?: string;
+  nome?: string;
   label?: string;
   type?: "number" | "string" | "date" | "geom";
 };
@@ -289,6 +289,29 @@ const TableElement = styled.table`
     font-weight: 700;
   }
 `;
+
+/* ================= helper: detect id/data columns ================= */
+/**
+ * Retorna true se a coluna for um identificador ou coluna de data/hora,
+ * para impedir seleção/plot.
+ */
+function isIdOrDateColumn(name?: string) {
+  if (!name) return false;
+  const n = String(name).toLowerCase();
+  // id-like
+  if (/^id/.test(n) || /id$/.test(n)) return true;
+  if (/\b(id|idestacao|idsima|regno|nro|numero|num|uid|registro)\b/.test(n)) return true;
+  // date/time-like
+  if (
+    /\bdatahora\b/.test(n) ||
+    /\bdata_hour\b/.test(n) ||
+    /\bdata\b/.test(n) ||
+    /\bdatetime\b/.test(n)
+  )
+    return true;
+  return false;
+}
+
 /* ================= Component ================= */
 
 export default function TablesPage(): JSX.Element {
@@ -322,7 +345,7 @@ export default function TablesPage(): JSX.Element {
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
-  const [reservatorios, setReservatorios] = useState([]);
+  const [reservatorios, setReservatorios] = useState<any[]>([]);
 
   // tabela preview state (dados da tabela e controle de exibição)
   const [data, setData] = useState<any[]>([]);
@@ -336,6 +359,8 @@ export default function TablesPage(): JSX.Element {
   const [zoom, setZoom] = useState<number>(1);
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+
+  // tooltip state used on charts (kept in case chart is reintroduced)
 
   async function handleGenerateTables(): Promise<void> {
     setShowTable(false);
@@ -507,7 +532,12 @@ export default function TablesPage(): JSX.Element {
     return resp;
   }
 
+  // toggleColumn agora impede seleção de colunas id/data
   function toggleColumn(name: string) {
+    if (isIdOrDateColumn(name)) {
+      // evita selecionar/deselecionar colunas de identificação/data
+      return;
+    }
     setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
   }
 
@@ -581,14 +611,19 @@ export default function TablesPage(): JSX.Element {
     }, 500);
   }
 
+  // latLonPoints necessário para o mapa — gera a partir de reservatorios (shape: latitude / longitude)
   const latLonPoints = useMemo(() => {
     return reservatorios
-      .filter((r) => typeof r.lat === "number" && typeof r.lng === "number")
+      .filter(
+        (r) =>
+          (typeof r.lat === "number" && typeof r.lng === "number") ||
+          (typeof r.latitude === "number" && typeof r.longitude === "number"),
+      )
       .map((r) => ({
-        latitude: r.lat,
-        longitude: r.lng,
-        id: r.idreservatorio,
-        nome: r.nome,
+        id: r.idreservatorio ?? r.id ?? null,
+        latitude: typeof r.lat === "number" ? r.lat : r.latitude,
+        longitude: typeof r.lng === "number" ? r.lng : r.longitude,
+        nome: r.nome ?? r.name ?? "",
       }));
   }, [reservatorios]);
 
@@ -602,209 +637,9 @@ export default function TablesPage(): JSX.Element {
     }
   };
 
-  function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
-    if (!rows || !rows.length || !columns || !columns.length)
-      return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
+  // removi MultiSeriesSVG desta página (não estava sendo usado) para evitar erro TS6133.
+  // Se quiser reintroduzir o gráfico aqui, diga onde e de qual fonte de dados (data/chartData) ele deve vir.
 
-    const months = (() => {
-      const found = rows.map((r) => {
-        if (!r.datamedida) return "";
-        const d = new Date(r.datamedida);
-        if (!isNaN(d.getTime()))
-          return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/01`;
-        const s = String(r.datamedida).slice(0, 10).replace(/-/g, "/");
-        return s.length ? s : "";
-      });
-      if (found.every((m) => m)) return found;
-      return monthsBetweenDatesISO(startDate, endDate);
-    })();
-
-    const height = 520;
-    const viewBoxWidth = Math.max(1000, months.length * 100);
-    const count = months.length;
-    const xFor = (i: number) => (i / (count - 1 || 1)) * (viewBoxWidth - 100) + 50;
-
-    const rowsByMonth = months.map((m, i) => {
-      const ymd = m.replace(/\//g, "-").slice(0, 7);
-      const found = rows.find((r) => {
-        if (!r.datamedida) return false;
-        const d = new Date(r.datamedida);
-        if (isNaN(d.getTime())) return false;
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        return key === ymd;
-      });
-      return found || rows[Math.min(rows.length - 1, i)] || rows[0];
-    });
-
-    const seriesValues = columns.map((col) =>
-      rowsByMonth.map((r) => {
-        const v = Number(r[col]);
-        return Number.isFinite(v) ? v : NaN;
-      }),
-    );
-
-    const allNumbers = seriesValues.flat().filter((v) => !Number.isNaN(v));
-    const max = allNumbers.length ? Math.max(...allNumbers) : 1;
-    const min = allNumbers.length ? Math.min(...allNumbers) : 0;
-    const range = max - min || 1;
-    const yFor = (v: number) => ((max - v) / range) * (height - 80) + 40;
-
-    const uniqueInsts = Array.from(new Set(rows.map((r) => r.instituicao || "—")));
-    const instColorMap: Record<string, string> = {};
-    uniqueInsts.forEach((inst, idx) => {
-      instColorMap[inst] = INSTITUTION_FILL_COLORS[idx % INSTITUTION_FILL_COLORS.length];
-    });
-
-    return (
-      <div style={{ width: "100%", position: "relative" }}>
-        <svg
-          viewBox={`0 0 ${viewBoxWidth} ${height}`}
-          width="100%"
-          height={height}
-          preserveAspectRatio="xMidYMid meet"
-        >
-          {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-            <line
-              key={i}
-              x1={50}
-              x2={viewBoxWidth - 50}
-              y1={40 + t * (height - 80)}
-              y2={40 + t * (height - 80)}
-              stroke="#e6eefb"
-              strokeWidth={1}
-            />
-          ))}
-
-          {seriesValues.map((vals, sIdx) => {
-            const points = vals
-              .map((v, i) => {
-                if (Number.isNaN(v)) return null;
-                return `${xFor(i)},${yFor(v)}`;
-              })
-              .filter(Boolean) as string[];
-            if (!points.length) return null;
-            const stroke = SERIES_COLORS[sIdx % SERIES_COLORS.length];
-            return (
-              <g key={sIdx}>
-                <polyline
-                  points={points.join(" ")}
-                  fill="none"
-                  stroke={stroke}
-                  strokeWidth={3}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                {points.map((pt, i) => {
-                  const [xStr, yStr] = pt.split(",");
-                  const repRow = rowsByMonth[i] || {};
-                  return (
-                    <circle
-                      key={i}
-                      cx={+xStr}
-                      cy={+yStr}
-                      r={6}
-                      fill={instColorMap[repRow.instituicao || "—"] || "#fff"}
-                      stroke={stroke}
-                      strokeWidth={2}
-                      style={{ cursor: "pointer" }}
-                      onMouseEnter={(ev) => {
-                        const rect = (chartMainRef.current &&
-                          chartMainRef.current.getBoundingClientRect()) || {
-                          left: 0,
-                          top: 0,
-                        };
-                        setTooltip({
-                          visible: true,
-                          left: ev.clientX - rect.left,
-                          top: ev.clientY - rect.top,
-                          instituicao: repRow.instituicao,
-                          reservatorio: repRow.reservatorio,
-                          color: instColorMap[repRow.instituicao || "—"],
-                        });
-                      }}
-                      onMouseMove={(ev) => {
-                        const rect = (chartMainRef.current &&
-                          chartMainRef.current.getBoundingClientRect()) || {
-                          left: 0,
-                          top: 0,
-                        };
-                        setTooltip((t) => ({
-                          ...t,
-                          left: ev.clientX - rect.left,
-                          top: ev.clientY - rect.top,
-                        }));
-                      }}
-                      onMouseLeave={() => setTooltip({ visible: false, left: 0, top: 0 })}
-                    />
-                  );
-                })}
-              </g>
-            );
-          })}
-
-          {/* --- Pontos de Reservatórios (FURNAS) --- */}
-          {latLonPoints &&
-            latLonPoints.length > 0 &&
-            latLonPoints.map((p) => {
-              const x = ((p.longitude + 74) / (-34 + 74)) * (viewBoxWidth - 100) + 50;
-              const y = ((-p.latitude + 34) / (-34 + 5)) * (height - 80) + 40;
-
-              return (
-                <circle
-                  key={p.id}
-                  cx={x}
-                  cy={y}
-                  r={5}
-                  fill="#2563eb"
-                  stroke="#fff"
-                  strokeWidth={1.5}
-                >
-                  <title>{`Ponto ${p.id}`}</title>
-                </circle>
-              );
-            })}
-
-          {months.map((m, i) => (
-            <text
-              key={`lbl-${i}`}
-              x={xFor(i)}
-              y={height - 10}
-              fontSize="12"
-              fill="#5b6b7a"
-              textAnchor="middle"
-            >
-              {m}
-            </text>
-          ))}
-
-          <text x="14" y={34} fontSize="13" fill="#5b6b7a">
-            {max}
-          </text>
-          <text x="14" y={height - 22} fontSize="13" fill="#5b6b7a">
-            {min}
-          </text>
-        </svg>
-
-        {tooltip.visible && tooltip.instituicao && (
-          <Tooltip left={tooltip.left} top={tooltip.top} color={tooltip.color || "#ccc"}>
-            <div className="title">
-              <span className="color" />
-              {tooltip.instituicao}
-            </div>
-            <div className="meta">
-              Reservatório: <strong>{tooltip.reservatorio || "—"}</strong>
-            </div>
-          </Tooltip>
-        )}
-      </div>
-    );
-  }
-
-  const numericColumns = columns.filter(
-    (c) => c.type === "number" || /dic|ph|profundidade|temp|conduct/i.test(c.name),
-  );
-  const plotColumns = selectedColumns.filter((s) => numericColumns.some((c) => c.name === s));
-  const plottedColumns = plotColumns.length ? plotColumns : [selectedColumns[0]].filter(Boolean);
   // criar alias any para MapBrazil para evitar erro de tipagem temporariamente
   const MapBrazilAny = MapBrazil as any;
 
@@ -883,28 +718,38 @@ export default function TablesPage(): JSX.Element {
 
           <ColumnsBox aria-label="Lista de colunas">
             {columns &&
-              columns.map((c: any, index: number) => (
-                <ColumnItem key={c.nome || `column-${index}`}>
-                  <input
-                    type="checkbox"
-                    checked={selectedColumns.includes(c.nome)}
-                    onChange={() => toggleColumn(c.nome)}
-                    id={`col-${c.nome || index}`}
-                  />
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontWeight: 700 }}>{c.label || c.nome}</span>
-                    <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
-                  </div>
-                </ColumnItem>
-              ))}
+              columns.map((c: any, index: number) => {
+                const colName = c.nome ?? c.name ?? `column-${index}`;
+                const disabled = isIdOrDateColumn(colName);
+                return (
+                  <ColumnItem key={colName}>
+                    <input
+                      type="checkbox"
+                      checked={selectedColumns.includes(colName)}
+                      onChange={() => toggleColumn(colName)}
+                      id={`col-${colName}`}
+                      disabled={disabled}
+                      // reduzir opacidade visual quando desabilitado
+                      style={disabled ? { cursor: "not-allowed", opacity: 0.6 } : undefined}
+                    />
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={{ fontWeight: 700 }}>
+                        {c.label || colName}{" "}
+                        {disabled && (
+                          <small style={{ color: "#9ca3af" }}> (não selecionável)</small>
+                        )}
+                      </span>
+                      <small style={{ color: "#64748b" }}>{c.type || "—"}</small>
+                    </div>
+                  </ColumnItem>
+                );
+              })}
           </ColumnsBox>
         </LeftColumn>
 
         <RightPanel>
           <ControlsTopRight>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              {/* botão de gerar gráfico removido (função de gráfico desabilitada) */}
-
               <div style={{ position: "relative" }}>
                 <Button onClick={() => setShowExportOptions((s) => !s)}>Exportar ▾</Button>
                 {showExportOptions && (

@@ -15,6 +15,7 @@ export default function MapBrasil() {
   }, []);
 
   const handleStateClick = (sigla) => {
+    console.log("ID recebido:", sigla);
     const state = brStates.find((s) => s.id === sigla);
     if (!state) return;
 

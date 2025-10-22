@@ -14,6 +14,7 @@ interface ToastContextType {
   showToast: (codigo?: number | null, conteudo?: string, cor?: string, emoji?: string) => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const ToastContext = createContext<ToastContextType | null>(null);
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

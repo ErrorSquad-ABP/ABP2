@@ -1,4 +1,3 @@
-//SimaTable.tsx
 import type { Sima } from "../types/sima";
 import { useState, useMemo, JSX } from "react";
 import styled from "styled-components";
@@ -19,13 +18,12 @@ interface SimaTableProps<T> {
   onSort?: (field: keyof T, order: "asc" | "desc") => void;
 }
 
-// Wrapper para a tabela
 const TableWrapper = styled.div`
   max-width: 100%;
   overflow-x: auto;
+  position: relative;
 `;
 
-// Tabela estilizada
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -58,7 +56,6 @@ const Table = styled.table`
   }
 `;
 
-// Controles de paginação
 const PaginationControls = styled.div`
   margin-top: 12px;
   display: flex;
@@ -89,6 +86,44 @@ const PaginationControls = styled.div`
   }
 `;
 
+const ColumnControlButton = styled.button`
+  background-color: #2563eb;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: 0.2s;
+
+  &:hover {
+    background-color: #1e40af;
+  }
+`;
+
+const ColumnSelector = styled.div`
+  position: absolute;
+  top: 40px;
+  left: 0;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 12px;
+  z-index: 10;
+  max-height: 250px;
+  overflow-y: auto;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    font-size: 0.9rem;
+  }
+`;
+
 const SimaTable = ({
   columns,
   data,
@@ -98,10 +133,11 @@ const SimaTable = ({
   onSort,
 }: SimaTableProps<Sima>) => {
   const [internalPage, setInternalPage] = useState(0);
-  const [sortConfig, setSortConfig] = useState<{
-    field: keyof Sima;
-    order: "asc" | "desc";
-  } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ field: keyof Sima; order: "asc" | "desc" } | null>(
+    null,
+  );
+  const [showColumnSelector, setShowColumnSelector] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState(columns.map((c) => c.key));
 
   const page = controlledPage ?? internalPage;
 
@@ -136,32 +172,61 @@ const SimaTable = ({
     onSort?.(field, order);
   };
 
+  const toggleColumnVisibility = (key: keyof Sima) => {
+    setVisibleColumns((prev) =>
+      prev.includes(key) ? prev.filter((c) => c !== key) : [...prev, key],
+    );
+  };
+
   return (
     <TableWrapper>
+      <ColumnControlButton onClick={() => setShowColumnSelector((prev) => !prev)}>
+        Organizar Colunas
+      </ColumnControlButton>
+
+      {showColumnSelector && (
+        <ColumnSelector>
+          {columns.map((col) => (
+            <label key={String(col.key)}>
+              <input
+                type="checkbox"
+                checked={visibleColumns.includes(col.key)}
+                onChange={() => toggleColumnVisibility(col.key)}
+              />
+              {col.label}
+            </label>
+          ))}
+        </ColumnSelector>
+      )}
+
       <Table>
         <thead>
           <tr>
-            {columns.map((col) => (
-              <th key={String(col.key)} onClick={() => col.sortable && handleSort(col.key)}>
-                {col.label}
-                {sortConfig?.field === col.key && (sortConfig.order === "asc" ? " ▲" : " ▼")}
-              </th>
-            ))}
+            {columns
+              .filter((col) => visibleColumns.includes(col.key))
+              .map((col) => (
+                <th key={String(col.key)} onClick={() => col.sortable && handleSort(col.key)}>
+                  {col.label}
+                  {sortConfig?.field === col.key && (sortConfig.order === "asc" ? " ▲" : " ▼")}
+                </th>
+              ))}
           </tr>
         </thead>
         <tbody>
           {pages[page]?.map((row) => (
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             <tr key={(row as any).idsima}>
-              {columns.map((col) => (
-                <td key={String(col.key)}>
-                  {col.render
-                    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      col.render((row as any)[col.key], row)
-                    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      String((row as any)[col.key] ?? "-")}
-                </td>
-              ))}
+              {columns
+                .filter((col) => visibleColumns.includes(col.key))
+                .map((col) => (
+                  <td key={String(col.key)}>
+                    {col.render
+                      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        col.render((row as any)[col.key], row)
+                      : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        String((row as any)[col.key] ?? "-")}
+                  </td>
+                ))}
             </tr>
           ))}
         </tbody>
