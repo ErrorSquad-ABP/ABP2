@@ -3,6 +3,7 @@
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
+import ResponsiveChartContainer from "../components/ResponsiveChartContainer";
 
 import SimaTable from "../components/SimaTable";
 import axios from "axios";
@@ -493,16 +494,14 @@ export default function TablesPage(): JSX.Element {
       return;
     }
 
-    // ensure start <= end
     if (new Date(startDate).getTime() > new Date(endDate).getTime()) {
       alert("Data de início deve ser menor ou igual à data final.");
       return;
     }
 
-    // real table name via metadata map (display -> real)
-    const realTableName = tableIdMap[table] ?? table;
+    setLoading(true);
 
-    // IMPORTANT: encode each column individually but keep comma characters literal between them
+    const realTableName = tableIdMap[table] ?? table;
     const colsParam = selectedColumns.map((c) => encodeURIComponent(c)).join(",");
 
     const candidateMeasurementUrls = [
@@ -545,7 +544,11 @@ export default function TablesPage(): JSX.Element {
           });
           setChartData(normalized);
           setView("chart");
-          chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          setTimeout(
+            () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
+            200,
+          );
+          setLoading(false);
           return;
         }
       } catch (err) {
@@ -553,13 +556,11 @@ export default function TablesPage(): JSX.Element {
       }
     }
 
-    // fallback to aggregate endpoint (monthly aggregate)
     const months = monthsBetweenDatesISO(startDate, endDate);
     try {
       const params = new URLSearchParams();
       params.set("start", startDate);
       params.set("end", endDate);
-      // aggregate endpoint expects 'cols' without encoding of commas as well; we encode each column individually
       params.set("cols", selectedColumns.map((c) => encodeURIComponent(c)).join(","));
       params.set("aggregate_by", "month");
 
@@ -585,8 +586,28 @@ export default function TablesPage(): JSX.Element {
     }
 
     setView("chart");
-    chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(
+      () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
+      200,
+    );
+    setLoading(false);
+
+    return (
+      <div ref={chartRef} className="mt-4 w-full">
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-transparent mb-2" />
+            <span>Gerando gráfico...</span>
+          </div>
+        )}
+
+        {!loading && view === "chart" && (
+          <ResponsiveChartContainer data={chartData} columns={selectedColumns} />
+        )}
+      </div>
+    );
   }
+
   /* ================= end updated handleGenerate ================= */
 
   useEffect(() => {
