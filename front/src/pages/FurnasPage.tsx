@@ -109,14 +109,11 @@ const Column = styled.div`
 `;
 
 const Block = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  border-radius: 8px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  background-color: #fff;
-  margin: 20px; /* adiciona espaçamento em volta dos blocks, em vez de padding global */
+  background: #ffffff;
+  padding: 18px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(6,58,128,0.06);
 `;
 
 const LogosHeader = styled.div`
