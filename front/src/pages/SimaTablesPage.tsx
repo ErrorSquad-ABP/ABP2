@@ -180,6 +180,7 @@ const Button = styled.button<{ $primary?: boolean }>`
   font-weight: 700;
   background: ${(p) => (p.$primary ? p.theme.colors.primary : "rgba(2,6,23,0.06)")};
   color: ${(p) => (p.$primary ? "#fff" : "#04203a")};
+  margin-rigth: ${(p) => (p.$primary ? "12" : "0")};
 `;
 
 const Panel = styled.div`
@@ -805,8 +806,9 @@ export default function SimaTablesPage(): JSX.Element {
                 )}
               </div>
 
-              <div style={{ marginTop: 12 }}>
-                <Button $primary onClick={handleGenerate} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar gráfico"}</Button>
+              <div style={{ margin: 12 }}>
+                <Button style={{ marginRight: 10}} $primary onClick={handleGenerate} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar gráfico"}</Button>
+                <Button $primary onClick={handleGenerateTable} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar tabela"}</Button>
               </div>
             </ColumnsBox>
           )}

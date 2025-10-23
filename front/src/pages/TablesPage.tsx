@@ -380,6 +380,10 @@ export default function TablesPage(): JSX.Element {
   }
 
   useEffect(() => {
+    if (data) {console.log("Dados: ", data)}
+  }, [data]);
+
+  useEffect(() => {
     async function load() {
       try {
         const metaRes = await fetch(`${API_BASE}/metadata/${encodeURIComponent(topicSlug)}`);
