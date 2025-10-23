@@ -536,7 +536,7 @@ export default function SimaTablesPage(): JSX.Element {
   }
 
   /* ---------------- handleGenerate: fetch full dataset for chosen columns, filter by station/date, aggregate ---------------- */
-  async function handleGenerate() {
+  async function handleGenerateChart() {
     console.debug("[generate] start", { table, selectedColumns, startDate, endDate, selectedStations });
     if (!selectedStations.length) {
       alert("Selecione ao menos uma estação.");
@@ -597,8 +597,8 @@ export default function SimaTablesPage(): JSX.Element {
           return row;
         });
         setChartData(normalized);
-        setDataForTablePreview(mock);
-        setShowTable(true);
+        setDataForTablePreview(mock); // mock? Onde é usado essa variablçe?
+        setShowTable(true); 
         setView("chart");
         setLoading(false);
         return;
@@ -610,6 +610,97 @@ export default function SimaTablesPage(): JSX.Element {
       setDataForTablePreview(filtered.slice(0, 500)); // sample for preview
       setShowTable(true);
       setView("chart");
+      setTimeout(() => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+    } catch (err) {
+      console.error("[generate] error fetching/processing data:", err);
+      alert("Erro ao gerar gráfico. Veja console para detalhes.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+/* ESSE DADO AQUI É O QUE VOU USAR PARA GERAR AS TABELAS :) ! dataForTablePreview ! */
+
+  useEffect(() => {
+    if (dataForTablePreview) {console.log(dataForTablePreview)}
+  }, [dataForTablePreview])
+
+  /* ----------------- handle generate table ----------- */
+
+async function handleGenerateGraph () {
+    console.debug("[generate] start", { table, selectedColumns, startDate, endDate, selectedStations });
+    if (!selectedStations.length) {
+      alert("Selecione ao menos uma estação.");
+      return;
+    }
+    if (!selectedColumns.length) {
+      alert("Selecione ao menos uma coluna para plotar.");
+      return;
+    }
+    if (!startDate || !endDate) {
+      alert("Escolha período.");
+      return;
+    }
+    setLoading(true);
+
+    try {
+      // Build cols param including idestacao and dataHora (server expects these names)
+      const cols = ["idestacao", "dataHora", ...selectedColumns];
+      const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
+
+      // choose endpoint based on table
+      const endpoint = table === "tbsima"
+        ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=${colsParam}`
+        : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=${colsParam}`;
+
+      console.debug("[generate] fetching endpoint:", endpoint);
+      const resp = await fetch(endpoint);
+      if (!resp.ok) {
+        throw new Error(`fetch failed: ${resp.status} ${resp.statusText}`);
+      }
+
+      const json = await resp.json();
+      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+      console.debug("[generate] fetched rows:", rows?.length ?? 0);
+
+      // filter by selectedStations and date range
+      const stationSet = new Set(selectedStations.map((s) => String(s).trim()));
+      const filtered = (rows || []).filter((r: any) => {
+        const sid = String(r.idestacao ?? r.id ?? "").trim();
+        if (!stationSet.has(sid)) return false;
+        const dv = r.dataHora ?? r.datahora ?? r.datamedida ?? r.inicio ?? r.fim ?? r.data ?? null;
+        if (!dv) return false;
+        const d = new Date(dv);
+        if (isNaN(d.getTime())) return false;
+        const day = isoDate(d);
+        return day >= startDate && day <= endDate;
+      });
+
+      console.debug("[generate] filtered rows:", filtered.length);
+
+      if (!filtered.length) {
+        // fallback to mock monthly data
+        const months = monthsBetweenDatesISO(startDate, endDate);
+        const mock = makeMockMeasurementsForMonths(months);
+        const normalized = mock.map((m) => {
+          const row: any = { day: m.datamedida };
+          selectedColumns.forEach((c) => (row[c] = Number.NaN));
+          return row;
+        });
+        setChartData(normalized);
+        setDataForTablePreview(mock); // mock? Onde é usado essa variablçe?
+        setShowTable(true); 
+        setView("table");
+        setLoading(false);
+        return;
+      }
+
+      // aggregate by day across filtered rows
+      const aggregated = aggregateRowsByDay(filtered, selectedColumns);
+      setChartData(aggregated);
+      setDataForTablePreview(filtered.slice(0, 500)); // sample for preview
+      setShowTable(true);
+      setView("table");
       setTimeout(() => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
     } catch (err) {
       console.error("[generate] error fetching/processing data:", err);
@@ -807,8 +898,8 @@ export default function SimaTablesPage(): JSX.Element {
               </div>
 
               <div style={{ margin: 12 }}>
-                <Button style={{ marginRight: 10}} $primary onClick={handleGenerate} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar gráfico"}</Button>
-                <Button $primary onClick={handleGenerateTable} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar tabela"}</Button>
+                <Button style={{ marginRight: 10}} $primary onClick={handleGenerateChart} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar gráfico"}</Button>
+                <Button $primary onClick={handleGenerateGraph} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar tabela"}</Button>
               </div>
             </ColumnsBox>
           )}
@@ -821,7 +912,7 @@ export default function SimaTablesPage(): JSX.Element {
                 Reiniciar
               </Button>
 
-              <Button $primary onClick={handleGenerate} disabled={loading || !(stage >= 4 && selectedColumns.length > 0)}>
+              <Button $primary onClick={handleGenerateGraph} disabled={loading || !(stage >= 4 && selectedColumns.length > 0)}>
                 {loading ? "Gerando..." : "Gerar Gráfico"}
               </Button>
 
@@ -906,7 +997,9 @@ export default function SimaTablesPage(): JSX.Element {
                   )}
                 </ChartMain>
               </ChartWrapper>
-            ) : (
+            ) : view === "table" ? 
+            <><p>Sas</p></>
+            : (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <div style={{ fontWeight: 800, color: "#0b2740" }}>Mapa — pontos de coleta</div>
