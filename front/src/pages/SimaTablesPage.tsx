@@ -328,6 +328,8 @@ export default function SimaTablesPage(): JSX.Element {
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
   const [pan, setPan] = useState({ x: 0, y: 0 });
 
+  const [page, setPage] = useState(0)
+
   const MapBrazilAny = MapBrazil as any;
 
   /* ---------------- fetch stations ---------------- */
@@ -998,6 +1000,7 @@ async function handleGenerateGraph () {
                 </ChartMain>
               </ChartWrapper>
             ) : view === "table" ? 
+            <>
             <TablePreview>
                     <TableElement>
                       <thead>
@@ -1012,7 +1015,7 @@ async function handleGenerateGraph () {
                       <tbody>
                         {/* Pagina inicial do slice: QUANTIDADEASERMOSTRADO * page + 1           Pagina final do sçlice: QUANTIDADEASERMOSTRADO * page + QUANTIDADEASERMOSTRADO*/}
                         {dataForTablePreview && dataForTablePreview.length
-                          ? dataForTablePreview.slice(10 * 2, 10 * 2 + 10).map((row, i) => (
+                          ? dataForTablePreview.slice(10 * page, 10 * page + 10).map((row, i) => (
                               <tr key={`row-${i}`}>
                                 {selectedColumns.length
                                   ? selectedColumns.map((col) => (
@@ -1037,6 +1040,9 @@ async function handleGenerateGraph () {
                       </tbody>
                     </TableElement>
                   </TablePreview>
+                  <Button onClick={() => {setPage(page + 1)}}>{">"}</Button>
+                  <Button onClick={() => {setPage(page - 1)}}>{"<"}</Button>
+                  </>
             : (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
