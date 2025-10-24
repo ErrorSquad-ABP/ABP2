@@ -9,7 +9,13 @@ const PageContainer = styled.div`
   font-size: 15px;
   background-color: #ffffff;
   box-sizing: border-box;
-  padding: 0; /* aplicar padding apenas nos blocks */
+  padding: 0;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding-bottom: 60px; /* espaço extra para navegação ou rolagem */
+    overflow-x: hidden; /* evita scroll lateral */
+  }
 `;
 
 const HeaderWrapper = styled.div`
@@ -20,6 +26,13 @@ const HeaderWrapper = styled.div`
   background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding-bottom: 0; /* sem padding inferior, a separação será feita pela linha */
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+  }
 `;
 
 const HeaderContainer = styled.div`
@@ -29,6 +42,10 @@ const HeaderContainer = styled.div`
   align-items: center;
   padding: 1.5rem 0 0.5rem 0; /* topo maior, bottom menor para aproximar da linha */
   box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 1rem 0.5rem;
+  }
 `;
 
 const HeaderText = styled.h1`
@@ -37,6 +54,10 @@ const HeaderText = styled.h1`
   font-weight: bold;
   text-align: center;
   margin: 0;
+
+  @media (max-width: 600px) {
+    font-size: 1.4rem;
+  }
 `;
 
 const HeaderSeparator = styled.div`
@@ -52,13 +73,17 @@ const Separator = styled.div`
   height: 2px;
   background-color: rgba(255, 255, 255, 0.5);
   margin: 0.5rem 0 2rem 0; /* espaço inferior maior antes do corpo */
-`;
 
 const Menu = styled.div`
   display: flex;
   justify-content: center;
   gap: 25px;
   padding: 0.75rem 0;
+
+  @media (max-width: 768px) {
+    gap: 15px;
+    padding: 0.5rem;
+  }
 `;
 
 const MenuItem = styled.span<{ active?: boolean }>`
@@ -85,6 +110,11 @@ const MenuItem = styled.span<{ active?: boolean }>`
   &:hover::after {
     width: 100%;
   }
+
+  @media (max-width: 768px) {
+    gap: 15px;
+    padding: 0.5rem;
+  }
 `;
 
 const TwoColumnContainer = styled.div`
@@ -92,6 +122,11 @@ const TwoColumnContainer = styled.div`
   gap: 20px;
   flex-wrap: wrap; /* permite que as colunas se ajustem em telas menores */
   justify-content: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    padding: 0 0.5rem;
+  }
 `;
 
 const Column = styled.div`
@@ -101,7 +136,7 @@ const Column = styled.div`
   gap: 20px; /* espaço entre blocos dentro da coluna */
 
   @media (max-width: 900px) {
-    flex: 1 1 100%; /* colunas ocupam toda a largura em telas menores */
+    flex: 1 1 100%;
   }
 `;
 
@@ -111,9 +146,37 @@ const Block = styled.div`
   flex: 1;
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
   background-color: #fff;
-  margin: 20px; /* adiciona espaçamento em volta dos blocks, em vez de padding global */
+  margin: 20px;
+  min-height: 400px;
+  max-height: 90vh; /* limita bem em telas menores */
+  overflow: hidden; /* mantém aparência limpa */
+  position: relative;
+
+  /* garante que o conteúdo role corretamente dentro */
+  > div:last-child {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #2563eb #f1f1f1;
+  }
+
+  > div:last-child::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  > div:last-child::-webkit-scrollbar-thumb {
+    background-color: #2563eb;
+    border-radius: 10px;
+  }
+
+  > div:last-child::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  @media (max-width: 768px) {
+    margin: 12px 8px;
+  }
 `;
 
 const BlockTitle = styled.div`
@@ -124,6 +187,11 @@ const BlockTitle = styled.div`
   padding: 1rem;
   background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
   text-align: center;
+
+  @media (max-width: 600px) {
+    font-size: 1.1rem;
+    padding: 0.8rem;
+  }
 `;
 
 const BlockText = styled.div`
@@ -132,6 +200,30 @@ const BlockText = styled.div`
   font-size: 15px;
   line-height: 1.5;
   padding: 15px;
+  overflow-y: auto;
+  flex: 1;
+  height: calc(100vh - 220px);
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #2563eb #f1f1f1;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #2563eb;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  @media (max-width: 600px) {
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 12px;
+  }
 `;
 
 const Footer = styled.footer`
@@ -144,6 +236,12 @@ const Footer = styled.footer`
   text-align: right;
   font-weight: 600;
   color: #334155;
+
+  @media (max-width: 768px) {
+    text-align: center;
+    font-size: 14px;
+    padding: 20px 10px;
+  }
 `;
 
 // ================= Conteúdo das páginas =================
@@ -200,7 +298,8 @@ const HomeContent = () => (
 
       <Block>
         <BlockTitle> Dados Armazenados</BlockTitle>
-        <BlockText>
+        <BlockText style={{ overflowY: "auto", maxHeight: "80vh", paddingRight: "10px" }}>
+          <div style={{ gap: "7px" }}></div>
           Os dados são formados por coletas realizadas em 79 campanhas com datas e localidades
           (reservatórios) distintos com o objetivo de coletar parâmetros na interface
           água-sedimento, coluna d’água e interface água-atmosfera. Mais detalhes sobre a base de
@@ -304,7 +403,7 @@ const EquipeContent = () => (
 
       <Block>
         <BlockTitle>Gerente de Rede do Portal</BlockTitle>
-        João Benedito Diehl
+        <BlockText>João Benedito Diehl</BlockText>
       </Block>
 
       <Block>
@@ -320,26 +419,6 @@ const EquipeContent = () => (
 );
 
 const PublicacoesContent = () => {
-  const Section = styled.div`
-    background-color: #e3e8f0;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 6px;
-  `;
-
-  const SectionTitle = styled.div`
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 18px;
-  `;
-
-  const PublicationText = styled.div`
-    color: #222;
-    font-size: 15px;
-    line-height: 1.5;
-    margin-bottom: 10px;
-  `;
   /*
   const PublicationLink = styled.a`
     display: block;
@@ -895,35 +974,6 @@ const PublicacoesContent = () => {
 };
 
 const DescricaoContent = () => {
-  const Section = styled.div`
-    background-color: #e3e8f0;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 6px;
-  `;
-
-  const SectionColorless = styled.div`
-    background-color: #f0f0f5;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 6px;
-  `;
-
-  const SectionTitle = styled.div`
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 18px;
-  `;
-
-  const SectionColorlessTitle = styled.div`
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 18px;
-    border-bottom: 1px solid #333;
-  `;
-
   return (
     <TwoColumnContainer>
       <Column>
@@ -1154,8 +1204,7 @@ const DescricaoContent = () => {
 
         <Block>
           <BlockTitle>IEE</BlockTitle>
-          <BlockText style={{ overflowY: "auto", maxHeight: "80vh", paddingRight: "10px" }}>
-            <div style={{ gap: "7px" }}></div>
+          <BlockText>
             <div>
               <div style={{ fontWeight: "1000" }}>Água e matéria orgânica no sedimento</div>
               <div>Quantidade de coletas: 1283</div>
