@@ -537,7 +537,7 @@ export default function SimaTablesPage(): JSX.Element {
 
   /* ---------------- handleGenerate: fetch full dataset for chosen columns, filter by station/date, aggregate ---------------- */
   async function handleGenerateChart() {
-    console.debug("[generate] start", { table, selectedColumns, startDate, endDate, selectedStations });
+    console.log("[generate] start", { table, selectedColumns, startDate, endDate, selectedStations });
     if (!selectedStations.length) {
       alert("Selecione ao menos uma estação.");
       return;
@@ -998,7 +998,45 @@ async function handleGenerateGraph () {
                 </ChartMain>
               </ChartWrapper>
             ) : view === "table" ? 
-            <><p>Sas</p></>
+            <TablePreview>
+                    <TableElement>
+                      <thead>
+                        <tr>
+                          {selectedColumns && selectedColumns.length ? (
+                            selectedColumns.map((col) => <th key={col}>{col}</th>)
+                          ) : (
+                            <th>Sem colunas selecionadas</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Pagina inicial do slice: QUANTIDADEASERMOSTRADO * page + 1           Pagina final do sçlice: QUANTIDADEASERMOSTRADO * page + QUANTIDADEASERMOSTRADO*/}
+                        {dataForTablePreview && dataForTablePreview.length
+                          ? dataForTablePreview.slice(10 * 2, 10 * 2 + 10).map((row, i) => (
+                              <tr key={`row-${i}`}>
+                                {selectedColumns.length
+                                  ? selectedColumns.map((col) => (
+                                      <td key={`${i}-${col}`}>{String(row[col] ?? "—")}</td>
+                                    ))
+                                  : Object.keys(row)
+                                      .slice(0, 6)
+                                      .map((k) => (
+                                        <td key={`${i}-${k}`}>{String(row[k] ?? "—")}</td>
+                                      ))}
+                              </tr>
+                            ))
+                          : Array.from({ length: 3 }).map((_, r) => (
+                              <tr key={`ph-${r}`}>
+                                {selectedColumns && selectedColumns.length ? (
+                                  selectedColumns.map((col) => <td key={`ph-${r}-${col}`}>—</td>)
+                                ) : (
+                                  <td>—</td>
+                                )}
+                              </tr>
+                            ))}
+                      </tbody>
+                    </TableElement>
+                  </TablePreview>
             : (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
