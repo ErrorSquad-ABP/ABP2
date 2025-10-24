@@ -74,11 +74,6 @@ const Separator = styled.div`
   background-color: rgba(255, 255, 255, 0.5);
   margin: 0.5rem 0 2rem 0; /* espaço inferior maior antes do corpo */
 
-  @media (max-width: 768px) {
-    width: 80%;
-  }
-`;
-
 const Menu = styled.div`
   display: flex;
   justify-content: center;
