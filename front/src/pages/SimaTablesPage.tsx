@@ -180,6 +180,7 @@ const Button = styled.button<{ $primary?: boolean }>`
   font-weight: 700;
   background: ${(p) => (p.$primary ? p.theme.colors.primary : "rgba(2,6,23,0.06)")};
   color: ${(p) => (p.$primary ? "#fff" : "#04203a")};
+  margin-rigth: ${(p) => (p.$primary ? "12" : "0")};
 `;
 
 const Panel = styled.div`
@@ -336,9 +337,12 @@ export default function SimaTablesPage(): JSX.Element {
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
   const [pan, setPan] = useState({ x: 0, y: 0 });
 
+  const [page, setPage] = useState(0)
+
   const MapBrazilAny = MapBrazil as any;
 
   /* ---------------- fetch stations ---------------- */
+
   useEffect(() => {
     async function fetchStations() {
       try {
@@ -358,7 +362,7 @@ export default function SimaTablesPage(): JSX.Element {
               const idRaw = r.idestacao ?? r.id ?? null;
               const nameRaw = r.rotulo ?? r.nome ?? r.name ?? null;
               if (!idRaw) return null;
-              const id = String(idRaw).trim();
+              const id = idRaw
               const name = nameRaw ? String(nameRaw).trim() : `Estação ${id}`;
               return { id, name };
             })
@@ -373,7 +377,8 @@ export default function SimaTablesPage(): JSX.Element {
             const idRaw = r.idestacao ?? r.id ?? null;
             const nameRaw = r.rotulo ?? r.nome ?? r.name ?? null;
             if (!idRaw) return null;
-            const id = String(idRaw).trim();
+                        console.log(`Id raw  '${idRaw}'`)
+            const id = idRaw
             const name = nameRaw ? String(nameRaw).trim() : `Estação ${id}`;
             const lat = r.lat ?? r.latitude ?? null;
             const lng = r.lng ?? r.longitude ?? null;
@@ -478,14 +483,16 @@ export default function SimaTablesPage(): JSX.Element {
   /* ---------------- fetch columns for chosen table (sample 1 row) ---------------- */
   async function fetchColumnsForTable(tableName: string) {
     try {
-      const url = `${API_BASE}/tables/sima/${encodeURIComponent(tableName)}?all=true&limit=1`;
+      const url = `${API_BASE}/tables/sima/${encodeURIComponent(tableName)}?all=true`;
       const res = await fetch(url);
       if (!res.ok) {
         setColumnsForTable([]);
         return;
       }
       const j = await res.json();
-      const rows = Array.isArray(j) ? j : j?.data || j?.rows || [];
+      console.log("cADU:",j)
+      const rows = j.data;
+      console.log(j.count)
       if (rows && rows.length) {
         const keys = Object.keys(rows[0] || {}).map((k) => {
           const val = rows[0][k];
@@ -565,6 +572,7 @@ export default function SimaTablesPage(): JSX.Element {
   }
 
   /* ---------------- handleGenerate: fetch full dataset for chosen columns, filter by station/date, aggregate ---------------- */
+
   async function handleGenerate() {
     console.debug("[generate] start", {
       table,
@@ -611,7 +619,7 @@ export default function SimaTablesPage(): JSX.Element {
       // filter by selectedStations and date range
       const stationSet = new Set(selectedStations.map((s) => String(s).trim()));
       const filtered = (rows || []).filter((r: any) => {
-        const sid = String(r.idestacao ?? r.id ?? "").trim();
+        const sid = String(r.idestacao ?? r.id ?? "");
         if (!stationSet.has(sid)) return false;
         const dv = r.dataHora ?? r.datahora ?? r.datamedida ?? r.inicio ?? r.fim ?? r.data ?? null;
         if (!dv) return false;
@@ -633,8 +641,8 @@ export default function SimaTablesPage(): JSX.Element {
           return row;
         });
         setChartData(normalized);
-        setDataForTablePreview(mock);
-        setShowTable(true);
+        setDataForTablePreview(mock); // mock? Onde é usado essa variablçe?
+        setShowTable(true); 
         setView("chart");
         setLoading(false);
         return;
@@ -650,6 +658,97 @@ export default function SimaTablesPage(): JSX.Element {
         () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
         50,
       );
+    } catch (err) {
+      console.error("[generate] error fetching/processing data:", err);
+      alert("Erro ao gerar gráfico. Veja console para detalhes.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+/* ESSE DADO AQUI É O QUE VOU USAR PARA GERAR AS TABELAS :) ! dataForTablePreview ! */
+
+  useEffect(() => {
+    if (dataForTablePreview) {console.log(dataForTablePreview)}
+  }, [dataForTablePreview])
+
+  /* ----------------- handle generate table ----------- */
+
+async function handleGenerateGraph () {
+    console.debug("[generate] start", { table, selectedColumns, startDate, endDate, selectedStations });
+    if (!selectedStations.length) {
+      alert("Selecione ao menos uma estação.");
+      return;
+    }
+    if (!selectedColumns.length) {
+      alert("Selecione ao menos uma coluna para plotar.");
+      return;
+    }
+    if (!startDate || !endDate) {
+      alert("Escolha período.");
+      return;
+    }
+    setLoading(true);
+
+    try {
+      // Build cols param including idestacao and dataHora (server expects these names)
+      const cols = ["idestacao", "dataHora", ...selectedColumns];
+      const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
+
+      // choose endpoint based on table
+      const endpoint = table === "tbsima"
+        ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=${colsParam}`
+        : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=${colsParam}`;
+
+      console.debug("[generate] fetching endpoint:", endpoint);
+      const resp = await fetch(endpoint);
+      if (!resp.ok) {
+        throw new Error(`fetch failed: ${resp.status} ${resp.statusText}`);
+      }
+
+      const json = await resp.json();
+      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+      console.log("[generate] fetched rows:", rows?.length ?? 0);
+
+      // filter by selectedStations and date range
+      const stationSet = new Set(selectedStations.map((s) => String(s) ));
+      const filtered = (rows || []).filter((r: any) => {
+        const sid = String(r.idestacao ?? r.id ?? "");
+        if (!stationSet.has(sid)) return false;
+        const dv = r.dataHora ?? r.datahora ?? r.datamedida ?? r.inicio ?? r.fim ?? r.data ?? null;
+        if (!dv) return false;
+        const d = new Date(dv);
+        if (isNaN(d.getTime())) return false;
+        const day = isoDate(d);
+        return day >= startDate && day <= endDate;
+      });
+
+      console.debug("[generate] filtered rows:", filtered.length);
+
+      if (!filtered.length) {
+        // fallback to mock monthly data
+        const months = monthsBetweenDatesISO(startDate, endDate);
+        const mock = makeMockMeasurementsForMonths(months);
+        const normalized = mock.map((m) => {
+          const row: any = { day: m.datamedida };
+          selectedColumns.forEach((c) => (row[c] = Number.NaN));
+          return row;
+        });
+        setChartData(normalized);
+        setDataForTablePreview(mock); // mock? Onde é usado essa variablçe?
+        setShowTable(true); 
+        setView("table");
+        setLoading(false);
+        return;
+      }
+
+      // aggregate by day across filtered rows
+      const aggregated = aggregateRowsByDay(filtered, selectedColumns);
+      setChartData(aggregated);
+      setDataForTablePreview(rows); // sample for preview
+      setShowTable(true);
+      setView("table");
+      setTimeout(() => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
     } catch (err) {
       console.error("[generate] error fetching/processing data:", err);
       alert("Erro ao gerar gráfico. Veja console para detalhes.");
@@ -889,15 +988,9 @@ export default function SimaTablesPage(): JSX.Element {
                   <div>Carregando colunas...</div>
                 )}
               </div>
-
-              <div style={{ marginTop: 12 }}>
-                <Button
-                  $primary
-                  onClick={handleGenerate}
-                  disabled={loading || !(selectedColumns.length > 0)}
-                >
-                  {loading ? "Gerando..." : "Gerar gráfico"}
-                </Button>
+              <div style={{ margin: 12 }}>
+                <Button style={{ marginRight: 10}} $primary onClick={handleGenerateChart} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar gráfico"}</Button>
+                <Button $primary onClick={handleGenerateGraph} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar tabela"}</Button>
               </div>
             </ColumnsBox>
           )}
@@ -1033,8 +1126,8 @@ export default function SimaTablesPage(): JSX.Element {
                           </tr>
                         </thead>
                         <tbody>
-                          {dataForTablePreview && dataForTablePreview.length
-                            ? dataForTablePreview.slice(0, 5).map((row, i) => (
+                          {chartData && chartData.length
+                            ? chartData.slice(0, 5).map((row, i) => (
                                 <tr key={`row-${i}`}>
                                   {selectedColumns.length
                                     ? selectedColumns.map((col) => (
@@ -1062,7 +1155,51 @@ export default function SimaTablesPage(): JSX.Element {
                   )}
                 </ChartMain>
               </ChartWrapper>
-            ) : (
+            ) : view === "table" ? 
+            <>
+            <TablePreview>
+                    <TableElement>
+                      <thead>
+                        <tr>
+                          {selectedColumns && selectedColumns.length ? (
+                            selectedColumns.map((col) => <th key={col}>{col}</th>)
+                          ) : (
+                            <th>Sem colunas selecionadas</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Pagina inicial do slice: QUANTIDADEASERMOSTRADO * page + 1           Pagina final do sçlice: QUANTIDADEASERMOSTRADO * page + QUANTIDADEASERMOSTRADO*/}
+                        {chartData && chartData.length
+                          ? chartData.slice(10 * page, 10 * page + 10 ).map((row, i) => (
+                              <tr key={`row-${i}`}>
+                                {selectedColumns.length
+                                  ? selectedColumns.map((col) => (
+                                      <td key={`${i}-${col}`}>{String(row[col] ?? "—")}</td>
+                                    ))
+                                  : Object.keys(row)
+                                      .slice(0, 6)
+                                      .map((k) => (
+                                        <td key={`${i}-${k}`}>{String(row[k] ?? "—")}</td>
+                                      ))}
+                              </tr>
+                            ))
+                          : Array.from({ length: 3 }).map((_, r) => (
+                              <tr key={`ph-${r}`}>
+                                {selectedColumns && selectedColumns.length ? (
+                                  selectedColumns.map((col) => <td key={`ph-${r}-${col}`}>—</td>)
+                                ) : (
+                                  <td>—</td>
+                                )}
+                              </tr>
+                            ))}
+                      </tbody>
+                    </TableElement>
+                  </TablePreview>
+                  <Button onClick={() => {setPage(page + 1)}}>{">"}</Button>
+                  <Button onClick={() => {setPage(page - 1)}}>{"<"}</Button>
+                  </>
+            : (
               <>
                 <div
                   style={{
