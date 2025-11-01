@@ -6,7 +6,15 @@ export default function MapSvg({ onClickState, reservatorios }) {
   const [paths, setPaths] = useState([]);
 
   useEffect(() => {
-    const projection = d3.geoMercator().scale(850).center([-55, -15]).translate([350, 325]);
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // Ajuste dinâmico para manter a proporção correta
+    const scale = width < 768 ? 650 : 850;
+    const center = width < 768 ? [-55, -16] : [-55, -15];
+    const translate = width < 768 ? [width / 2, height / 2.1] : [350, 325];
+
+    const projection = d3.geoMercator().scale(scale).center(center).translate(translate);
 
     const pathGenerator = d3.geoPath().projection(projection);
 
@@ -18,15 +26,26 @@ export default function MapSvg({ onClickState, reservatorios }) {
     setPaths(statePaths);
   }, []);
 
-  const projection = d3.geoMercator().scale(850).center([-55, -15]).translate([350, 325]);
+  // Cria novamente a projeção para os reservatórios (fora do useEffect)
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const scale = width < 768 ? 650 : 850;
+  const center = width < 768 ? [-55, -16] : [-55, -15];
+  const translate = width < 768 ? [width / 2, height / 2.1] : [350, 325];
+  const projection = d3.geoMercator().scale(scale).center(center).translate(translate);
 
   return (
     <svg
-      width={700}
-      height={650}
+      viewBox="0 0 700 650"
+      preserveAspectRatio="xMidYMid meet"
       style={{
-        backgroundColor: "transparent", // 👈 combina com o degradê
+        width: "100%",
+        height: "auto",
+        maxHeight: "90vh",
+        display: "block",
+        margin: "0 auto",
         cursor: "pointer",
+        backgroundColor: "transparent",
       }}
     >
       {/* Estados */}
@@ -35,11 +54,11 @@ export default function MapSvg({ onClickState, reservatorios }) {
           key={index}
           id={p.id}
           d={p.d}
-          fill="#1E3A5F" // azul médio elegante
-          stroke="#89A1C9" // borda azul prateada
+          fill="#1E3A5F"
+          stroke="#89A1C9"
           strokeWidth="0.5"
-          style={{ transition: "fill 0.25s ease" }} // suaviza transição de hover
-          onMouseEnter={(e) => (e.target.style.fill = "#FF4C4C")} // hover vermelho
+          style={{ transition: "fill 0.25s ease" }}
+          onMouseEnter={(e) => (e.target.style.fill = "#FF4C4C")}
           onMouseLeave={(e) => (e.target.style.fill = "#1E3A5F")}
           onClick={() => {
             console.log("Estado clicado:", p.id);
@@ -48,7 +67,7 @@ export default function MapSvg({ onClickState, reservatorios }) {
         />
       ))}
 
-      {/* Reservatórios (losangos dourados) */}
+      {/* Reservatórios */}
       {reservatorios.map((r, i) => {
         if (!r.lat || !r.lng) return null;
         const [x, y] = projection([r.lng, r.lat]);
@@ -56,8 +75,8 @@ export default function MapSvg({ onClickState, reservatorios }) {
           <polygon
             key={i}
             points={`${x},${y - 5} ${x + 5},${y} ${x},${y + 5} ${x - 5},${y}`}
-            fill="#FFD700" // dourado principal
-            stroke="#FFA500" // contorno laranja suave
+            fill="#FFD700"
+            stroke="#FFA500"
             strokeWidth="1"
             style={{ transition: "fill 0.25s ease" }}
             onMouseEnter={(e) => (e.target.style.fill = "#FFF275")}

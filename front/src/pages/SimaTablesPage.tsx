@@ -3,7 +3,7 @@
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
-import SimaTable from "../components/SimaTable";
+// import SimaTable from "../components/SimaTable";
 
 /**
  * SimaTablesPage.tsx
@@ -298,7 +298,9 @@ export default function SimaTablesPage(): JSX.Element {
   // stage: 1 stations, 2 table, 3 dates, 4 columns
   const [stage, setStage] = useState<number>(1);
 
-  const [stationsList, setStationsList] = useState<{ id: string; name: string; lat?: number; lng?: number }[]>([]);
+  const [stationsList, setStationsList] = useState<
+    { id: string; name: string; lat?: number; lng?: number }[]
+  >([]);
   const [selectedStations, setSelectedStations] = useState<string[]>([]);
   const [selectAllStations, setSelectAllStations] = useState(false);
 
@@ -316,13 +318,20 @@ export default function SimaTablesPage(): JSX.Element {
 
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
-  const [tooltip, setTooltip] = useState<{ visible: boolean; left: number; top: number; instituicao?: string; reservatorio?: string; color?: string }>({ visible: false, left: 0, top: 0 });
+  const [tooltip, setTooltip] = useState<{
+    visible: boolean;
+    left: number;
+    top: number;
+    instituicao?: string;
+    reservatorio?: string;
+    color?: string;
+  }>({ visible: false, left: 0, top: 0 });
 
   const [view, setView] = useState<"chart" | "map">("chart");
   const [loading, setLoading] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
-  const [showTableView, setShowTableView] = useState<boolean>(false);
-  const [showTable, setShowTable] = useState<boolean>(false);
+  const [showTableView /*setShowTableView*/] = useState<boolean>(false);
+  const [, /*showTable*/ setShowTable] = useState<boolean>(false);
 
   const [zoom, setZoom] = useState<number>(1);
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
@@ -373,8 +382,12 @@ export default function SimaTablesPage(): JSX.Element {
             const name = nameRaw ? String(nameRaw).trim() : `Estação ${id}`;
             const lat = r.lat ?? r.latitude ?? null;
             const lng = r.lng ?? r.longitude ?? null;
-                        console.log(`Id novo  '${id}'`)
-            return { id, name, lat: typeof lat === "number" ? lat : lat ? Number(lat) : undefined, lng: typeof lng === "number" ? lng : lng ? Number(lng) : undefined };
+            return {
+              id,
+              name,
+              lat: typeof lat === "number" ? lat : lat ? Number(lat) : undefined,
+              lng: typeof lng === "number" ? lng : lng ? Number(lng) : undefined,
+            };
           })
           .filter(Boolean) as { id: string; name: string; lat?: number; lng?: number }[];
         const map: Record<string, { name: string; lat?: number; lng?: number }> = {};
@@ -398,14 +411,21 @@ export default function SimaTablesPage(): JSX.Element {
     return /(^id|_id$|(^idestacao$)|\bidestacao\b|_id_|id$)/i.test(col);
   }
   function isDateColumn(col: string) {
-    return /^datahora$/i.test(col) || /^data$/i.test(col) || /^datamedida$/i.test(col) || /^inicio$/i.test(col) || /^fim$/i.test(col);
+    return (
+      /^datahora$/i.test(col) ||
+      /^data$/i.test(col) ||
+      /^datamedida$/i.test(col) ||
+      /^inicio$/i.test(col) ||
+      /^fim$/i.test(col)
+    );
   }
 
   /* ---------------- when table confirmed: fetch dates (filtered by selected stations) ---------------- */
   async function fetchDatesForTableAndStations(tableName: string, stations: string[]) {
-    const endpoint = tableName === "tbsima"
-      ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=dataHora,idestacao`
-      : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=dataHora,idestacao`;
+    const endpoint =
+      tableName === "tbsima"
+        ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=dataHora,idestacao`
+        : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=dataHora,idestacao`;
     try {
       const resp = await fetch(endpoint);
       if (!resp.ok) {
@@ -430,7 +450,9 @@ export default function SimaTablesPage(): JSX.Element {
           if (/^\d{4}-\d{2}-\d{2}$/.test(maybe)) foundDates.add(maybe);
         }
       }
-      const arr = Array.from(foundDates).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+      const arr = Array.from(foundDates).sort(
+        (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+      );
       setAvailableDates(arr);
       if (arr.length) {
         setStartDate((p) => (p ? p : arr[0]));
@@ -475,7 +497,11 @@ export default function SimaTablesPage(): JSX.Element {
         const keys = Object.keys(rows[0] || {}).map((k) => {
           const val = rows[0][k];
           const type =
-            typeof val === "number" ? "number" : /data|hora|inicio|fim/i.test(k) ? "date" : "string";
+            typeof val === "number"
+              ? "number"
+              : /data|hora|inicio|fim/i.test(k)
+                ? "date"
+                : "string";
           return { nome: k, label: k, type };
         });
         setColumnsForTable(keys);
@@ -514,7 +540,8 @@ export default function SimaTablesPage(): JSX.Element {
   function aggregateRowsByDay(rows: any[], cols: string[]) {
     const map = new Map<string, Record<string, number[]>>();
     for (const r of rows) {
-      const dateVal = r.dataHora ?? r.datahora ?? r.datamedida ?? r.inicio ?? r.fim ?? r.data ?? null;
+      const dateVal =
+        r.dataHora ?? r.datahora ?? r.datamedida ?? r.inicio ?? r.fim ?? r.data ?? null;
       if (!dateVal) continue;
       const d = new Date(dateVal);
       if (isNaN(d.getTime())) continue;
@@ -535,7 +562,9 @@ export default function SimaTablesPage(): JSX.Element {
         const obj: any = { day };
         for (const c of cols) {
           const arr = rec[c] ?? [];
-          obj[c] = arr.length ? Number((arr.reduce((s, v) => s + v, 0) / arr.length).toFixed(6)) : NaN;
+          obj[c] = arr.length
+            ? Number((arr.reduce((s, v) => s + v, 0) / arr.length).toFixed(6))
+            : NaN;
         }
         return obj;
       });
@@ -543,7 +572,6 @@ export default function SimaTablesPage(): JSX.Element {
   }
 
   /* ---------------- handleGenerate: fetch full dataset for chosen columns, filter by station/date, aggregate ---------------- */
-
 
    async function handleGenerateChart() {
     console.log("[generate] start", { table, selectedColumns, startDate, endDate, selectedStations });
@@ -568,9 +596,10 @@ export default function SimaTablesPage(): JSX.Element {
       const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
 
       // choose endpoint based on table
-      const endpoint = table === "tbsima"
-        ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=${colsParam}`
-        : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=${colsParam}`;
+      const endpoint =
+        table === "tbsima"
+          ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=${colsParam}`
+          : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=${colsParam}`;
 
       console.debug("[generate] fetching endpoint:", endpoint);
       const resp = await fetch(endpoint);
@@ -620,7 +649,10 @@ export default function SimaTablesPage(): JSX.Element {
       setDataForTablePreview(filtered.slice(0, 500)); // sample for preview
       setShowTable(true);
       setView("chart");
-      setTimeout(() => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+      setTimeout(
+        () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
+        50,
+      );
     } catch (err) {
       console.error("[generate] error fetching/processing data:", err);
       alert("Erro ao gerar gráfico. Veja console para detalhes.");
@@ -734,7 +766,12 @@ async function handleGenerateGraph () {
     if (!points.length && dataForTablePreview && dataForTablePreview.length) {
       for (const r of dataForTablePreview) {
         if (typeof r.latitude === "number" && typeof r.longitude === "number") {
-          points.push({ id: r.id ?? r.idestacao ?? Math.random(), lat: r.latitude, lon: r.longitude, label: r.reservatorio ?? r.instituicao });
+          points.push({
+            id: r.id ?? r.idestacao ?? Math.random(),
+            lat: r.latitude,
+            lon: r.longitude,
+            label: r.reservatorio ?? r.instituicao,
+          });
         }
       }
     }
@@ -745,7 +782,10 @@ async function handleGenerateGraph () {
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const ev = e as any;
     if (ev.buttons === 1) {
-      setPan((prevPan) => ({ x: prevPan.x + (ev.movementX || 0), y: prevPan.y + (ev.movementY || 0) }));
+      setPan((prevPan) => ({
+        x: prevPan.x + (ev.movementX || 0),
+        y: prevPan.y + (ev.movementY || 0),
+      }));
     }
   };
 
@@ -758,7 +798,9 @@ async function handleGenerateGraph () {
             {/* Stage 1: stations */}
             {stage >= 1 && (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                >
                   <div style={{ fontWeight: 700 }}>1) Escolha a(s) estação(ões)</div>
                 </div>
 
@@ -778,12 +820,24 @@ async function handleGenerateGraph () {
                   </label>
                 </div>
 
-                <div style={{ maxHeight: 220, overflowY: "auto", marginTop: 8, padding: 8, border: "1px solid #eef2ff", borderRadius: 8 }}>
+                <div
+                  style={{
+                    maxHeight: 220,
+                    overflowY: "auto",
+                    marginTop: 8,
+                    padding: 8,
+                    border: "1px solid #eef2ff",
+                    borderRadius: 8,
+                  }}
+                >
                   {stationsList.length ? (
                     stationsList.map((s) => {
                       const checked = selectedStations.includes(s.id);
                       return (
-                        <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                        <div
+                          key={s.id}
+                          style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}
+                        >
                           <input
                             type="checkbox"
                             checked={checked}
@@ -824,17 +878,29 @@ async function handleGenerateGraph () {
                 <div style={{ marginTop: 12, fontWeight: 700 }}>2) Escolha a tabela</div>
                 <div style={{ marginTop: 8 }}>
                   <label style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                    <input type="radio" name="tb" checked={table === "tbsima"} onChange={() => setTable("tbsima")} />
+                    <input
+                      type="radio"
+                      name="tb"
+                      checked={table === "tbsima"}
+                      onChange={() => setTable("tbsima")}
+                    />
                     <span>tbsima (online)</span>
                   </label>
                   <label style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 6 }}>
-                    <input type="radio" name="tb" checked={table === "tbsimaoffline"} onChange={() => setTable("tbsimaoffline")} />
+                    <input
+                      type="radio"
+                      name="tb"
+                      checked={table === "tbsimaoffline"}
+                      onChange={() => setTable("tbsimaoffline")}
+                    />
                     <span>tbsimaoffline (offline)</span>
                   </label>
                 </div>
 
                 <div style={{ marginTop: 12 }}>
-                  <Button $primary onClick={handleConfirmTable}>Confirmar tabela</Button>
+                  <Button $primary onClick={handleConfirmTable}>
+                    Confirmar tabela
+                  </Button>
                 </div>
               </>
             )}
@@ -869,7 +935,9 @@ async function handleGenerateGraph () {
                 </Row>
 
                 <div style={{ marginTop: 12 }}>
-                  <Button $primary onClick={handleConfirmPeriod}>Confirmar período</Button>
+                  <Button $primary onClick={handleConfirmPeriod}>
+                    Confirmar período
+                  </Button>
                 </div>
               </>
             )}
@@ -891,11 +959,20 @@ async function handleGenerateGraph () {
                     const checked = selectedColumns.includes(colName);
                     return (
                       <ColumnItem key={colName + "-" + idx}>
-                        <input type="checkbox" checked={checked} disabled={disabled} onChange={() => toggleColumn(colName)} />
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={disabled}
+                          onChange={() => toggleColumn(colName)}
+                        />
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           <div style={{ fontWeight: 700 }}>
                             {c.label ?? colName}
-                            {disabled ? <small style={{ marginLeft: 8, color: "#94a3b8" }}>(não selecionável)</small> : null}
+                            {disabled ? (
+                              <small style={{ marginLeft: 8, color: "#94a3b8" }}>
+                                (não selecionável)
+                              </small>
+                            ) : null}
                           </div>
                           <small style={{ color: "#64748b" }}>{c.type ?? "—"}</small>
                         </div>
@@ -906,7 +983,6 @@ async function handleGenerateGraph () {
                   <div>Carregando colunas...</div>
                 )}
               </div>
-
               <div style={{ margin: 12 }}>
                 <Button style={{ marginRight: 10}} $primary onClick={handleGenerateChart} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar gráfico"}</Button>
                 <Button $primary onClick={handleGenerateGraph} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar tabela"}</Button>
@@ -918,11 +994,26 @@ async function handleGenerateGraph () {
         <RightPanel>
           <ControlsTopRight>
             <div style={{ display: "flex", gap: 8 }}>
-              <Button onClick={() => { setStage(1); setSelectedStations([]); setSelectAllStations(false); setColumnsForTable([]); setSelectedColumns([]); setChartData(null); setDataForTablePreview(null); setShowTable(false); }}>
+              <Button
+                onClick={() => {
+                  setStage(1);
+                  setSelectedStations([]);
+                  setSelectAllStations(false);
+                  setColumnsForTable([]);
+                  setSelectedColumns([]);
+                  setChartData(null);
+                  setDataForTablePreview(null);
+                  setShowTable(false);
+                }}
+              >
                 Reiniciar
               </Button>
 
-              <Button $primary onClick={handleGenerateGraph} disabled={loading || !(stage >= 4 && selectedColumns.length > 0)}>
+              <Button
+                $primary
+                onClick={handleGenerate}
+                disabled={loading || !(stage >= 4 && selectedColumns.length > 0)}
+              >
                 {loading ? "Gerando..." : "Gerar Gráfico"}
               </Button>
 
@@ -933,10 +1024,32 @@ async function handleGenerateGraph () {
               <div style={{ position: "relative" }}>
                 <Button onClick={() => setShowExportOptions((s) => !s)}>Exportar ▾</Button>
                 {showExportOptions && (
-                  <div style={{ position: "absolute", right: 0, marginTop: 8, background: "#fff", boxShadow: "0 6px 18px rgba(2,6,23,0.12)", borderRadius: 8, padding: 8 }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      marginTop: 8,
+                      background: "#fff",
+                      boxShadow: "0 6px 18px rgba(2,6,23,0.12)",
+                      borderRadius: 8,
+                      padding: 8,
+                    }}
+                  >
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <button onClick={() => { /* CSV */ }}>CSV</button>
-                      <button onClick={() => { /* PDF */ }}>PDF</button>
+                      <button
+                        onClick={() => {
+                          /* CSV */
+                        }}
+                      >
+                        CSV
+                      </button>
+                      <button
+                        onClick={() => {
+                          /* PDF */
+                        }}
+                      >
+                        PDF
+                      </button>
                     </div>
                   </div>
                 )}
@@ -945,21 +1058,43 @@ async function handleGenerateGraph () {
           </ControlsTopRight>
 
           <Panel ref={chartRef}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <div style={{ fontWeight: 800, color: "#0b2740", fontSize: 16 }}>Visualização — {table}</div>
-              <div style={{ color: "#475569", fontSize: 13 }}>{chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}</div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 8,
+              }}
+            >
+              <div style={{ fontWeight: 800, color: "#0b2740", fontSize: 16 }}>
+                Visualização — {table}
+              </div>
+              <div style={{ color: "#475569", fontSize: 13 }}>
+                {chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}
+              </div>
             </div>
 
             {view === "chart" ? (
               <ChartWrapper>
-                <ChartMain ref={chartMainRef} onMouseLeave={() => setTooltip({ visible: false, left: 0, top: 0 })}>
+                <ChartMain
+                  ref={chartMainRef}
+                  onMouseLeave={() => setTooltip({ visible: false, left: 0, top: 0 })}
+                >
                   {chartData && chartData.length && selectedColumns.length ? (
                     <>
                       <MultiSeriesSVG rows={chartData} columns={selectedColumns} />
                       <Legend aria-hidden>
                         {selectedColumns.map((col, i) => (
                           <LegendItem key={col}>
-                            <div style={{ width: 14, height: 14, borderRadius: 3, background: SERIES_COLORS[i % SERIES_COLORS.length], border: "1px solid rgba(0,0,0,0.06)" }} />
+                            <div
+                              style={{
+                                width: 14,
+                                height: 14,
+                                borderRadius: 3,
+                                background: SERIES_COLORS[i % SERIES_COLORS.length],
+                                border: "1px solid rgba(0,0,0,0.06)",
+                              }}
+                            />
                             <div>{col}</div>
                           </LegendItem>
                         ))}
@@ -967,7 +1102,9 @@ async function handleGenerateGraph () {
                     </>
                   ) : (
                     <div style={{ padding: 16, color: "#64748b" }}>
-                      {stage < 4 ? "Complete as etapas à esquerda para gerar o gráfico." : "Selecione colunas e clique em \"Gerar gráfico\"."}
+                      {stage < 4
+                        ? "Complete as etapas à esquerda para gerar o gráfico."
+                        : 'Selecione colunas e clique em "Gerar gráfico".'}
                     </div>
                   )}
 
@@ -988,8 +1125,14 @@ async function handleGenerateGraph () {
                             ? chartData.slice(0, 5).map((row, i) => (
                                 <tr key={`row-${i}`}>
                                   {selectedColumns.length
-                                    ? selectedColumns.map((col) => <td key={`${i}-${col}`}>{String(row[col] ?? "—")}</td>)
-                                    : Object.keys(row).slice(0, 6).map((k) => <td key={`${i}-${k}`}>{String(row[k] ?? "—")}</td>)}
+                                    ? selectedColumns.map((col) => (
+                                        <td key={`${i}-${col}`}>{String(row[col] ?? "—")}</td>
+                                      ))
+                                    : Object.keys(row)
+                                        .slice(0, 6)
+                                        .map((k) => (
+                                          <td key={`${i}-${k}`}>{String(row[k] ?? "—")}</td>
+                                        ))}
                                 </tr>
                               ))
                             : Array.from({ length: 3 }).map((_, r) => (
@@ -1053,7 +1196,14 @@ async function handleGenerateGraph () {
                   </>
             : (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 8,
+                  }}
+                >
                   <div style={{ fontWeight: 800, color: "#0b2740" }}>Mapa — pontos de coleta</div>
                   <div style={{ color: "#475569", fontSize: 13 }}>{latLonPoints.length} pontos</div>
                 </div>
@@ -1061,23 +1211,71 @@ async function handleGenerateGraph () {
                 <MapPlaceholder>
                   <ZoomControls>
                     <label>
-                      <input type="checkbox" checked={showStateNames} onChange={(e) => setShowStateNames(e.target.checked)} />
+                      <input
+                        type="checkbox"
+                        checked={showStateNames}
+                        onChange={(e) => setShowStateNames(e.target.checked)}
+                      />
                       <span>Mostrar nomes</span>
                     </label>
                     <div>
-                      <button aria-label="Zoom Out" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}>-</button>
-                      <button aria-label="Zoom In" onClick={() => setZoom((z) => Math.min(2.0, +(z + 0.2).toFixed(2)))}>+</button>
-                      <button aria-label="Center" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>⤾</button>
+                      <button
+                        aria-label="Zoom Out"
+                        onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}
+                      >
+                        -
+                      </button>
+                      <button
+                        aria-label="Zoom In"
+                        onClick={() => setZoom((z) => Math.min(2.0, +(z + 0.2).toFixed(2)))}
+                      >
+                        +
+                      </button>
+                      <button
+                        aria-label="Center"
+                        onClick={() => {
+                          setZoom(1);
+                          setPan({ x: 0, y: 0 });
+                        }}
+                      >
+                        ⤾
+                      </button>
                     </div>
                   </ZoomControls>
 
-                  <div onMouseMove={handleMouseMove} style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                    <div style={{ width: "100%", height: "100%", maxWidth: 1100, display: "flex", justifyContent: "center", alignItems: "center", transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`, cursor: "grab", transformOrigin: "center top" }}>
+                  <div
+                    onMouseMove={handleMouseMove}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        maxWidth: 1100,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+                        cursor: "grab",
+                        transformOrigin: "center top",
+                      }}
+                    >
                       <MapBrazilAny
                         height={760}
                         showPolygons={true}
                         showStateNames={showStateNames}
-                        points={latLonPoints.map((p) => ({ id: p.id, lat: p.lat, lon: p.lon, label: p.label || `Ponto ${p.id}` }))}
+                        points={latLonPoints.map((p) => ({
+                          id: p.id,
+                          lat: p.lat,
+                          lon: p.lon,
+                          label: p.label || `Ponto ${p.id}`,
+                        }))}
                         showPoints={true}
                       />
                     </div>
@@ -1094,11 +1292,14 @@ async function handleGenerateGraph () {
   /* ---------------- inner component: MultiSeriesSVG ---------------- */
 
   function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
-    if (!rows || !rows.length || !columns || !columns.length) return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
+    if (!rows || !rows.length || !columns || !columns.length)
+      return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
 
     // rows expected as [{ day: 'YYYY-MM-DD', col1: val, col2: val, ... }, ...]
     const labels = rows.map((r) => r.day).filter(Boolean);
-    const uniqueLabels = Array.from(new Set(labels)).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    const uniqueLabels = Array.from(new Set(labels)).sort(
+      (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+    );
 
     const height = 480;
     const viewBoxWidth = Math.max(1000, uniqueLabels.length * 40);
@@ -1123,13 +1324,29 @@ async function handleGenerateGraph () {
 
     const uniqueInsts = Array.from(new Set(rows.map((r) => r.instituicao || "—")));
     const instColorMap: Record<string, string> = {};
-    uniqueInsts.forEach((inst, idx) => (instColorMap[inst] = INSTITUTION_FILL_COLORS[idx % INSTITUTION_FILL_COLORS.length]));
+    uniqueInsts.forEach(
+      (inst, idx) =>
+        (instColorMap[inst] = INSTITUTION_FILL_COLORS[idx % INSTITUTION_FILL_COLORS.length]),
+    );
 
     return (
       <div style={{ width: "100%", position: "relative" }}>
-        <svg viewBox={`0 0 ${viewBoxWidth} ${height}`} width="100%" height={height} preserveAspectRatio="xMidYMid meet">
+        <svg
+          viewBox={`0 0 ${viewBoxWidth} ${height}`}
+          width="100%"
+          height={height}
+          preserveAspectRatio="xMidYMid meet"
+        >
           {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-            <line key={i} x1={50} x2={viewBoxWidth - 50} y1={40 + t * (height - 80)} y2={40 + t * (height - 80)} stroke="#e6eefb" strokeWidth={1} />
+            <line
+              key={i}
+              x1={50}
+              x2={viewBoxWidth - 50}
+              y1={40 + t * (height - 80)}
+              y2={40 + t * (height - 80)}
+              stroke="#e6eefb"
+              strokeWidth={1}
+            />
           ))}
 
           {seriesValues.map((vals, sIdx) => {
@@ -1143,7 +1360,14 @@ async function handleGenerateGraph () {
             const stroke = SERIES_COLORS[sIdx % SERIES_COLORS.length];
             return (
               <g key={sIdx}>
-                <polyline points={points.join(" ")} fill="none" stroke={stroke} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+                <polyline
+                  points={points.join(" ")}
+                  fill="none"
+                  stroke={stroke}
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
                 {points.map((pt, i) => {
                   const [xStr, yStr] = pt.split(",");
                   const repRow = rows.find((r) => r.day === uniqueLabels[i]) || {};
@@ -1158,7 +1382,8 @@ async function handleGenerateGraph () {
                       strokeWidth={2}
                       style={{ cursor: "pointer" }}
                       onMouseEnter={(ev) => {
-                        const rect = (chartMainRef.current && chartMainRef.current.getBoundingClientRect()) || { left: 0, top: 0 };
+                        const rect = (chartMainRef.current &&
+                          chartMainRef.current.getBoundingClientRect()) || { left: 0, top: 0 };
                         setTooltip({
                           visible: true,
                           left: ev.clientX - rect.left,
@@ -1169,8 +1394,13 @@ async function handleGenerateGraph () {
                         });
                       }}
                       onMouseMove={(ev) => {
-                        const rect = (chartMainRef.current && chartMainRef.current.getBoundingClientRect()) || { left: 0, top: 0 };
-                        setTooltip((t) => ({ ...t, left: ev.clientX - rect.left, top: ev.clientY - rect.top }));
+                        const rect = (chartMainRef.current &&
+                          chartMainRef.current.getBoundingClientRect()) || { left: 0, top: 0 };
+                        setTooltip((t) => ({
+                          ...t,
+                          left: ev.clientX - rect.left,
+                          top: ev.clientY - rect.top,
+                        }));
                       }}
                       onMouseLeave={() => setTooltip({ visible: false, left: 0, top: 0 })}
                     />
@@ -1181,7 +1411,14 @@ async function handleGenerateGraph () {
           })}
 
           {uniqueLabels.map((m, i) => (
-            <text key={`lbl-${i}`} x={xFor(i)} y={height - 10} fontSize="12" fill="#5b6b7a" textAnchor="middle">
+            <text
+              key={`lbl-${i}`}
+              x={xFor(i)}
+              y={height - 10}
+              fontSize="12"
+              fill="#5b6b7a"
+              textAnchor="middle"
+            >
               {m.replace(/-/g, "/").slice(0, 10)}
             </text>
           ))}
