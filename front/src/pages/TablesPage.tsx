@@ -897,7 +897,7 @@ export default function TablesPage(): JSX.Element {
                           ]}
                           data={data}
                           page={1}
-                          pageSize={10}
+                          pageSize={2}
                           onPageChange={() => {}}
                         />
                       </div>

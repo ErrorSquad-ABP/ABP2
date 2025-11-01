@@ -10,7 +10,7 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
 
     const columns = queryColumns ? `${queryColumns}` : "*";
 
-    const query = `SELECT ${columns} FROM ${tabela} `;
+    const query = `SELECT ${columns} FROM ${tabela}`;
 
     const result = await simaPool.query(query);
     const resultData = result.rows;
