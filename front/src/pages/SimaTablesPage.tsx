@@ -1011,7 +1011,7 @@ async function handleGenerateGraph () {
 
               <Button
                 $primary
-                onClick={handleGenerate}
+                onClick={handleGenerateChart}
                 disabled={loading || !(stage >= 4 && selectedColumns.length > 0)}
               >
                 {loading ? "Gerando..." : "Gerar Gráfico"}
