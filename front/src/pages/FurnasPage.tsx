@@ -113,7 +113,7 @@ const Block = styled.div`
   padding: 18px;
   margin-bottom: 18px;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(6,58,128,0.06);
+  box-shadow: 0 8px 24px rgba(6, 58, 128, 0.06);
 `;
 
 const LogosHeader = styled.div`
