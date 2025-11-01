@@ -573,18 +573,13 @@ export default function SimaTablesPage(): JSX.Element {
 
   /* ---------------- handleGenerate: fetch full dataset for chosen columns, filter by station/date, aggregate ---------------- */
 
-  async function handleGenerate() {
-    console.debug("[generate] start", {
-      table,
-      selectedColumns,
-      startDate,
-      endDate,
-      selectedStations,
-    });
+   async function handleGenerateChart() {
+    console.log("[generate] start", { table, selectedColumns, startDate, endDate, selectedStations });
     if (!selectedStations.length) {
       alert("Selecione ao menos uma estação.");
       return;
     }
+    
     if (!selectedColumns.length) {
       alert("Selecione ao menos uma coluna para plotar.");
       return;
