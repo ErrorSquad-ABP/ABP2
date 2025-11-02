@@ -30,3 +30,6 @@ export const logger = winston.createLogger({
     }),
   ],
 });
+/**codgo recolocado para dar commit na branch.
+ * Valeu Arthurito!
+ */
