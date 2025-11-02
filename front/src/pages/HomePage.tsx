@@ -110,8 +110,9 @@ export default function HomePage(): JSX.Element {
       </Hero>
 
       <Content>
+        {/* TopSpot: SIMA card centered */}
         <TopSpot>
-          <SimaCardLink to={sima.href}>
+          <SimaCardLink to={sima.href} aria-label="Abrir dados SIMA">
             <SimaCard tabIndex={0} aria-label="Abrir dados SIMA">
               <SimaIcon aria-hidden>{sima.icon}</SimaIcon>
               <SimaCardTitle>{sima.title}</SimaCardTitle>
@@ -204,32 +205,45 @@ const Content = styled.main`
   width: 100%;
 `;
 
+/* TopSpot: keep SIMA card centered and constrained */
 const TopSpot = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  justify-content: center;
+  display: flex;
+  justify-content: center; /* center the sima card */
   gap: 24px;
   margin-bottom: 28px;
 `;
 
+/* Cards grid: 3 cards per row on wide screens, responsive down to 1 */
 const Cards = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(240px, 320px));
+  justify-content: center; /* center the grid within container */
   gap: 24px;
   align-items: start;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const CardLink = styled(Link)`
   text-decoration: none;
   color: inherit;
-  width: 100%;
+  display: flex;
+  justify-content: center;
 `;
 
 const Card = styled.article`
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   border-radius: 16px;
-  padding: 28px 22px;
-  min-height: 220px;
+  padding: 22px;
+  height: 220px;
+  width: 100%;
+  max-width: 340px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -241,6 +255,7 @@ const Card = styled.article`
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease;
+  text-align: center;
 
   &:hover {
     transform: translateY(-6px) scale(1.02);
@@ -253,10 +268,10 @@ const Card = styled.article`
 `;
 
 const Icon = styled.div`
-  font-size: 48px;
-  width: 72px;
-  height: 72px;
-  border-radius: 14px;
+  font-size: 40px;
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
   background: linear-gradient(180deg, rgba(37, 99, 235, 0.12), rgba(6, 58, 128, 0.08));
   display: flex;
   align-items: center;
@@ -266,19 +281,17 @@ const Icon = styled.div`
 
 const CardTitle = styled.h3`
   margin: 0;
-  font-size: 17px;
-  text-align: center;
+  font-size: 16px;
   color: #062244;
   font-weight: 700;
 `;
 
 const CardDesc = styled.p`
   margin: 0;
-  font-size: 14px;
-  text-align: center;
+  font-size: 13px;
   color: #475569;
-  line-height: 1.3;
-  max-width: 88%;
+  line-height: 1.25;
+  max-width: 100%;
 `;
 
 const CardCTA = styled.div`
@@ -289,10 +302,13 @@ const CardCTA = styled.div`
   padding-top: 8px;
 `;
 
+/* Sima card specifically: centered content and constrained width */
 const SimaCardLink = styled(Link)`
   text-decoration: none;
   color: inherit;
   width: 100%;
+  display: flex;
+  justify-content: center;
 `;
 
 const SimaCard = styled.article`
@@ -301,15 +317,19 @@ const SimaCard = styled.article`
   border-radius: 16px;
   padding: 28px 22px;
   min-height: 220px;
+  width: 100%;
+  max-width: 720px; /* limit stretch */
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center; /* center contents */
+  justify-content: center; /* vertically center content */
   gap: 12px;
   box-shadow: 0 20px 50px rgba(37, 99, 235, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease;
+  text-align: center;
 
   &:hover {
     transform: translateY(-6px) scale(1.02);
@@ -336,7 +356,6 @@ const SimaIcon = styled.div`
 const SimaCardTitle = styled.h3`
   margin: 0;
   font-size: 18px;
-  text-align: center;
   color: #ffffff;
   font-weight: 800;
 `;
@@ -344,7 +363,6 @@ const SimaCardTitle = styled.h3`
 const SimaCardDesc = styled.p`
   margin: 0;
   font-size: 14px;
-  text-align: center;
   color: #ffffff;
   line-height: 1.3;
   max-width: 88%;

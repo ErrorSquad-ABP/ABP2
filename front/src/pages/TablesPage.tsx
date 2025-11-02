@@ -380,7 +380,9 @@ export default function TablesPage(): JSX.Element {
   }
 
   useEffect(() => {
-    if (data) {console.log("Dados: ", data)}
+    if (data) {
+      console.log("Dados: ", data);
+    }
   }, [data]);
 
   useEffect(() => {

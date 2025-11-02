@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // front/src/pages/SimaTablesPage.tsx
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import MapBrazil from "../components/MapBrazil";
 // import SimaTable from "../components/SimaTable";
 
@@ -12,11 +12,11 @@ import MapBrazil from "../components/MapBrazil";
  * 1) escolher estações (uma ou várias)
  * 2) escolher tabela (tbsima | tbsimaoffline)
  * 3) escolher período (datas filtradas por estação)
- * 4) escolher colunas (id/data desabilitadas) -> Gerar gráfico
+ * 4) escolher colunas (id/data desabilitadas) -> Gerar gráfico / Gerar tabela
  *
- * Alteração principal: handleGenerate() agora solicita diretamente:
+ * Alteração principal: handleGenerateChart agora solicita diretamente:
  *  /tables/sima/{tbsima|tbsimaoffline}?all=true&colunas=idestacao,dataHora,<colunas selecionadas>
- * e filtra localmente por idestacao e intervalo de datas.
+ * e filtra localmente por idestacao e intervalo de datas. Também salva dados brutos para tabela.
  */
 
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
@@ -292,6 +292,38 @@ const TableElement = styled.table`
   }
 `;
 
+/* ---------------- Spinner (animação antiga) ---------------- */
+
+const spin = keyframes`
+  0% { transform: rotate(0deg) }
+  100% { transform: rotate(360deg) }
+`;
+
+const SpinnerWrapper = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+`;
+
+const SpinnerCircle = styled.div`
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid rgba(37, 99, 235, 0.15);
+  border-top-color: rgba(37, 99, 235, 1);
+  animation: ${spin} 0.9s linear infinite;
+`;
+
+function Spinner() {
+  return (
+    <SpinnerWrapper aria-hidden>
+      <SpinnerCircle />
+    </SpinnerWrapper>
+  );
+}
+
 /* ================= Component ================= */
 
 export default function SimaTablesPage(): JSX.Element {
@@ -327,7 +359,7 @@ export default function SimaTablesPage(): JSX.Element {
     color?: string;
   }>({ visible: false, left: 0, top: 0 });
 
-  const [view, setView] = useState<"chart" | "map">("chart");
+  const [view, setView] = useState<"chart" | "map" | "table">("chart");
   const [loading, setLoading] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [showTableView /*setShowTableView*/] = useState<boolean>(false);
@@ -337,7 +369,7 @@ export default function SimaTablesPage(): JSX.Element {
   const [showStateNames, setShowStateNames] = useState<boolean>(true);
   const [pan, setPan] = useState({ x: 0, y: 0 });
 
-  const [page, setPage] = useState(0)
+  const [page, setPage] = useState(0);
 
   const MapBrazilAny = MapBrazil as any;
 
@@ -362,12 +394,14 @@ export default function SimaTablesPage(): JSX.Element {
               const idRaw = r.idestacao ?? r.id ?? null;
               const nameRaw = r.rotulo ?? r.nome ?? r.name ?? null;
               if (!idRaw) return null;
-              const id = idRaw
+              const id = String(idRaw).trim();
               const name = nameRaw ? String(nameRaw).trim() : `Estação ${id}`;
               return { id, name };
             })
             .filter(Boolean);
           setStationsList(list2 as any);
+          setSelectedStations([]);
+          setSelectAllStations(false);
           return;
         }
         const j = await res.json();
@@ -377,8 +411,7 @@ export default function SimaTablesPage(): JSX.Element {
             const idRaw = r.idestacao ?? r.id ?? null;
             const nameRaw = r.rotulo ?? r.nome ?? r.name ?? null;
             if (!idRaw) return null;
-                        console.log(`Id raw  '${idRaw}'`)
-            const id = idRaw
+            const id = String(idRaw).trim();
             const name = nameRaw ? String(nameRaw).trim() : `Estação ${id}`;
             const lat = r.lat ?? r.latitude ?? null;
             const lng = r.lng ?? r.longitude ?? null;
@@ -490,9 +523,7 @@ export default function SimaTablesPage(): JSX.Element {
         return;
       }
       const j = await res.json();
-      console.log("cADU:",j)
       const rows = j.data;
-      console.log(j.count)
       if (rows && rows.length) {
         const keys = Object.keys(rows[0] || {}).map((k) => {
           const val = rows[0][k];
@@ -518,6 +549,11 @@ export default function SimaTablesPage(): JSX.Element {
       alert("Escolha data início e fim.");
       return;
     }
+    // validação de período: end >= start
+    if (new Date(endDate).getTime() < new Date(startDate).getTime()) {
+      alert("Data fim não pode ser menor que data início.");
+      return;
+    }
     setLoading(true);
     await fetchColumnsForTable(table);
     setStage(4);
@@ -526,8 +562,9 @@ export default function SimaTablesPage(): JSX.Element {
 
   /* ---------------- station toggles ---------------- */
   function toggleStation(id: string, checked: boolean) {
-    if (checked) setSelectedStations((s) => Array.from(new Set([...s, id])));
-    else setSelectedStations((s) => s.filter((x) => x !== id));
+    const normalized = String(id).trim();
+    if (checked) setSelectedStations((s) => Array.from(new Set([...s, normalized])));
+    else setSelectedStations((s) => s.filter((x) => x !== normalized));
   }
 
   /* ---------------- column toggle (prevent id/date selection) ---------------- */
@@ -573,19 +610,29 @@ export default function SimaTablesPage(): JSX.Element {
 
   /* ---------------- handleGenerate: fetch full dataset for chosen columns, filter by station/date, aggregate ---------------- */
 
-   async function handleGenerateChart() {
-    console.log("[generate] start", { table, selectedColumns, startDate, endDate, selectedStations });
+  async function handleGenerateChart() {
+    console.log("[generate] start", {
+      table,
+      selectedColumns,
+      startDate,
+      endDate,
+      selectedStations,
+    });
     if (!selectedStations.length) {
       alert("Selecione ao menos uma estação.");
       return;
     }
-    
+
     if (!selectedColumns.length) {
       alert("Selecione ao menos uma coluna para plotar.");
       return;
     }
     if (!startDate || !endDate) {
       alert("Escolha período.");
+      return;
+    }
+    if (new Date(endDate).getTime() < new Date(startDate).getTime()) {
+      alert("Data fim não pode ser menor que data início.");
       return;
     }
     setLoading(true);
@@ -614,7 +661,7 @@ export default function SimaTablesPage(): JSX.Element {
       // filter by selectedStations and date range
       const stationSet = new Set(selectedStations.map((s) => String(s).trim()));
       const filtered = (rows || []).filter((r: any) => {
-        const sid = String(r.idestacao ?? r.id ?? "");
+        const sid = String(r.idestacao ?? r.id ?? "").trim();
         if (!stationSet.has(sid)) return false;
         const dv = r.dataHora ?? r.datahora ?? r.datamedida ?? r.inicio ?? r.fim ?? r.data ?? null;
         if (!dv) return false;
@@ -626,6 +673,10 @@ export default function SimaTablesPage(): JSX.Element {
 
       console.debug("[generate] filtered rows:", filtered.length);
 
+      // sempre salvar os brutos (para tabela)
+      setDataForTablePreview(filtered);
+      setShowTable(true);
+
       if (!filtered.length) {
         // fallback to mock monthly data
         const months = monthsBetweenDatesISO(startDate, endDate);
@@ -636,8 +687,6 @@ export default function SimaTablesPage(): JSX.Element {
           return row;
         });
         setChartData(normalized);
-        setDataForTablePreview(mock); // mock? Onde é usado essa variablçe?
-        setShowTable(true); 
         setView("chart");
         setLoading(false);
         return;
@@ -646,8 +695,6 @@ export default function SimaTablesPage(): JSX.Element {
       // aggregate by day across filtered rows
       const aggregated = aggregateRowsByDay(filtered, selectedColumns);
       setChartData(aggregated);
-      setDataForTablePreview(filtered.slice(0, 500)); // sample for preview
-      setShowTable(true);
       setView("chart");
       setTimeout(
         () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
@@ -661,41 +708,43 @@ export default function SimaTablesPage(): JSX.Element {
     }
   }
 
-/* ESSE DADO AQUI É O QUE VOU USAR PARA GERAR AS TABELAS :) ! dataForTablePreview ! */
+  /* ---------------- handleGenerateGraph: gera tabela (dados brutos) ---------------- */
 
-  useEffect(() => {
-    if (dataForTablePreview) {console.log(dataForTablePreview)}
-  }, [dataForTablePreview])
-
-  /* ----------------- handle generate table ----------- */
-
-async function handleGenerateGraph () {
-    console.debug("[generate] start", { table, selectedColumns, startDate, endDate, selectedStations });
+  async function handleGenerateGraph() {
+    console.debug("[generate-table] start", {
+      table,
+      selectedColumns,
+      startDate,
+      endDate,
+      selectedStations,
+    });
     if (!selectedStations.length) {
       alert("Selecione ao menos uma estação.");
       return;
     }
     if (!selectedColumns.length) {
-      alert("Selecione ao menos uma coluna para plotar.");
+      alert("Selecione ao menos uma coluna para visualizar.");
       return;
     }
     if (!startDate || !endDate) {
       alert("Escolha período.");
       return;
     }
+    if (new Date(endDate).getTime() < new Date(startDate).getTime()) {
+      alert("Data fim não pode ser menor que data início.");
+      return;
+    }
     setLoading(true);
 
     try {
-      // Build cols param including idestacao and dataHora (server expects these names)
       const cols = ["idestacao", "dataHora", ...selectedColumns];
       const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
 
-      // choose endpoint based on table
-      const endpoint = table === "tbsima"
-        ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=${colsParam}`
-        : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=${colsParam}`;
+      const endpoint =
+        table === "tbsima"
+          ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=${colsParam}`
+          : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=${colsParam}`;
 
-      console.debug("[generate] fetching endpoint:", endpoint);
       const resp = await fetch(endpoint);
       if (!resp.ok) {
         throw new Error(`fetch failed: ${resp.status} ${resp.statusText}`);
@@ -703,12 +752,11 @@ async function handleGenerateGraph () {
 
       const json = await resp.json();
       const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
-      console.log("[generate] fetched rows:", rows?.length ?? 0);
+      console.log("[generate-table] fetched rows:", rows?.length ?? 0);
 
-      // filter by selectedStations and date range
-      const stationSet = new Set(selectedStations.map((s) => String(s) ));
+      const stationSet = new Set(selectedStations.map((s) => String(s).trim()));
       const filtered = (rows || []).filter((r: any) => {
-        const sid = String(r.idestacao ?? r.id ?? "");
+        const sid = String(r.idestacao ?? r.id ?? "").trim();
         if (!stationSet.has(sid)) return false;
         const dv = r.dataHora ?? r.datahora ?? r.datamedida ?? r.inicio ?? r.fim ?? r.data ?? null;
         if (!dv) return false;
@@ -718,35 +766,20 @@ async function handleGenerateGraph () {
         return day >= startDate && day <= endDate;
       });
 
-      console.debug("[generate] filtered rows:", filtered.length);
+      console.debug("[generate-table] filtered rows:", filtered.length);
 
-      if (!filtered.length) {
-        // fallback to mock monthly data
-        const months = monthsBetweenDatesISO(startDate, endDate);
-        const mock = makeMockMeasurementsForMonths(months);
-        const normalized = mock.map((m) => {
-          const row: any = { day: m.datamedida };
-          selectedColumns.forEach((c) => (row[c] = Number.NaN));
-          return row;
-        });
-        setChartData(normalized);
-        setDataForTablePreview(mock); // mock? Onde é usado essa variablçe?
-        setShowTable(true); 
-        setView("table");
-        setLoading(false);
-        return;
-      }
-
-      // aggregate by day across filtered rows
-      const aggregated = aggregateRowsByDay(filtered, selectedColumns);
-      setChartData(aggregated);
-      setDataForTablePreview(rows); // sample for preview
-      setShowTable(true);
+      setDataForTablePreview(filtered);
+      // também setar chartData como os brutos se quiser usar a mesma fonte
+      setChartData(filtered);
       setView("table");
-      setTimeout(() => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+      setShowTable(true);
+      setTimeout(
+        () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
+        50,
+      );
     } catch (err) {
-      console.error("[generate] error fetching/processing data:", err);
-      alert("Erro ao gerar gráfico. Veja console para detalhes.");
+      console.error("[generate-table] error:", err);
+      alert("Erro ao gerar tabela. Veja console para detalhes.");
     } finally {
       setLoading(false);
     }
@@ -757,7 +790,7 @@ async function handleGenerateGraph () {
     const points: { id: string | number; lat: number; lon: number; label?: string }[] = [];
 
     for (const id of selectedStations) {
-      const s = stationsList.find((x) => x.id.trim() === String(id).trim());
+      const s = stationsList.find((x) => x.id === String(id).trim());
       if (s && typeof s.lat === "number" && typeof s.lng === "number") {
         points.push({ id: s.id, lat: s.lat as number, lon: s.lng as number, label: s.name });
       }
@@ -802,6 +835,7 @@ async function handleGenerateGraph () {
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
                   <div style={{ fontWeight: 700 }}>1) Escolha a(s) estação(ões)</div>
+                  {loading && <Spinner />}
                 </div>
 
                 <div style={{ marginTop: 8 }}>
@@ -812,7 +846,7 @@ async function handleGenerateGraph () {
                       onChange={(e) => {
                         const v = e.target.checked;
                         setSelectAllStations(v);
-                        if (v) setSelectedStations(stationsList.map((s) => s.id));
+                        if (v) setSelectedStations(stationsList.map((s) => String(s.id).trim()));
                         else setSelectedStations([]);
                       }}
                     />
@@ -832,7 +866,7 @@ async function handleGenerateGraph () {
                 >
                   {stationsList.length ? (
                     stationsList.map((s) => {
-                      const checked = selectedStations.includes(s.id);
+                      const checked = selectedStations.includes(String(s.id).trim());
                       return (
                         <div
                           key={s.id}
@@ -851,7 +885,7 @@ async function handleGenerateGraph () {
                       );
                     })
                   ) : (
-                    <div>Carregando estações...</div>
+                    <div>Carregando estações... {loading ? <Spinner /> : null}</div>
                   )}
                 </div>
 
@@ -912,7 +946,20 @@ async function handleGenerateGraph () {
 
                 <Row style={{ marginTop: 8 }}>
                   <Label>Data início</Label>
-                  <Select value={startDate} onChange={(e) => setStartDate(e.target.value)}>
+                  <Select
+                    value={startDate}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setStartDate(v);
+                      if (endDate && new Date(v).getTime() > new Date(endDate).getTime()) {
+                        setTimeout(() => {
+                          if (new Date(v).getTime() > new Date(endDate).getTime()) {
+                            alert("Data início não pode ser posterior à data fim.");
+                          }
+                        }, 50);
+                      }
+                    }}
+                  >
                     <option value="">Selecione...</option>
                     {availableDates.map((d) => (
                       <option key={`s-${d}`} value={d}>
@@ -924,7 +971,20 @@ async function handleGenerateGraph () {
 
                 <Row style={{ marginTop: 8 }}>
                   <Label>Data fim</Label>
-                  <Select value={endDate} onChange={(e) => setEndDate(e.target.value)}>
+                  <Select
+                    value={endDate}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setEndDate(v);
+                      if (startDate && new Date(v).getTime() < new Date(startDate).getTime()) {
+                        setTimeout(() => {
+                          if (new Date(v).getTime() < new Date(startDate).getTime()) {
+                            alert("Data fim não pode ser menor que data início.");
+                          }
+                        }, 50);
+                      }
+                    }}
+                  >
                     <option value="">Selecione...</option>
                     {availableDates.map((d) => (
                       <option key={`e-${d}`} value={d}>
@@ -980,12 +1040,25 @@ async function handleGenerateGraph () {
                     );
                   })
                 ) : (
-                  <div>Carregando colunas...</div>
+                  <div>Carregando colunas... {loading ? <Spinner /> : null}</div>
                 )}
               </div>
               <div style={{ margin: 12 }}>
-                <Button style={{ marginRight: 10}} $primary onClick={handleGenerateChart} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar gráfico"}</Button>
-                <Button $primary onClick={handleGenerateGraph} disabled={loading || !(selectedColumns.length > 0)}>{loading ? "Gerando..." : "Gerar tabela"}</Button>
+                <Button
+                  style={{ marginRight: 10 }}
+                  $primary
+                  onClick={handleGenerateChart}
+                  disabled={loading || !(selectedColumns.length > 0)}
+                >
+                  {loading ? "Gerando..." : "Gerar gráfico"}
+                </Button>
+                <Button
+                  $primary
+                  onClick={handleGenerateGraph}
+                  disabled={loading || !(selectedColumns.length > 0)}
+                >
+                  {loading ? "Gerando..." : "Gerar tabela"}
+                </Button>
               </div>
             </ColumnsBox>
           )}
@@ -1009,13 +1082,7 @@ async function handleGenerateGraph () {
                 Reiniciar
               </Button>
 
-              <Button
-                $primary
-                onClick={handleGenerateChart}
-                disabled={loading || !(stage >= 4 && selectedColumns.length > 0)}
-              >
-                {loading ? "Gerando..." : "Gerar Gráfico"}
-              </Button>
+              {/* Botão superior "Gerar Gráfico" removido conforme solicitado */}
 
               <Button onClick={() => setView((v) => (v === "chart" ? "map" : "chart"))}>
                 {view === "chart" ? "Ver mapa" : "Ver gráfico"}
@@ -1070,7 +1137,13 @@ async function handleGenerateGraph () {
                 Visualização — {table}
               </div>
               <div style={{ color: "#475569", fontSize: 13 }}>
-                {chartData ? `${chartData.length} registros` : "Nenhum dado gerado"}
+                {view === "table"
+                  ? dataForTablePreview
+                    ? `${dataForTablePreview.length} registros`
+                    : "Nenhum dado"
+                  : chartData
+                    ? `${chartData.length} registros`
+                    : "Nenhum dado gerado"}
               </div>
             </div>
 
@@ -1105,6 +1178,11 @@ async function handleGenerateGraph () {
                       {stage < 4
                         ? "Complete as etapas à esquerda para gerar o gráfico."
                         : 'Selecione colunas e clique em "Gerar gráfico".'}
+                      {loading ? (
+                        <div style={{ marginTop: 8 }}>
+                          <Spinner />
+                        </div>
+                      ) : null}
                     </div>
                   )}
 
@@ -1150,51 +1228,58 @@ async function handleGenerateGraph () {
                   )}
                 </ChartMain>
               </ChartWrapper>
-            ) : view === "table" ? 
-            <>
-            <TablePreview>
-                    <TableElement>
-                      <thead>
-                        <tr>
-                          {selectedColumns && selectedColumns.length ? (
-                            selectedColumns.map((col) => <th key={col}>{col}</th>)
-                          ) : (
-                            <th>Sem colunas selecionadas</th>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {/* Pagina inicial do slice: QUANTIDADEASERMOSTRADO * page + 1           Pagina final do sçlice: QUANTIDADEASERMOSTRADO * page + QUANTIDADEASERMOSTRADO*/}
-                        {chartData && chartData.length
-                          ? chartData.slice(10 * page, 10 * page + 10 ).map((row, i) => (
-                              <tr key={`row-${i}`}>
-                                {selectedColumns.length
-                                  ? selectedColumns.map((col) => (
-                                      <td key={`${i}-${col}`}>{String(row[col] ?? "—")}</td>
-                                    ))
-                                  : Object.keys(row)
-                                      .slice(0, 6)
-                                      .map((k) => (
-                                        <td key={`${i}-${k}`}>{String(row[k] ?? "—")}</td>
-                                      ))}
-                              </tr>
-                            ))
-                          : Array.from({ length: 3 }).map((_, r) => (
-                              <tr key={`ph-${r}`}>
-                                {selectedColumns && selectedColumns.length ? (
-                                  selectedColumns.map((col) => <td key={`ph-${r}-${col}`}>—</td>)
-                                ) : (
-                                  <td>—</td>
-                                )}
-                              </tr>
-                            ))}
-                      </tbody>
-                    </TableElement>
-                  </TablePreview>
-                  <Button onClick={() => {setPage(page + 1)}}>{">"}</Button>
-                  <Button onClick={() => {setPage(page - 1)}}>{"<"}</Button>
-                  </>
-            : (
+            ) : view === "table" ? (
+              <>
+                <TablePreview>
+                  <TableElement>
+                    <thead>
+                      <tr>
+                        {selectedColumns && selectedColumns.length ? (
+                          selectedColumns.map((col) => <th key={col}>{col}</th>)
+                        ) : (
+                          <th>Sem colunas selecionadas</th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dataForTablePreview && dataForTablePreview.length
+                        ? dataForTablePreview.slice(10 * page, 10 * page + 10).map((row, i) => (
+                            <tr key={`row-${i}`}>
+                              {selectedColumns.length
+                                ? selectedColumns.map((col) => (
+                                    <td key={`${i}-${col}`}>
+                                      {String(row[col] ?? row[col.toLowerCase?.()] ?? "—")}
+                                    </td>
+                                  ))
+                                : Object.keys(row)
+                                    .slice(0, 6)
+                                    .map((k) => <td key={`${i}-${k}`}>{String(row[k] ?? "—")}</td>)}
+                            </tr>
+                          ))
+                        : Array.from({ length: 3 }).map((_, r) => (
+                            <tr key={`ph-${r}`}>
+                              {selectedColumns && selectedColumns.length ? (
+                                selectedColumns.map((col) => <td key={`ph-${r}-${col}`}>—</td>)
+                              ) : (
+                                <td>—</td>
+                              )}
+                            </tr>
+                          ))}
+                    </tbody>
+                  </TableElement>
+                </TablePreview>
+
+                <div style={{ marginTop: 8 }}>
+                  <Button onClick={() => setPage((p) => Math.max(0, p - 1))}>{"<"}</Button>
+                  <Button onClick={() => setPage((p) => p + 1)}>{">"}</Button>
+                  {loading ? (
+                    <span style={{ marginLeft: 12 }}>
+                      <Spinner />
+                    </span>
+                  ) : null}
+                </div>
+              </>
+            ) : (
               <>
                 <div
                   style={{
