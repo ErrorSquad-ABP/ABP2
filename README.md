@@ -421,19 +421,18 @@ Para melhor estruturação do projeto, modelamos o diagrama de casos de uso:
 
 <details>
 <summary><b>🔄 Sprint 2 – Aplicação do Protótipo na Prática</b></summary>
-
 ### 📅 Período
 
-- **Início:** 13/10/2025
-- **Término:** 03/11/2025
-- **Review:** 04/11/2025
+- **Início:** 16/09/2025
+- **Término:** 06/10/2025
+- **Review:** 07/10/2025
 
 ### 🎯 Objetivos Principais
 
-- Implementar as funcionalidades centrais da Sprint 2
-- Entregar gráficos interativos e exportação de dados
-- Integrar visualização espacial (mapa) com dados reais
-- Garantir experiência responsiva e consistente entre frontend/backend
+- Implementar gráficos interativos multissérie e conexões com endpoints de dados.
+- Disponibilizar exportação CSV dos dados exibidos em tabelas.
+- Melhorar visualização geográfica com mapa interativo e popups.
+- Finalizar tabela paginada e ordenável para exibição estrutural dos dados.
 
 <details>  
 <summary>📌 Histórias Selecionadas para a Sprint 2</summary>
@@ -442,232 +441,218 @@ Para melhor estruturação do projeto, modelamos o diagrama de casos de uso:
 
 **Como usuário,**  
 Quero visualizar os dados em forma de gráficos,  
-**Para** obter entendimento rápido e confiável das séries temporais.
+**Para** ter melhor entendimento e análise temporal dos parâmetros.
 
-**Tarefas (exemplos):**
-- Implementar endpoint `/tables/:table/aggregate` (backend) que entregue séries temporais agregadas por período (dia/mês/ano).
-- Componente React que desenhe gráficos multi-série responsivos e interativos.
-- Tooltip com instituição/reservatório quando hover em pontos.
-- Eixo X mostrando todos os meses entre data início e fim (formato `AAAA/MM/DD`).
-- Testes visuais básicos e testes unitários para transformação de dados.
+**Tarefas:**
+- Implementar componente de gráfico multissérie (SVG) reutilizável.
+- Ajustar fetch/transformação de dados para agregação correta (diária/mensal) conforme seleção.
+- Garantir suporte a múltiplas colunas/séries e legenda dinâmica.
+- Implementar tooltips com metadados (instituição / reservatório / timestamp).
+- Adicionar testes básicos que validem a representação dos dados (valores, séries e eixos).
 
 **Prioridade:** Alta  
-**Sprint points:** 5  
+**Sprint:** 2  
+**Sprint points:** 5
+
 **Critérios de Aceite:**
-- Gráficos estilizados aparecem corretamente para o intervalo e colunas selecionadas.
-- Tooltip mostra instituição + reservatório ao passar sobre pontos; desaparece ao sair.
+- Gráficos multissérie aparecem e atualizam conforme seleção de colunas e período.
+- Tooltip mostra valor e metadados ao passar/hover sobre pontos.
+- Legenda corresponde às séries exibidas.
+- Escala e eixos mostram valores coerentes com os dados (sem agregações erradas).
 
 ---
 
 ## História (US04) – Exportar dados em CSV
 
 **Como usuário,**  
-Quero exportar os dados em CSV,  
-**Para** usar em ferramentas externas (Excel, R, Python).
+Quero exportar dados em CSV,  
+**Para** permitir análise externa em outras ferramentas.
 
-**Tarefas (exemplos):**
-- Endpoint `POST /export` para exportar CSV/JSON/PDF (backend).
-- Frontend: botão/ação que envia seleção atual (colunas, filtros, paginação) para `/export` ou gera CSV no cliente.
-- Garantir escape/encodificação correta de campos (vírgulas, aspas).
-- Teste de exportação com payloads reais (validação do conteúdo).
+**Tarefas:**
+- Implementar botão/export action no frontend para gerar CSV da vista atual.
+- Backend: garantir endpoint que suporte retorno paginado/filtrado e, se necessário, endpoint específico de export (streaming).
+- Tratar cabeçalho, escaping, UTF-8 e delimitação correta no CSV gerado.
+- Mensagem de aviso quando a exportação for muito grande (oferecer export por página).
+- Testes para verificar integridade do CSV (cabeçalho, número de linhas, escaping).
 
 **Prioridade:** Alta  
-**Sprint points:** 5  
+**Sprint:** 2  
+**Sprint points:** 5
+
 **Critérios de Aceite:**
-- CSV contém exatamente os registros/colunas atualmente exibidos.
-- Export funciona mesmo com colunas contendo vírgulas/aspas.
+- Usuário pode exportar os dados exibidos na tabela (página atual) em CSV.
+- CSV tem cabeçalho correto e valores escapados/formatados.
+- Export de todo o conjunto filtrado funciona com aviso/limitação quando dataset for muito grande.
 
 ---
 
-## História (US05) – Mapa interativo dos dados
+## História (US05) – Mapa interativo para visualização geográfica
 
 **Como usuário,**  
-Quero localizar os dados em um mapa interativo,  
-**Para** analisar a distribuição geográfica.
+Quero visualizar dados em um mapa interativo,  
+**Para** analisar a distribuição espacial e interagir com pontos de coleta.
 
-**Tarefas (exemplos):**
-- Endpoint `/tables/:table/map` retornando pontos (lat/lon) e polígonos (estados/áreas).
-- Frontend: camada base com polígonos dos estados do Brasil (arquivo `br_states.json`) e camada de pontos.
-- Interações: zoom/pan, hover em polígonos (highlight), hover/click em pontos (popup com metadados).
-- Implementar opção de alternar entre pontos e polígonos; tests básicos de integração.
+**Tarefas:**
+- Integrar MapBrazil (polígonos) e plotar pontos a partir de lat/lng das medições ou metadados de reservatórios.
+- Implementar popups/tooltips ao hover/click com resumo da medição (data, parâmetro, valor, reservatório).
+- Adicionar filtros que sincronizem mapa ↔ seleção (estações/reservatórios selecionados no fluxo).
+- Garantir responsividade e performance para renderização com centenas de pontos.
+- Testes de usabilidade para interações básicas (hover, click, zoom).
 
 **Prioridade:** Baixa  
-**Sprint points:** 1  
+**Sprint:** 2  
+**Sprint points:** 1
+
 **Critérios de Aceite:**
-- Mapa exibe polígonos dos estados e pontos de coleta.
-- Hover em elemento mostra popup explicativo; mapa permite zoom/pan.
+- Mapa mostra pontos filtráveis e popups funcionais.
+- Ao selecionar filtros na UI, mapa atualiza os pontos exibidos.
+- Popup exibe informações chaves (data, reservatório, instituição, valor).
 
 ---
 
-## História (US11) – Visualizar dados como tabelas com colunas
+## História (US11) – Visualizar dados em tabelas (ordenável/paginado)
 
 **Como usuário,**  
-Quero visualizar dados em tabelas com colunas configuráveis,  
-**Para** analisar estrutura e relacionamentos dos dados.
+Quero visualizar dados em tabelas com colunas ordenáveis e paginação,  
+**Para** facilitar análise tabular e navegação pelos registros.
 
-**Tarefas (exemplos):**
-- Componente de tabela com seleção de colunas, ordenação asc/desc, paginação.
-- Integração com endpoints paginados (`/tables/:table/data`, `/tables/:table/data?limit=&offset=`).
-- Regras: colunas chave (`id`) são obrigatórias e não desmarcáveis quando necessário.
-- Testes de ordenação, paginação e manutenção do estado (colunas + página).
+**Tarefas:**
+- Implementar componente de tabela com ordenação, paginação e seleção de colunas visíveis.
+- Conectar a tabela aos endpoints com `page`, `pageSize`, `sort` e filtros (reservatório/estação/período).
+- Mostrar contagem total de registros e permitir navegação entre páginas.
+- Permitir exportar a vista atual (página) em CSV.
+- Testes automatizados cobrindo ordenação e paginação.
 
 **Prioridade:** Alta  
-**Sprint points:** 5  
+**Sprint:** 2  
+**Sprint points:** 5
+
 **Critérios de Aceite:**
-- Tabela mostra dados paginados, ordenáveis e com seleção/ocultação de colunas.
-- Paginação funciona e se integra com backend paginado.
+- Tabela exibe registros com colunas configuráveis.
+- Ordenação asc/desc por coluna funciona corretamente.
+- Paginação com navegação e exibição de total funciona.
+- Export da vista atual (página) gera CSV correto.
 
 </details>
 
 <details>  
 <summary><b>📋 Requisitos da Sprint 2</b></summary>
 
-**Requisitos Funcionais (Sprint 2):**
+**Requisitos Funcionais contemplados:**
 
-- **RF-GRAPH:** Agregar séries temporais no backend e disponibilizar via `/tables/:table/aggregate`.
-- **RF-EXPORT:** Exportar dados visíveis para CSV; gerar PDF de gráfico/mapa (via `POST /export` ou client-side print).
-- **RF-MAP:** Servir polígonos base e pontos via `/tables/:table/map` e permitir renderização interativa no frontend.
-- **RF-TABLE:** Fornecer endpoints paginados (`/tables/:table/data`) e metadados (`/tables/:table/columns`, `/tables/:table/metadata`).
+- **RF03:** Renderização de gráficos multissérie a partir dos dados filtrados.  
+- **RF04:** Exportação de dados em CSV da vista atual (tabela).  
+- **RF05:** Filtragem e visualização no mapa interativo.  
+- **RF06:** Tabela com ordenação e paginação integradas ao backend.
 
-**Requisitos Não Funcionais:**
+**Requisitos Não Funcionais contemplados:**
 
-- **RNF-RESP:** UI responsiva e compatível com telas mobile/desktop.
-- **RNF-PERF:** Latência aceitável em ambiente dev; agregações devem ser razoavelmente eficientes.
-- **RNF-ERROR:** Tratamento robusto de falhas (fallback para mocks com mensagem).
-- **RNF-SEC:** Validar inputs (datas, colunas) para evitar SQL injection/consultas mal formadas.
+- **RNF04:** Respostas paginadas do backend para consultas grandes; export em streaming/por página.  
+- **RNF05:** Interface com carregamento assíncrono e indicadores de progresso (skeletons / spinners).  
+- **RNF06:** Manter compatibilidade com nomes de colunas heterogêneos (`dataHora` / `dataMedida`) via normalização no frontend.  
+- **RP05 (restrição):** Uso continuado de containers Docker para front, back e banco.
 
 </details>
 
 <details>  
-<summary><b>📝 Principais Funcionalidades (Sprint 2)</b></summary>
+<summary><b>📝 Principais Funcionalidades</b></summary>
 
-- Gráfico multi-série interativo com tooltip e eixo X mensal (formato `AAAA/MM/DD`).
-- Exportador CSV completo e exportação PDF/print-friendly do gráfico e do mapa.
-- Mapa base do Brasil (polígonos por estado) + pontos de coleta com hover/click.
-- Tabela reutilizável com ordenação, seleção de colunas e paginação remota.
-- Endpoints de metadados e agregação para alimentar frontend.
-- Componente de UI responsiva para seleção de tabela, responsáveis, colunas e intervalo.
+- Componente de gráfico multissérie com legendas e tooltips.  
+- Botão de export (CSV) com opções: página atual / todos (com aviso).  
+- Mapa interativo com pontos e popups; filtros sincronizados com seleção de estações/reservatórios.  
+- Tabela reusável com ordenação, paginação, seleção de colunas e contagem total.  
+- Validações de formulário (datas) e mensagens de erro amigáveis.
 
 </details>
 
 <details>  
 <summary><b>✅ Critérios de Aceite Gerais da Sprint 2</b></summary>
 
-- Gráficos gerados mostram corretamente séries por mês entre as datas escolhidas.
-- Tooltip em pontos mostra instituição e reservatório (temporariamente exibido apenas enquanto hover).
-- Export CSV entrega os dados exibidos; export PDF gera visualização imprimível.
-- Mapa do Brasil com polígonos visíveis; pontos plotados nas coordenadas corretas.
-- Tabela aceita ordenação e paginação (cliente ↔ servidor) e mantém estado de colunas.
-- Integração: frontend consome `/columns`, `/metadata`, `/aggregate`, `/map`, `/export` com tratamento de erros e fallback para mock.
-- UI responsiva e experiência aceitável em mobile/desktop.
+- Gráficos são renderizados com os dados corretos da seleção.  
+- Export CSV gera arquivo com cabeçalho correto e delimitadores válidos.  
+- Mapa interativo mostra pontos filtráveis e popups com informações chave.  
+- Tabela com ordenação/paginação funcionando; contagem total apresentada.  
+- Endpoint principal responde adequadamente a `page`/`pageSize`/`sort`/`filters`.  
+- Carregamento e UX apresentam indicadores (loading) em todas as operações assíncronas.
 
 </details>
-
-<details>  
-<summary><b>📊 Sprint Backlog (seleção principal)</b></summary>
-
-- US03: Gráfico multi-série (agregação + frontend) — 5 pontos  
-- US04: Export CSV (backend + frontend) — 5 pontos  
-- US05: Mapa base + interações — 1 ponto  
-- US11: Tabela paginada e ordenável — 5 pontos
-
-(As tasks detalhadas do Sprint Backlog serão divididas em 36 tasks numeradas e atribuídas conforme planejamento de sprint — garantido ao menos 2 tasks por matéria MC, BD, DW, TP, ES, ED.)
-
-</details>
-
 
 <details>  
 <summary><b>🎨 Design do Site</b></summary>
 🧭 Objetivo do Protótipo
 
-O protótipo tem como finalidade demonstrar visualmente a interface do sistema que permitirá a consulta de horários, turmas, professores e a ocupação de ambientes da instituição. Além disso, visa oferecer uma visualização gráfica e interativa das salas, apoiar a exportação de relatórios e garantir uma experiência fluida tanto em dispositivos desktop quanto móveis.
+O protótipo tem a finalidade de demonstrar visualmente a interface do sistema para consulta e análise de dados limnológicos e cartografia de pontos de coleta, com foco em usabilidade e responsividade.
 
 ### 📊 Interfaces Principais
 
 <div align="center">
   <table>
     <tr>
-      <th width="50%">pagina 1</th>
-      <th width="50%">pagina 2</th>
+      <th width="50%">Página — Gerador de Gráficos</th>
+      <th width="50%">Página — Tabelas</th>
     </tr>
     <tr>
       <td>
-        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/homepage_1.png" alt="Homepage com cards" width="100%">
-        <p><strong>Homepage com cartões com tópicos de dados:</strong> Visualização principal dos dados por topico</p>
+        <img src="./SCRUM/assets/grafico_prototipo.png" alt="Gerador de gráfico" width="100%">
+        <p><strong>Gerador de gráfico:</strong> seleção passo-a-passo (estações → tabela → período → colunas).</p>
       </td>
       <td>
-        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/homepage_2.png" alt="Homepage com cards" width="100%">
-        <p><strong>Homepage com cartões com tópicos de dados:</strong> Visualização principal dos dados por topico</p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/grafico_prototipo.png" alt="Mapa Interativo Desktop" width="100%">
-        <p><strong>Gerador de grafico:</strong> pagina dentro do card para geração dos graficos</p>
+        <img src="./SCRUM/assets/tabela_prototipo.png" alt="Tabela paginada" width="100%">
+        <p><strong>Tabela paginada:</strong> colunas configuráveis, ordenação e export.</p>
       </td>
     </tr>
     <tr>
       <td>
-        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/mapa_prototipo.png" alt="Mapa Interativo" width="100%">
-        <p><strong>Mapa Interativo:</strong> Visualização espacial dos ambientes acadêmicos</p>
+        <img src="./SCRUM/assets/mapa_prototipo.png" alt="Mapa Interativo" width="100%">
+        <p><strong>Mapa Interativo:</strong> polígonos por estado e pontos de coleta com popups.</p>
       </td>
-    </tr>
-    <tr>
       <td>
-        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/HomePageSima.png" alt="Homepage Sima" width="100%">
-        <p><strong>Homepage Sima:</strong>Página inicial do projeto Sima</p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/HomePageBalcar.png" alt="Homepage Balcar" width="100%">
-        <p><strong>Homepage Balcar:</strong> Página inicial do projeto Balcar</p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/assets/HomePageFurnas.png" alt="Homepage Furnas" width="100%">
-        <p><strong>Homepage Furnas:</strong> Página inicial do projeto Furnas</p>
+        <img src="./SCRUM/assets/HomePageSima.png" alt="Homepage Sima" width="100%">
+        <p><strong>Homepage Sima:</strong> entrada para o fluxo SIMA.</p>
       </td>
     </tr>
   </table>
 </div>
 
+### 🗂️ Arquitetura de Navegação
+
+O sistema é estruturado em páginas principais:
+- **Home**: cartões por tópico (SIMA, Abióticos, Bióticos, etc.).  
+- **Tables / Consulta**: fluxo de seleção para gerar tabelas e gráficos.  
+- **Mapa**: visão espacial com pontos e filtros.  
+- **Projetos**: páginas detalhadas para cada base (SIMA, Furnas, Balcar).
 
 - 🎨 Design System
-  - Tipografia: fontes sans-serif (Helvetica Neue / Arial) para leitura científica clara.  
-  - Componentes: `styled-components` com ThemeProvider (cores, espaçamentos, sombras e bordas padrão).  
-  - Interações: hover sutil, elevação (box-shadow) em cards, transições leves em botões.
+  - `styled-components` com ThemeProvider.
+  - Tipografia sans-serif para legibilidade (Helvetica Neue / Inter).
+  - Componentes com ênfase em clareza: cards, botões, controles passo-a-passo.
 
-#### Paleta de Cores
+#### Paleta de Cores (resumo)
 
 <div align="center">
   <table>
     <tr>
       <td style="background-color:#0B5394; color:white; text-align:center; padding:8px">Azul Escuro<br>#0B5394</td>
       <td style="background-color:#2563EB; color:white; text-align:center; padding:8px">Azul Primário<br>#2563EB</td>
-      <td style="background-color:#DBEAFE; color:#0b2740; text-align:center; padding:8px">Fundo Claro Azul<br>#DBEAFE</td>
+      <td style="background-color:#DBEAFE; color:#0b2740; text-align:center; padding:8px">Fundo Claro<br>#DBEAFE</td>
       <td style="background-color:#0B2740; color:white; text-align:center; padding:8px">Texto Escuro<br>#0B2740</td>
       <td style="background-color:#FFFFFF; color:black; text-align:center; padding:8px; border:1px solid #ccc">Branco<br>#FFFFFF</td>
     </tr>
   </table>
 </div>
 
-A paleta usa tons de azul para o topo e elementos de destaque, combinada com branco e azuis claros para fundos e contraste. Para séries no gráfico utilizamos uma pequena paleta complementar (ex.: #0b5394, #2563EB, #06B6D4, #F59E0B, #EF4444).
-
-
 </details>
 
 <details>  
-<summary><b>📋 Visão Geral do diagrama de classes</b></summary>
+<summary><b>📋 Visão Geral dos Casos de Uso</b></summary>
 
 #### Diagrama de Casos de Uso
 
-![Casos de Uso](./SCRUM/diagramas/DIAGRAMA_CASOS_DE_USO.png)
+![Casos de Uso](./SCRUM/diagramas/diagramas-assets/DIAGRAMA_CASOS_DE_USO.png)
 
 **Funcionalidades Principais**
--
-- 
+- Pesquisador/Usuário: filtra, gera gráficos, exporta CSV, vê mapa, navega por páginas.  
+- Sistema (backend): fornece endpoints para metadados, dados filtrados/paginados, agregados e export.
 
 </details>
 
@@ -675,93 +660,75 @@ A paleta usa tons de azul para o topo e elementos de destaque, combinada com bra
 <summary><b>📊 Modelo de Dados</b></summary>
 
 - **Bancos envolvidos**
-  - 
-  - 
-  - 
+  - `bdfurnas-campanha` (Furnas)
+  - `bdsima` (SIMA)
+  - `bdbalcar-campanha` (Balcar)
 
 - **Entidades principais**
-  - 
-  - 
-  - 
-  - 
+  - `reservatorio` (id, nome, instituicao, lat, lng, geom)
+  - `instituicao` (id, nome)
+  - `estacao` (idestacao, rotulo, lat, lng)
+  - `medicao` (id, dataHora/dataMedida, idestacao/idreservatorio, coluna1, coluna2, ...)
+  - `campanha`, `sitio`, `amostra`
 
 - **Relacionamentos**
-  - 
-  - 
-  - 
+  - `instituicao` 1:N `reservatorio`
+  - `reservatorio` 1:N `medicao`
+  - `estacao` 1:N `medicao` (SIMA)
+  - `campanha` 1:N `sitio` → 1:N `amostra` → 1:N `medicao`
 
 - **Características Técnicas**
-  - 
-  - 
+  - Datas: normalizar `dataHora` / `dataMedida` no frontend.
+  - Paginação: backend deve suportar `page` e `pageSize`.
+  - Export: endpoint que suporta CSV ou retorno JSON paginado a ser convertido no frontend.
 
 </details>
 
 <details>  
-<summary><b>🚀 Funcionalidades Implementadas</b></summary>
+<summary><b>🚀 Funcionalidades Implementadas / Planejadas</b></summary>
 
-- 💻 **Backend (Express + Node)**  
-  Endpoints planejados / implementados (essenciais):
-  - 
+**Planejado/Implementado nesta sprint:**
+- Componente de gráfico multissérie (SVG) com tooltip e legenda.
+- Backend: endpoints paginados/filtrados e endpoint de export (ou export via consulta paginada).
+- Frontend: botão Exportar (CSV), tabela paginada com ordenação, mapa com pontos e popups.
+- Normalização de nomes de colunas no frontend (`dataHora`/`dataMedida`) para que todos os fluxos funcionem.
+- Validações de datas (data fim não menor que data início) e UI de loading.
 
-
-- 🗃️ **Banco de Dados**
-  - 
-  - 
-
-- 🖥️ **Frontend (React + Vite + styled-components)**  
-  Implementações principais:
-  - 
-  - 
-  - 
-  - 
-
-- 🧰 **Ferramentas & Infra**
-  - 
-  - 
+**Infra & Ferramentas:**
+- Docker compose para front / back / db.
+- Lint (ESLint) e build pipeline (CI) com testes básicos.
 
 </details>
 
 <details>  
 <summary><b>📉 Burndown Chart</b></summary>
 
-- 🖼️ Gráfico de Burndown
+- Gráfico de Burndown será atualizado ao longo da sprint e anexado ao repositório SCRUM/burndown.
 
 <div align="center">
-    <img src="https://github.com/ErrorSquad-ABP/ABP2/blob/main/SCRUM/burndown/Sprint%202/BurndownInicialSprint2.png" alt="Burndown Chart da Sprint" width="80%">
+  <!-- placeholder image - substituir pelo gráfico real -->
+  <img src="./SCRUM/burndown/Sprint%202/BurndownSprint2.png" alt="Burndown Sprint 2" width="80%">
 </div>
 
-- 📋 Observações rápidas  
-  - 
-  - 
 </details>
 
 <details>  
-<summary><b>🔍 Sprint Retrospective</b></summary>
+<summary><b>🔍 Sprint Retrospective (planejado)</b></summary>
 
-- 🎯 O que funcionou bem
-  - 
-  - 
-  - 
+- 🎯 O que esperamos que funcione bem:
+  - Integração front ↔ back para tabelas, gráficos e export.
+  - Fluxo passo-a-passo de seleção (estações/reservatórios → tabela → período → colunas) consistente.
+  - UX com indicadores de loading e mensagens claras.
 
-- ⚠️ Desafios enfrentados
-  - 
-  - 
-  - 
-  - 
-  - 
+- ⚠️ Riscos / desafios:
+  - Volume de dados grande (necessidade de paginação/export streaming).
+  - Heterogeneidade de nomes de colunas entre fontes (`dataHora` vs `dataMedida`).
+  - Tratamento de ids com espaços/formatos inconsistentes.
 
-- 🚀 Plano de melhorias (Sprint seguinte)
-  - 
-  - 
-  -
-  -
-  -
-  - 
-
-- 📈 Métricas alvo para Sprint 2
-  - 
-  - 
-  - 
+- 🚀 Ações de melhoria:
+  - Consolidar contrato de API (nomenclatura de colunas, params de paginação).
+  - Implementar testes de integração para endpoints principais.
+  - Definir limites para exportação e UX para grandes dumps.
 
 </details>
 </details>
