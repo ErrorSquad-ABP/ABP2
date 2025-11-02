@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { simaPool } from "../../configs/db"; // assumindo pool separado para SIMA
+import { simaPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 
 const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
@@ -10,40 +10,17 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
     const limit = Number(req.query.limit) || PAGE_SIZE;
     const offset = (page - 1) * limit;
 
-    // consulta com paginação
     const result = await simaPool.query(
       `
       SELECT 
         idsimaoffline,
         idestacao,
         datahora,
-        dirvt,
-        intensvt,
-        u_vel,
-        v_vel,
-        tempag1,
-        tempag2,
-        tempag3,
-        tempag4,
         tempar,
-        ur,
-        tempar_r,
-        pressatm,
-        radincid,
-        radrefl,
-        fonteradiometro,
-        sonda_temp,
-        sonda_cond,
-        sonda_do,
-        sonda_ph,
-        sonda_nh4,
-        sonda_no3,
-        sonda_turb,
-        sonda_chl,
-        sonda_bateria,
-        corr_norte,
-        corr_leste,
-        bateriapainel
+        precipitacao,
+        ph,
+        oxigenio,
+        condutividade
       FROM tbsimaoffline
       ORDER BY datahora DESC
       LIMIT $1 OFFSET $2
@@ -51,7 +28,6 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
       [limit, offset],
     );
 
-    // total de registros
     const countResult = await simaPool.query("SELECT COUNT(*) FROM tbsimaoffline");
     const total = Number(countResult.rows[0].count);
 
@@ -72,6 +48,223 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({
       success: false,
       error: "Erro ao realizar a operação.",
+    });
+  }
+};
+
+export const downloadCSV = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { startDate, endDate, stations } = req.query;
+
+    let query = `
+      SELECT 
+        idsimaoffline,
+        idestacao,
+        datahora,
+        tempar,
+        precipitacao,
+        ph,
+        oxigenio,
+        condutividade
+      FROM tbsimaoffline
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+    let paramCount = 0;
+
+    if (startDate) {
+      paramCount++;
+      query += ` AND datahora >= $${paramCount}`;
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      paramCount++;
+      query += ` AND datahora <= $${paramCount}`;
+      params.push(endDate);
+    }
+
+    if (stations) {
+      const stationList = String(stations).split(",");
+      if (stationList.length > 0) {
+        paramCount++;
+        query += ` AND idestacao = ANY($${paramCount})`;
+        params.push(stationList);
+      }
+    }
+
+    query += " ORDER BY datahora DESC";
+
+    const result = await simaPool.query(query, params);
+
+    const headers = Object.keys(result.rows[0] || {}).join(",");
+    const csvRows = result.rows.map((row) =>
+      Object.values(row)
+        .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+        .join(","),
+    );
+
+    const csvContent = [headers, ...csvRows].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="simaoffline_${new Date().toISOString().split("T")[0]}.csv"`,
+    );
+    res.status(200).send(csvContent);
+  } catch (error: any) {
+    logger.error("Erro ao exportar CSV tbsimaoffline", {
+      message: error.message,
+      stack: error.stack,
+    });
+
+    res.status(500).json({
+      success: false,
+      error: "Erro ao exportar dados.",
+    });
+  }
+};
+
+export const downloadJSON = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { startDate, endDate, stations } = req.query;
+
+    let query = `
+      SELECT 
+        idsimaoffline,
+        idestacao,
+        datahora,
+        tempar,
+        precipitacao,
+        ph,
+        oxigenio,
+        condutividade
+      FROM tbsimaoffline
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+    let paramCount = 0;
+
+    if (startDate) {
+      paramCount++;
+      query += ` AND datahora >= $${paramCount}`;
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      paramCount++;
+      query += ` AND datahora <= $${paramCount}`;
+      params.push(endDate);
+    }
+
+    if (stations) {
+      const stationList = String(stations).split(",");
+      if (stationList.length > 0) {
+        paramCount++;
+        query += ` AND idestacao = ANY($${paramCount})`;
+        params.push(stationList);
+      }
+    }
+
+    query += " ORDER BY datahora DESC";
+
+    const result = await simaPool.query(query, params);
+
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="simaoffline_${new Date().toISOString().split("T")[0]}.json"`,
+    );
+    res.status(200).json({
+      success: true,
+      data: result.rows,
+      metadata: {
+        exportedAt: new Date().toISOString(),
+        totalRecords: result.rows.length,
+        table: "tbsimaoffline",
+      },
+    });
+  } catch (error: any) {
+    logger.error("Erro ao exportar JSON tbsimaoffline", {
+      message: error.message,
+      stack: error.stack,
+    });
+
+    res.status(500).json({
+      success: false,
+      error: "Erro ao exportar dados.",
+    });
+  }
+};
+
+export const downloadPDF = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    let query = `
+      SELECT 
+        idsimaoffline,
+        idestacao,
+        datahora,
+        tempar,
+        precipitacao,
+        ph,
+        oxigenio,
+        condutividade
+      FROM tbsimaoffline
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+    let paramCount = 0;
+
+    if (startDate) {
+      paramCount++;
+      query += ` AND datahora >= $${paramCount}`;
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      paramCount++;
+      query += ` AND datahora <= $${paramCount}`;
+      params.push(endDate);
+    }
+
+    query += " ORDER BY datahora DESC LIMIT 1000";
+
+    const result = await simaPool.query(query, params);
+
+    const pdfContent = `
+      RELATÓRIO - Dados SIMA Offline
+      Data de exportação: ${new Date().toLocaleString("pt-BR")}
+      Período: ${startDate || "Início"} à ${endDate || "Fim"}
+      Total de registros: ${result.rows.length}
+      
+      ${result.rows
+        .map(
+          (row) =>
+            `ID: ${row.idsimaoffline} | Estação: ${row.idestacao} | Data: ${row.datahora} | Temp: ${row.tempar}°C`,
+        )
+        .join("\n")}
+    `;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="simaoffline_${new Date().toISOString().split("T")[0]}.pdf"`,
+    );
+    res.status(200).send(pdfContent);
+  } catch (error: any) {
+    logger.error("Erro ao exportar PDF tbsimaoffline", {
+      message: error.message,
+      stack: error.stack,
+    });
+
+    res.status(500).json({
+      success: false,
+      error: "Erro ao exportar dados.",
     });
   }
 };

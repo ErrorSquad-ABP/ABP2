@@ -1,5 +1,6 @@
 import express from "express";
 import abioticocoluna from "./abioticocoluna.routes";
+import abioticosuperficie from "./abioticosuperficie.routes";
 import campanha from "./campanha.routes";
 import instituicao from "./instituicao.routes";
 import reservatorio from "./reservatorio.routes";
@@ -10,6 +11,7 @@ import dataUnion from "./dataUnion.routes";
 const router = express.Router();
 
 router.use("/abioticocoluna", abioticocoluna);
+router.use("/abioticosuperficie", abioticosuperficie);
 router.use("/campanha", campanha);
 router.use("/instituicao", instituicao);
 router.use("/reservatorio", reservatorio);

@@ -4,7 +4,7 @@ import {
   downloadCSV,
   downloadJSON,
   downloadPDF,
-} from "../../controllers/sima/simaoffline.controller";
+} from "../../controllers/furnas/bioticocoluna.controller";
 
 const router = Router();
 

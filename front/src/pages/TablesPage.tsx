@@ -4,9 +4,9 @@ import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
-
 import SimaTable from "../components/SimaTable";
 import axios from "axios";
+
 /**
  * TablesPage
  *
@@ -290,6 +290,49 @@ const TableElement = styled.table`
   }
 `;
 
+const DownloadButtonsContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+`;
+
+const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  background-color: ${(props) => {
+    switch (props.variant) {
+      case "csv":
+        return "#28a745";
+      case "json":
+        return "#17a2b8";
+      case "pdf":
+        return "#dc3545";
+      default:
+        return "#6c757d";
+    }
+  }};
+
+  color: white;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
 /* ================= helper: detect id/data columns ================= */
 /**
  * Retorna true se a coluna for um identificador ou coluna de data/hora,
@@ -339,10 +382,10 @@ export default function TablesPage(): JSX.Element {
 
   // view toggles between "chart" (now used as "table preview") and "map"
   const [view, setView] = useState<"chart" | "map">("chart");
-  const [chartData, setChartData] = useState<any[] | null>(null); // used as table data
+  //const [chartData, setChartData] = useState<any[] | null>(null); // used as table data
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
-  const [showExportOptions, setShowExportOptions] = useState(false);
+  //const [showExportOptions, setShowExportOptions] = useState(false);
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
   const [reservatorios, setReservatorios] = useState<any[]>([]);
@@ -362,6 +405,135 @@ export default function TablesPage(): JSX.Element {
 
   // tooltip state used on charts (kept in case chart is reintroduced)
 
+  // Funções de download aprimoradas
+  const handleDownloadCSV = async () => {
+    if (!data || data.length === 0) {
+      alert("Gere os dados da tabela primeiro para exportar.");
+      return;
+    }
+
+    try {
+      // Se temos dados específicos da tabela, usar endpoint de download
+      if (table) {
+        const params = new URLSearchParams();
+        if (startDate) params.append("startDate", startDate);
+        if (endDate) params.append("endDate", endDate);
+        if (selectedColumns.length > 0) params.append("columns", selectedColumns.join(","));
+
+        const response = await axios.get(
+          `${API_BASE}/furnas/${table}/download/csv?${params.toString()}`,
+          { responseType: "blob" },
+        );
+
+        const blob = new Blob([response.data]);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${table}_${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // Fallback para download dos dados atuais
+        downloadCSV();
+      }
+    } catch (error) {
+      console.error("Erro ao exportar CSV:", error);
+      alert("Erro ao exportar CSV. Usando método alternativo...");
+      downloadCSV(); // Fallback
+    }
+  };
+
+  const handleDownloadJSON = async () => {
+    if (!data || data.length === 0) {
+      alert("Gere os dados da tabela primeiro para exportar.");
+      return;
+    }
+
+    try {
+      if (table) {
+        const params = new URLSearchParams();
+        if (startDate) params.append("startDate", startDate);
+        if (endDate) params.append("endDate", endDate);
+        if (selectedColumns.length > 0) params.append("columns", selectedColumns.join(","));
+
+        const response = await axios.get(
+          `${API_BASE}/furnas/${table}/download/json?${params.toString()}`,
+          { responseType: "blob" },
+        );
+
+        const blob = new Blob([response.data]);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${table}_${new Date().toISOString().split("T")[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // Fallback para dados atuais
+        const jsonData = {
+          table: table || "unknown",
+          exportedAt: new Date().toISOString(),
+          totalRecords: data.length,
+          data: data,
+        };
+
+        const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${table || "data"}_${new Date().toISOString().split("T")[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("Erro ao exportar JSON:", error);
+      alert("Erro ao exportar JSON. Verifique o console para mais detalhes.");
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!data || data.length === 0) {
+      alert("Gere os dados da tabela primeiro para exportar.");
+      return;
+    }
+
+    try {
+      if (table) {
+        const params = new URLSearchParams();
+        if (startDate) params.append("startDate", startDate);
+        if (endDate) params.append("endDate", endDate);
+
+        const response = await axios.get(
+          `${API_BASE}/furnas/${table}/download/pdf?${params.toString()}`,
+          { responseType: "blob" },
+        );
+
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${table}_${new Date().toISOString().split("T")[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // Fallback para o método atual
+        exportPDF();
+      }
+    } catch (error) {
+      console.error("Erro ao exportar PDF:", error);
+      alert("Erro ao exportar PDF. Usando método alternativo...");
+      exportPDF(); // Fallback
+    }
+  };
+
   async function handleGenerateTables(): Promise<void> {
     setShowTable(false);
     setLoading(true);
@@ -370,7 +542,7 @@ export default function TablesPage(): JSX.Element {
       const payload: any = res.data;
       setData(payload?.data ?? payload ?? []);
       setShowTable(true);
-      setChartData(null);
+      //setChartData(null);
       setView("chart");
     } catch (err) {
       console.error("Erro ao carregar dados da SIMA:", err);
@@ -566,12 +738,12 @@ export default function TablesPage(): JSX.Element {
   }
 
   function downloadCSV() {
-    if (!chartData || !chartData.length) {
+    if (!data || !data.length) {
       alert("Gere o dado de tabela para ter dados para exportar.");
       return;
     }
-    const headers = Object.keys(chartData[0] || {});
-    const rows = chartData.map((r) => headers.map((h) => (r[h] === undefined ? "" : `${r[h]}`)));
+    const headers = Object.keys(data[0] || {});
+    const rows = data.map((r) => headers.map((h) => (r[h] === undefined ? "" : `${r[h]}`)));
     const csv = [
       headers.join(","),
       ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")),
@@ -642,9 +814,6 @@ export default function TablesPage(): JSX.Element {
       }));
     }
   };
-
-  // removi MultiSeriesSVG desta página (não estava sendo usado) para evitar erro TS6133.
-  // Se quiser reintroduzir o gráfico aqui, diga onde e de qual fonte de dados (data/chartData) ele deve vir.
 
   // criar alias any para MapBrazil para evitar erro de tipagem temporariamente
   const MapBrazilAny = MapBrazil as any;
@@ -756,44 +925,30 @@ export default function TablesPage(): JSX.Element {
         <RightPanel>
           <ControlsTopRight>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <div style={{ position: "relative" }}>
-                <Button onClick={() => setShowExportOptions((s) => !s)}>Exportar ▾</Button>
-                {showExportOptions && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      marginTop: 8,
-                      background: "#fff",
-                      boxShadow: "0 6px 18px rgba(2,6,23,0.12)",
-                      borderRadius: 8,
-                      padding: 8,
-                      zIndex: 40,
-                    }}
-                  >
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <button
-                        style={{ padding: 8, borderRadius: 6, border: "none", cursor: "pointer" }}
-                        onClick={() => {
-                          downloadCSV();
-                          setShowExportOptions(false);
-                        }}
-                      >
-                        CSV
-                      </button>
-                      <button
-                        style={{ padding: 8, borderRadius: 6, border: "none", cursor: "pointer" }}
-                        onClick={() => {
-                          exportPDF();
-                          setShowExportOptions(false);
-                        }}
-                      >
-                        PDF
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Botões de Download Diretos */}
+              <DownloadButtonsContainer>
+                <DownloadButton
+                  variant="csv"
+                  onClick={handleDownloadCSV}
+                  disabled={!data || data.length === 0 || loading}
+                >
+                  📥 CSV
+                </DownloadButton>
+                <DownloadButton
+                  variant="json"
+                  onClick={handleDownloadJSON}
+                  disabled={!data || data.length === 0 || loading}
+                >
+                  📥 JSON
+                </DownloadButton>
+                <DownloadButton
+                  variant="pdf"
+                  onClick={handleDownloadPDF}
+                  disabled={!data || data.length === 0 || loading}
+                >
+                  📥 PDF
+                </DownloadButton>
+              </DownloadButtonsContainer>
 
               <Button onClick={() => setView((v) => (v === "chart" ? "map" : "chart"))}>
                 {view === "chart" ? "Ver mapa" : "Ver tabela"}
