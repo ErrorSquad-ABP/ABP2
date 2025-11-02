@@ -11,6 +11,7 @@ import logoCoppe from "../assets/logoCoppe.png";
 import logolie from "../assets/logoIie.png";
 import logoInpe from "../assets/logoInpe.png";
 import logoUfjf from "../assets/logoUfjf.png";
+
 // ================= Styled Components =================
 const PageContainer = styled.div`
   width: 100%;
@@ -19,7 +20,7 @@ const PageContainer = styled.div`
   font-size: 15px;
   background-color: #ffffff;
   box-sizing: border-box;
-  padding: 0; /* aplicar padding apenas nos blocks */
+  padding: 0;
 `;
 
 const HeaderWrapper = styled.div`
@@ -29,7 +30,7 @@ const HeaderWrapper = styled.div`
   align-items: center;
   background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding-bottom: 0; /* sem padding inferior, a separação será feita pela linha */
+  padding-bottom: 0;
 `;
 
 const HeaderContainer = styled.div`
@@ -37,7 +38,7 @@ const HeaderContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1.5rem 0 0.5rem 0; /* topo maior, bottom menor para aproximar da linha */
+  padding: 1.5rem 0 0.5rem 0;
   box-sizing: border-box;
 `;
 
@@ -50,18 +51,18 @@ const HeaderText = styled.h1`
 `;
 
 const HeaderSeparator = styled.div`
-  width: 100%; /* centralizada */
-  height: 3px; /* largura mais fina, visual moderno */
-  background-color: rgba(255, 255, 255, 0.7); /* branco translúcido, destaca sobre o gradiente */
-  margin: 0.5rem 0; /* separação entre headerText e menu */
-  border-radius: 2px; /* cantos levemente arredondados para ficar mais moderno */
+  width: 100%;
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.7);
+  margin: 0.5rem 0;
+  border-radius: 2px;
 `;
 
 const Separator = styled.div`
   width: 60%;
   height: 2px;
   background-color: rgba(255, 255, 255, 0.5);
-  margin: 0.5rem 0 2rem 0; /* espaço inferior maior antes do corpo */
+  margin: 0.5rem 0 2rem 0;
 `;
 
 const Menu = styled.div`
@@ -143,25 +144,226 @@ const BlockText = styled.div`
 
 const Image = styled.img`
   width: 100%;
-  max-width: 600px; /* Reduzi o tamanho máximo */
+  max-width: 600px;
   margin: 15px auto;
   display: block;
   border-radius: 6px;
 `;
+
+// ================= Novos componentes para Download =================
+const DownloadSection = styled.div`
+  padding: 20px;
+`;
+
+const DownloadInfo = styled.div`
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  border-left: 4px solid #2563eb;
+`;
+
+const DownloadGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+`;
+
+const DownloadCard = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e1e5e9;
+`;
+
+const DownloadCardTitle = styled.h3`
+  color: #2563eb;
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+`;
+
+const DownloadCardDescription = styled.p`
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  line-height: 1.4;
+`;
+
+const DownloadButton = styled.button<{ disabled?: boolean }>`
+  background: ${(props) => (props.disabled ? "#ccc" : "#2563eb")};
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: ${(props) => (props.disabled ? "#ccc" : "#1e40af")};
+  }
+`;
+
+// Ícone de Download simples
+const Download = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+  </svg>
+);
 
 // ================= Seções =================
 const sections = [
   { id: "home", label: "Home" },
   { id: "panorama", label: "Panorama" },
   { id: "metodologia", label: "Metodologia" },
-  { id: "banco", label: "Banco de Dados", external: true, url: "http://www.dpi.inpe.br/sima/" }, // vírgula corrigida aqui
+  { id: "banco", label: "Banco de Dados", external: true, url: "http://www.dpi.inpe.br/sima/" },
   { id: "resultados", label: "Resultados Esperados" },
   { id: "participantes", label: "Participantes" },
   { id: "usinas", label: "Usinas Hidrelétricas" },
   { id: "pesquisas", label: "Pesquisas Correlatas" },
   { id: "publicacoes", label: "Publicações" },
+  { id: "download", label: "Download de Dados" },
 ];
 
+// ================= Componente de Download =================
+const DownloadContent = () => {
+  const [isDownloading, setIsDownloading] = useState<string | null>(null);
+
+  const handleDownload = async (table: string, format: "csv" | "json" | "pdf") => {
+    setIsDownloading(`${table}_${format}`);
+    try {
+      // Simulação de download - substitua pela sua API real
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Cria um blob simulado (substitua pela resposta real da API)
+      const content = `Dados da tabela ${table} em formato ${format}\nTimestamp: ${new Date().toISOString()}`;
+      const blob = new Blob([content], { type: "text/plain" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = `furnas_${table}_${new Date().getTime()}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Erro no download:", error);
+      alert("Erro ao fazer download. Tente novamente.");
+    } finally {
+      setIsDownloading(null);
+    }
+  };
+
+  const tables = [
+    {
+      name: "tbabioticocoluna",
+      title: "Abióticos na Coluna",
+      description: "Dados de parâmetros abióticos na coluna d'água",
+    },
+    {
+      name: "tbabioticosuperficie",
+      title: "Abióticos na Superfície",
+      description: "Dados de parâmetros abióticos na superfície",
+    },
+    {
+      name: "tbmeteorologia",
+      title: "Dados Meteorológicos",
+      description: "Informações climáticas e meteorológicas",
+    },
+    {
+      name: "tbgases",
+      title: "Emissão de Gases",
+      description: "Dados de emissão de CO₂, CH₄ e N₂O",
+    },
+    {
+      name: "tbsedimentos",
+      title: "Análise de Sedimentos",
+      description: "Dados de composição e fluxo de sedimentos",
+    },
+    {
+      name: "tbqualidadeagua",
+      title: "Qualidade da Água",
+      description: "Parâmetros físico-químicos da água",
+    },
+  ];
+
+  return (
+    <DownloadSection>
+      <DownloadInfo>
+        <p>
+          <strong>Download de Dados FURNAS</strong>
+          <br />
+          Aqui você pode baixar os dados completos das tabelas do projeto FURNAS nos formatos CSV,
+          JSON e PDF. Selecione a tabela desejada e o formato de exportação.
+        </p>
+      </DownloadInfo>
+
+      <DownloadGrid>
+        {tables.map((table) => (
+          <DownloadCard key={table.name}>
+            <DownloadCardTitle>{table.title}</DownloadCardTitle>
+            <DownloadCardDescription>{table.description}</DownloadCardDescription>
+
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <DownloadButton
+                onClick={() => handleDownload(table.name, "csv")}
+                disabled={isDownloading === `${table.name}_csv`}
+              >
+                <Download size={16} />
+                {isDownloading === `${table.name}_csv` ? "Baixando..." : "CSV"}
+              </DownloadButton>
+
+              <DownloadButton
+                onClick={() => handleDownload(table.name, "json")}
+                disabled={isDownloading === `${table.name}_json`}
+              >
+                <Download size={16} />
+                {isDownloading === `${table.name}_json` ? "Baixando..." : "JSON"}
+              </DownloadButton>
+
+              <DownloadButton
+                onClick={() => handleDownload(table.name, "pdf")}
+                disabled={isDownloading === `${table.name}_pdf`}
+              >
+                <Download size={16} />
+                {isDownloading === `${table.name}_pdf` ? "Baixando..." : "PDF"}
+              </DownloadButton>
+            </div>
+          </DownloadCard>
+        ))}
+      </DownloadGrid>
+
+      <Block style={{ marginTop: "30px" }}>
+        <BlockTitle>Informações sobre os Dados</BlockTitle>
+        <BlockText>
+          <p>
+            <strong>Formato CSV:</strong> Ideal para análise em planilhas (Excel, Google Sheets) e
+            programas estatísticos.
+          </p>
+          <p>
+            <strong>Formato JSON:</strong> Ideal para desenvolvedores e integração com outras
+            aplicações.
+          </p>
+          <p>
+            <strong>Formato PDF:</strong> Ideal para relatórios e documentação.
+          </p>
+          <p>
+            <strong>Nota:</strong> Todos os downloads incluem todos os registros disponíveis na
+            tabela selecionada.
+          </p>
+        </BlockText>
+      </Block>
+    </DownloadSection>
+  );
+};
+
+// ================= Componente Principal =================
 const FurnasPage: React.FC = () => {
   const [active, setActive] = useState("home");
 
@@ -173,7 +375,7 @@ const FurnasPage: React.FC = () => {
         <HeaderContainer>
           <HeaderText>Sistema Integrado de Monitoramento Ambiental</HeaderText>
         </HeaderContainer>
-        <Separator /> {/* linha branca separadora */}
+        <Separator />
         <Menu>
           {sections.map((sec) =>
             sec.external ? (
@@ -195,7 +397,8 @@ const FurnasPage: React.FC = () => {
           )}
         </Menu>
       </HeaderWrapper>
-      {/* CONTEÚDO DA SEÇÃO ATIVA */}
+
+      {/* CONTEÚDO DAS SEÇÕES */}
       {active === "home" && (
         <TwoColumnContainer>
           <Column>
@@ -219,11 +422,11 @@ const FurnasPage: React.FC = () => {
 
           <Column>
             <LogosHeader>
-              <img src={logoCepel} style={{ width: "115px", height: "51px" }} />
-              <img src={logoCoppe} style={{ width: "98px", height: "50px" }} />
-              <img src={logoUfjf} style={{ width: "75px", height: "55px" }} />
-              <img src={logolie} style={{ width: "108px", height: "40px" }} />
-              <img src={logoInpe} style={{ width: "62px", height: "52px" }} />
+              <img src={logoCepel} style={{ width: "115px", height: "51px" }} alt="CEPEL" />
+              <img src={logoCoppe} style={{ width: "98px", height: "50px" }} alt="COPPE" />
+              <img src={logoUfjf} style={{ width: "75px", height: "55px" }} alt="UFJF" />
+              <img src={logolie} style={{ width: "108px", height: "40px" }} alt="IIE" />
+              <img src={logoInpe} style={{ width: "62px", height: "52px" }} alt="INPE" />
             </LogosHeader>
             <Block>
               <BlockTitle>Introdução</BlockTitle>
@@ -270,6 +473,7 @@ const FurnasPage: React.FC = () => {
           </Column>
         </TwoColumnContainer>
       )}
+
       {active === "panorama" && (
         <Block>
           <BlockTitle>Panorama</BlockTitle>
@@ -335,7 +539,7 @@ const FurnasPage: React.FC = () => {
             formado por cientistas de diversas nacionalidades, e vem realizando estudos sobre a
             alteração do clima planetário, suas conseqüências e a influência das atividades
             antrópicas em tais alterações. Os documentos que compõem o Terceiro Relatório de
-            Avaliação do IPCC (“Climate Change 2001”), confirmam que o aquecimento global nos
+            Avaliação do IPCC ("Climate Change 2001"), confirmam que o aquecimento global nos
             últimos 50 anos é conseqüência do aumento das concentrações de gases de efeito estufa
             (GEE), originado principalmente da queima de combustíveis fósseis. Como resultado, é
             prevista a ocorrência de eventos climáticos extremos e são esperados impactos na
@@ -386,7 +590,7 @@ const FurnasPage: React.FC = () => {
               trabalho foi a utilização da curva cota-área do reservatório para o cálculo da emissão
               de metano, já que foi observado que não se registravam emissões em profundidades
               superiores a 40 metros. Desta forma os cálculos ficaram mais precisos que a
-              extrapolação pura e simples para toda a área do espelho d’água.
+              extrapolação pura e simples para toda a área do espelho d'água.
             </p>
           </BlockText>
           <BlockText>
@@ -498,6 +702,7 @@ const FurnasPage: React.FC = () => {
           </BlockText>
         </Block>
       )}
+
       {active === "metodologia" && (
         <>
           <TwoColumnContainer>
@@ -526,7 +731,6 @@ const FurnasPage: React.FC = () => {
               </Block>
             </Column>
             <Column>
-              {/* Subprojeto 1 */}
               <Block>
                 <BlockTitle>
                   1. Aquisição de dados micrometeorológicos e limnológicos em tempo real
@@ -554,13 +758,12 @@ const FurnasPage: React.FC = () => {
             </Column>
           </TwoColumnContainer>
 
-          {/* Subprojeto 2 */}
           <TwoColumnContainer>
             <Column>
               <Block>
                 <BlockTitle>
                   2. Estimativa de Fluxos de CO₂, CH₄ e N₂O na interface água-atmosfera e coluna
-                  d’água
+                  d'água
                 </BlockTitle>
                 <BlockText>
                   O monitoramento envolve coletas de amostras de gases emitidos na interface
@@ -579,10 +782,9 @@ const FurnasPage: React.FC = () => {
               </Block>
             </Column>
 
-            {/* Subprojeto 3 */}
             <Column>
               <Block>
-                <BlockTitle>3. Ciclo do Carbono na coluna d’água</BlockTitle>
+                <BlockTitle>3. Ciclo do Carbono na coluna d'água</BlockTitle>
                 <BlockText>
                   O estudo visa compreender os processos de respiração, fotossíntese e produção
                   bacteriana que regulam os fluxos de carbono em ecossistemas aquáticos,
@@ -605,7 +807,6 @@ const FurnasPage: React.FC = () => {
             </Column>
           </TwoColumnContainer>
 
-          {/* Subprojeto 4 */}
           <Block>
             <BlockTitle>
               4. Estimativa de Fluxos de CO₂, CH₄ e N₂ na interface água-sedimento
@@ -619,7 +820,7 @@ const FurnasPage: React.FC = () => {
               <strong>Objetivos:</strong>
               <ul style={{ paddingLeft: "20px" }}>
                 <li>Quantificar fluxos difusivos de gases na interface água-sedimento.</li>
-                <li>Avaliar perda de gases para a coluna d’água e atmosfera.</li>
+                <li>Avaliar perda de gases para a coluna d'água e atmosfera.</li>
                 <li>Medir potencial de desoxigenação e denitrificação.</li>
                 <li>Estudar a composição isotópica do carbono e nitrogênio nos sedimentos.</li>
               </ul>
@@ -627,13 +828,7 @@ const FurnasPage: React.FC = () => {
           </Block>
         </>
       )}
-      ;
-      {active === "banco-dados" && (
-        <Block>
-          <BlockTitle>Banco de Dados</BlockTitle>
-          <BlockText>Conteúdo da seção Banco de Dados...</BlockText>
-        </Block>
-      )}
+
       {active === "resultados" && (
         <TwoColumnContainer>
           <Column>
@@ -689,6 +884,7 @@ const FurnasPage: React.FC = () => {
           </Column>
         </TwoColumnContainer>
       )}
+
       {active === "participantes" && (
         <TwoColumnContainer>
           <Column>
@@ -714,7 +910,7 @@ const FurnasPage: React.FC = () => {
                       Universidade Federal de Juiz de Fora
                     </a>{" "}
                     – Determinações da produção primária, metabolismo bacteriano e concentrações de
-                    nutrientes na coluna d’água.
+                    nutrientes na coluna d'água.
                   </li>
                   <li>
                     <a href="https://www.iie.com.br/" target="_blank" rel="noopener noreferrer">
@@ -742,16 +938,15 @@ const FurnasPage: React.FC = () => {
           </Column>
         </TwoColumnContainer>
       )}
+
       {active === "usinas" && (
         <Block>
           <BlockTitle>Usinas em Operação</BlockTitle>
-
-          {/* styled Image (defina no topo do arquivo, se quiser modular) */}
           <Image src={UsinasImg1} alt="Mapa Usinas Hidrelétricas 1" />
-
           <Image src={UsinasImg2} alt="Mapa Usinas Hidrelétricas 2" style={{ marginTop: "1rem" }} />
         </Block>
       )}
+
       {active === "pesquisas" && (
         <>
           <Block>
@@ -765,7 +960,6 @@ const FurnasPage: React.FC = () => {
                   <br />
                   IPCC 2001 - http://www.ipcc.ch
                 </li>
-
                 <li>
                   Sediment greenhouse gases (methane and carbon dioxide) in the Lobo-Broa Reservoir,
                   São Paulo State, Brazil: Concentrations and diffuse emission fluxes for carbon
@@ -774,7 +968,6 @@ const FurnasPage: React.FC = () => {
                   ABE, D. S.; ADAMS, D. D.; GALLI, C. V. S.; SIKAR, E.; TUNDISI, J. G. — Lakes &
                   Reservoirs: Research and Management, 10: 201-209, 2005
                 </li>
-
                 <li>
                   A comparison of the carbon balances of a natural lake (L. O. rtra.sket) and a
                   hydroelectric reservoir (L.Skinnmuddselet) in northern Sweden
@@ -782,7 +975,6 @@ const FurnasPage: React.FC = () => {
                   ABERG, JAN; BERGSTROM, ANN-K.; ALGESTEN, G.; DERBACK, G.; JANSSON, M. — Water
                   Research, 38, 531-538, 2004
                 </li>
-
                 <li>
                   CH4 e CO2 emissions and carbon imbalance in a 10-years old tropical reservoir
                   (Petit-Saut, French Guiana)
@@ -792,7 +984,6 @@ const FurnasPage: React.FC = () => {
                   <br />
                   Global Biogechemical Cycles, 19, 2005
                 </li>
-
                 <li>
                   In situ measurements of dissolved gases (CO2 and CH4) in a wide range of
                   concentrations in a tropical reservoir using an Equilibrator
@@ -800,7 +991,6 @@ const FurnasPage: React.FC = () => {
                   ABRIL, G.; RICHARD, S.; GUÉRIN, F. — Science of the Total Environment 354,
                   246-251, 2006 - www.elsevier.com/locate/scitotenv
                 </li>
-
                 <li>
                   Aquatic cycling and hydrosphere to troposphere transport of reduced gases - A
                   review
@@ -810,7 +1000,6 @@ const FurnasPage: React.FC = () => {
                   Limnology (SIL). E. Schweizerbart'sche Verlagsbuchhandlungen, Stuttgart, Germany,
                   pp. 1-13, 1996
                 </li>
-
                 <li>
                   Methane, carbon dioxide and nitrogen gases in the surficial sediments of two
                   Chilean reservoirs - diffusive fluxes at the sediment water interface
@@ -819,7 +1008,6 @@ const FurnasPage: React.FC = () => {
                   eds.; Proceedings of International Workshop on Hydrodams, Lakes and Greenhouse Gas
                   Emissions, COPPE-UFRJ, Rio de Janeiro, Brazil, pp. 50-77, 1999
                 </li>
-
                 <li>
                   Reservoirs and Greenhouse Gases
                   <br />
@@ -827,7 +1015,6 @@ const FurnasPage: React.FC = () => {
                   P. — Reservoirs and Greenhouse Gases, special session 42 at Societas
                   Internationalis Limnologiae, Monash University, Melbourne, Australia, 2001
                 </li>
-
                 <li>
                   Gases in the sediments of two eutrophic Chilean reservoirs: potential sediment
                   oxygen demand and sediment-water flux of CH4 and CO2 before and after an El Niño
@@ -836,28 +1023,24 @@ const FurnasPage: React.FC = () => {
                   ADAMS, D. D.; VILA, I.; PIZARRO, J.; SALAZAR, C. — Verh. Internat. Verein.
                   Limnol., 27:1376-1381, 2000
                 </li>
-
                 <li>
                   Investigating Ebullition in a Sand Column Using Dissolved Gas Analysis and
                   Reactive Transport Modeling
                   <br />
                   AMOS, R.; YER, K. — Environmental Science Technology, 40, 5361-5367, 2006
                 </li>
-
                 <li>
                   Mitigation and recovery of methane emissions from tropical hydroelectric dams
                   <br />
                   BAMBACE, L. A. W.; RAMOS, F. M.; LIMA, I. B. T.; ROSA R. R. — Energy, 32,
                   1038-1046, 2007 - www.elsevier.com/locate/energy
                 </li>
-
                 <li>
                   Measurement of Methane Oxidation in Lakes: A Comparison of Methods
                   <br />
                   BASTVIKEN, D.; NEJLERTSSON, J.; TRANVIK, L. — Environmental Science & Technology,
                   36, 3354-3361, 2004
                 </li>
-
                 <li>
                   Estimating production of heterotrophic bacterioplankton via incorporation of
                   tritiated thymidine
@@ -865,14 +1048,12 @@ const FurnasPage: React.FC = () => {
                   BELL, R. T. — In: P.F. Kemp, B. F. Sherr, E.B. Sherr and J.J. Cole (eds) Handbook
                   of Methods in Aquatic Microbial Ecology. Lewis. 1993
                 </li>
-
                 <li>
                   Emission of CO2 from hydroelectric reservoirs in northern Sweden
                   <br />
                   BERGSTRÖM, ANN-K.; ALGESTEN, G.; SOBEK, S.; TRANVIK, L.; JANSSON, M. — Arch.
                   Hydrobiol., 159 1 25-42, 2004
                 </li>
-
                 <li>
                   Experimenting with hydroelectric reservoirs: researchers created reservoirs in
                   Canada to explore the impacts of hydroelectric developments on greenhouse gas and
@@ -896,7 +1077,6 @@ const FurnasPage: React.FC = () => {
                   <br />
                   BOON P. I. — Verh. Internat. Verein. Limnol., 27:37-50, 2000
                 </li>
-
                 <li>
                   Fluxes of methane and carbon dioxide from a small productive lake to the
                   atmosphere
@@ -904,27 +1084,23 @@ const FurnasPage: React.FC = () => {
                   CASPER, P.; MABERLY, S. C.; HALL, G. H.; FINLAY, B. J. — Biogeochemistry, 49:1-19,
                   2000
                 </li>
-
                 <li>
                   Planktonic bacterial respiration as a function of C:N:P ratios across temperate
                   lakes
                   <br />
                   CIMBLERIS, A. C. P.; KALFF, J. — Hydrobiologia, 384:89-100, 1998
                 </li>
-
                 <li>
                   Carbon in catchments: connecting terrestrial carbon losses with aquatic metabolism
                   <br />
                   COLE, J. J.; CARACO, N. F. — Marine and Freshwater Research. 52:101-110, 2001
                 </li>
-
                 <li>
                   Carbon dioxide supersaturation in the surface waters of lakes
                   <br />
                   COLE, J. J.; CARACO, N. F.; KLING, G. W.; KRATZ, T. K. — Science, 265:1568-1570,
                   1994
                 </li>
-
                 <li>
                   Persistence of net heterotrophy in lakes during nutrient addition and food web
                   manipulations
@@ -932,28 +1108,24 @@ const FurnasPage: React.FC = () => {
                   COLE, J. J.; PACE, M. L.; CARPENTER, S. R.; KITCHELL, J. F. — Limnol. Oceanogr.
                   45(8):1718-1730, 2000
                 </li>
-
                 <li>
                   The Dam Debate And Its Discontents
                   <br />
                   CULLENWARD, D.; VICTOR, D. G. — Editorial Comment, Climatic Change, 75: 81-86,
                   2006
                 </li>
-
                 <li>
                   Sources and transfers of particulate organic matter in a tropical reservoir (Petit
                   Saut, French Guiana): a multitracers analysis using d13C, C/N ratio and pigments
                   <br />
                   DEJUNET, A.; ABRIL, G.; GUÉRIN, F.; WIT, R. — Submitted December 2006
                 </li>
-
                 <li>
                   Respiration rates in bacteria exceed phytoplankton production in unproductive
                   aquatic systems
                   <br />
                   DEL GIORGIO, P. A.; COLE, J. J.; CIMBLERIS, A. — Nature 385:148-151
                 </li>
-
                 <li>
                   Emission of greenhouse gases from the tropical hydroelectric reservoir of Petit
                   Saut (French Guiana) compared with emissions from thermal alternatives
@@ -961,7 +1133,6 @@ const FurnasPage: React.FC = () => {
                   DELMAS, R.; GALY-LACAUX, C.; RICHARD, S. — Global Biogeochemical Cycles, 15,
                   993-1003, 2001
                 </li>
-
                 <li>
                   Greenhouse gas emissions from hydroelectric dams in the tropics: a case study in
                   French Guiana
@@ -969,7 +1140,6 @@ const FurnasPage: React.FC = () => {
                   DELMAS, R.; RICHARD, S.; GALY-LACAUX, C.; GUÉRIN, F.; DELON, C. — ILEAPS -
                   International Open Science Conference, Helsinki, Finland, 73-78, 2003
                 </li>
-
                 <li>
                   Long term greenhouse gas emissions from the hydroelectric reservoir of Petit Saut
                   (French Guiana) and potencial impacts
@@ -979,21 +1149,18 @@ const FurnasPage: React.FC = () => {
                   hydroelectric reservoirs: fluxes and processes, A. Tremblay, L. Varfalvy, C. Roehm
                   and M. Garneau (Eds) Springer-Verlag, 293-312
                 </li>
-
                 <li>
                   Greenhouse Gas Emissions from Energy Systems: Comparision and Overview
                   <br />
                   DONES, R.; HECK, T.; HIRSCHBERG, S. — In PSI Annual Report, Annex IV, Paul
                   Scherrer Institut, Villigen, Switzerland, 27-40, 2003
                 </li>
-
                 <li>
                   CH4 emissions from flooded land: Basis for future methodological development
                   <br />
                   DUCHEMIN, E.; HUTTUNEN, J. T.; TREMBLAY, A.; DELMAS, R.; MENEZES, C. F. S. — IGES,
                   Kanagawa, Japan, pp. Ap3.1 - Ap3.8
                 </li>
-
                 <li>
                   Possible approach for estimating CO2 emissions from lands converted to permanently
                   flooded land: Basis for future methodological development
@@ -1001,7 +1168,6 @@ const FurnasPage: React.FC = () => {
                   DUCHEMIN, E.; HUTTUNEN, J. T.; TREMBLAY, A.; DELMAS, R.; MENEZES, C. F. S. — IGES,
                   Kanagawa, Japan, pp. Ap2.1 - Ap2.9
                 </li>
-
                 <li>
                   Comparison of static chamber and Boundary Layer Equation methods for measuring
                   greenhouse gas emissions from large water bodies
@@ -1009,7 +1175,6 @@ const FurnasPage: React.FC = () => {
                   DUCHEMIN, E.; LUCOTTE, M.; CANUEL, R. — Environmental Science & Technology,
                   33:350-357, 1999
                 </li>
-
                 <li>
                   Production of greenhouse gases CH4 and CO2 by hydroelectric reservoirs of the
                   boreal region
@@ -1017,7 +1182,6 @@ const FurnasPage: React.FC = () => {
                   DUCHEMIN, E.; LUCOTTE, M.; CANUEL, R. — Global Biogeochemical Cycles, vol 9, no 4,
                   p. 529-540, 1995
                 </li>
-
                 <li>
                   Comparison of greenhouse gas emissions from an old tropical reservoir with those
                   from other reservoirs worldwide
@@ -1025,7 +1189,6 @@ const FurnasPage: React.FC = () => {
                   DUCHEMIN, E.; LUCOTTE, M.; CANUEL, R.; QUEIROZ, A. G.; ALMEIDA, D. C.; PEREIRA, H.
                   C.; DEZINCOURT, J. — Verh. Internat. Verein. Limnol., 27:1391-1395, 2000
                 </li>
-
                 <li>
                   First assessment of methane and carbon dioxide emissions from shallow and deep
                   zones of boreal reservoirs upon ice break-up
@@ -1033,7 +1196,6 @@ const FurnasPage: React.FC = () => {
                   DUCHEMIN, E.; LUCOTTE, M.; CANUEL, R.; SOUMIS, N. — Lakes & Reservoirs: Research
                   and Management, 11: 9-19, 2006
                 </li>
-
                 <li>
                   Influence of light intensity on methanotrophic bacterial activity in the Petit
                   Saut reservoir, French Guiana
@@ -1055,55 +1217,47 @@ const FurnasPage: React.FC = () => {
                   <br />
                   FEARNSIDE, P. — Water, Air and Soil Pollution, 133:69-96, 2002
                 </li>
-
                 <li>
                   Do hydroelectric dams mitigate global warming? The case of Brazil's Curuí-Una dam
                   <br />
                   FEARNSIDE, P. M. — Mitigation and Adaptation Strategies for Global Change, 10:
                   675-691, 2005
                 </li>
-
                 <li>
                   Environmental impacts of Brazil's Tucuruí dam: unlearned lessons for hydroelectric
                   development in Amazonia
                   <br />
                   FEARNSIDE, P. M. — Environmental Management, 27 (3): 377-396, 2001
                 </li>
-
                 <li>
                   Greenhouse gas emissions from hydroelectric dams: controversies provide a
                   springboard for rethinking a supposedly 'clean' energy source
                   <br />
                   FEARNSIDE, P. M. — Climatic Change 66: 1-8, 2004
                 </li>
-
                 <li>
                   Greenhouse-gas emissions from Amazonian hydroelectric reservoirs: the example of
                   Brazil's Tucuruí dam as compared to fossil fuel alternatives
                   <br />
                   FEARNSIDE, P. M. — Environmental Conservation, 24 (1): 64-75, 1997
                 </li>
-
                 <li>
                   A headspace equilibration technique for measurement of dissolved gases in sediment
                   pore water
                   <br />
                   FENDINGER, N. J.; ADAMS, D. D. — Intern. J. Environ. Anal. Chem., 23:253-265, 1986
                 </li>
-
                 <li>
                   Methane and oxygen dynamics in a shallow floodplain lake: the significance of
                   periodic stratification
                   <br />
                   FORD, P. W.; BOON, P. I.; LEE, K. — Hydrobiologia, 485: 97-110, 2002
                 </li>
-
                 <li>
                   Greenhouse gas emissions from hydropower: The state of research in 1996
                   <br />
                   GAGNON, L.; VATE, VAN DE J. F. — Energy Policy, 25,(I),7-13, 1997
                 </li>
-
                 <li>
                   Gaseous emission and oxygen consumption in hydroelectric dams. A case study in
                   French Guiana
@@ -1111,7 +1265,6 @@ const FurnasPage: React.FC = () => {
                   GALY-LACAUX, C.; DELMAS, R.; DUMESTRE, J. F.; LABROUE, L.; GOSSE, P. — Global
                   Biogeochemical Cycles, 11, 471-483, 1997
                 </li>
-
                 <li>
                   Long term greenhouse gas emissions from hydroelectric reservoirs in tropical
                   forest regions
@@ -1119,7 +1272,6 @@ const FurnasPage: React.FC = () => {
                   GALY-LACAUX, C.; DELMAS, R.; KOUADIO, G.; RICHARD, S.; GOSSE, P. — Global
                   Biogeochemical Cycles, 13, 503-517, 1999
                 </li>
-
                 <li>
                   Emission de Méthane et consommation d'oxygène dans le retenue de Petit Saut en
                   Guyane
@@ -1127,7 +1279,6 @@ const FurnasPage: React.FC = () => {
                   GALY-LACAUX, C.; JAMBERT, C.; DELMAS, R.; DUMESTRE, J. F.; LABROUE, L.; CERDAN,
                   P.; RICHARD, S. — Comptes Rendus de I
                 </li>
-
                 <li>
                   Evolution and relationship between 3 dissolved gases (oxygen, methane, and carbon
                   dioxide) over a 10-year period (1994-2003) in a river downstream of a new
@@ -1137,7 +1288,6 @@ const FurnasPage: React.FC = () => {
                   Internationalen Vereinigung für Theoretische und Angewandte Limnologie, 29,
                   594-600, 2005
                 </li>
-
                 <li>
                   Evolution and relationships of greenhouse gases and dissolved oxygen during
                   1994-2003 in a river downstream of a tropical reservoir
@@ -1146,14 +1296,12 @@ const FurnasPage: React.FC = () => {
                   Internationalen Vereinigung für Theoretische und Angewandte Limnologie, 29,
                   594-600, 2005
                 </li>
-
                 <li>
                   Emission of CO2, CH4 and N2O from lakeshore soils in an Antarctic dry valley
                   <br />
                   GREGORICH, E. G.; HOPKINS, D. W.; ELBERLING, B.; SPARROW, A. D.; NOVIS, P.;
                   GREENFIELD, L. G.; ROCHETTE, P. — Soil Biology & Biochemistry, 38, 3120-3129, 2006
                 </li>
-
                 <li>
                   Production of carbon dioxide and methane by flooded tropical soils during anoxic
                   incubations: Implication for atmospheric emissions from a hydroelectric reservoir
@@ -1161,7 +1309,6 @@ const FurnasPage: React.FC = () => {
                   <br />
                   GUÉRIN, F.; ABRIL, G.; DEJUNET, A.; DELMAS, R. — Under preparation
                 </li>
-
                 <li>
                   Methane and carbon emissions from tropical reservoirs: significance of downstream
                   rivers
@@ -1169,7 +1316,6 @@ const FurnasPage: React.FC = () => {
                   GUÉRIN, F.; ABRIL, G.; RICHARD, S.; BURBAN, B.; REYNOUARD, C.; SEYLER, P.; DELMAS,
                   R. — Geophysical Research Letters, 33, L21407, 2006
                 </li>
-
                 <li>
                   Gas transfer velocities measured by eddy correlations and floating chambers
                   techniques in tropical reservoir
@@ -1177,7 +1323,6 @@ const FurnasPage: React.FC = () => {
                   GUÉRIN, F.; ABRIL, G.; SERÇA, D.; DELON, C.; RICHARD, S.; DELMAS, R.; TREMBLAY,
                   A.; VARFALVY, L. — SOLAS Newsletter, 2, 7, 2005
                 </li>
-
                 <li>
                   Gas transfer velocities of CO2 and CH4 in a tropical reservoir and its river
                   downstream
@@ -1199,7 +1344,6 @@ const FurnasPage: React.FC = () => {
                   HUTTUNEN, J. T.; ALM, J.; SAARIJARVI, E.; LAPPALAINEN, K. M.; SILVOLA, J.;
                   MARTIKAINEN, P. J. — Chemosphere, 50: 247-250, 2003
                 </li>
-
                 <li>
                   Fluxes of methane, carbon dioxide and nitrous oxide in boreal lakes and potential
                   anthropogenic effects on the aquatic greenhouse gas emissions
@@ -1207,14 +1351,12 @@ const FurnasPage: React.FC = () => {
                   HUTTUNEN, J. T.; ALM, J.; LIIKANEN, A.; JUUTINEN, S.; LARMOLA, T.; HAMMAR, T.;
                   SILVOLA, J.; MARTIKAINEN, P. J. — Chemosphere, 52, 609-621, 2003
                 </li>
-
                 <li>
                   Long-term effects of boreal reservoirs on the landscape-atmosphere N2O exchange
                   <br />
                   HUTTUNEN, J. T.; MARTIKAINEN, P. J. — Verhandlungen der Internationalen
                   Vereinigung für Theoretische und Angewandte Limnologie, 29, 607-611, 2005
                 </li>
-
                 <li>
                   Long-term effects of northern reservoirs on the landscape-scale CH4 and N2O
                   exchanges
@@ -1222,14 +1364,12 @@ const FurnasPage: React.FC = () => {
                   HUTTUNEN, J. T.; MARTIKAINEN, P. J. — Report Series in Aerosol Science No. 81A.
                   Yliopistopaino, Helsinki, 197-201, 2005
                 </li>
-
                 <li>
                   Long-term net methane release from finish hydro reservoirs
                   <br />
                   HUTTUNEN, J. T.; MARTIKAINEN, P. J. — Global Warming and Hydroelectric Reservoirs,
                   op. cit., pp. 125-135, 2005
                 </li>
-
                 <li>
                   Methane emissions from natural peatlands on the northern boreal zone on Finland,
                   Fennoscandia
@@ -1237,7 +1377,6 @@ const FurnasPage: React.FC = () => {
                   HUTTUNEN, J. T.; NYKÄNEN, H.; TURUNEN, J.; MARTIKAINEN, P. J. — Atmospheric
                   Environment 37, 147-151, 2003
                 </li>
-
                 <li>
                   Fluxes of nitrous oxide on natural peatlands in Vuotos, an area projected for a
                   hydroelectric reservoir in northern Finland
@@ -1245,7 +1384,6 @@ const FurnasPage: React.FC = () => {
                   HUTTUNEN, J. T.; NYKÄNEN, H.; TURUNEN, J.; NENONEN, O.; MARTIKAINEN, P. J. — SUO,
                   53, 87-96, 2002
                 </li>
-
                 <li>
                   Exchange of CO2, CH4 and N2O between the atmosphere and two northern boreal ponds
                   with catchments dominated by peatlands or forests
@@ -1253,7 +1391,6 @@ const FurnasPage: React.FC = () => {
                   HUTTUNEN, J. T.; VÄISÄNEN, T. S.; HEIKKINEN, S.; NYKÄNEN, H.; NENONEN, O.;
                   MARTIKAINEN, P. J. — Plant and Soil, 242, 137-146
                 </li>
-
                 <li>
                   Fluxes of CH4, CO2 and N2O in hydroelectric reservoirs Lokka and Porttipahta in
                   the northern boreal zone in Finland
@@ -1262,21 +1399,18 @@ const FurnasPage: React.FC = () => {
                   JUNGNER, H.; NISKANEN, A.; VIRTANEN, M. O.; LINDQVIST, O. V.; NENONEN, O.;
                   MARTIKAINEN, P. J. — Global Biogeochemical Cycles, 16, 1003, 2002
                 </li>
-
                 <li>
                   Methane fluxes at the sediment-water interface in some boreal lakes and reservoirs
                   <br />
                   HUTTUNEN, J. T.; VÄISÄNEN, T. S.; HELLSTEN, S. K.; MARTIKAINEN, P. J. — Boreal
                   Environment Research, 11, 27-34, 2006
                 </li>
-
                 <li>
                   Hydrologic sources of carbon cycling uncertainty throughout the
                   terrestrial-aquatic continuum
                   <br />
                   JENERETTE, G. D.; LAL, R. — Global Change Biology, 11, 1873-1882, 2005
                 </li>
-
                 <li>
                   Increases in fluxes of greenhouse gases and methyl mercury following flooding of
                   an experimental reservoir
@@ -1285,7 +1419,6 @@ const FurnasPage: React.FC = () => {
                   A.; MOORE, T. R.; SCHIFF, S.; ARAVENA, R.; SCOTT, K. J.; DYCK; B.; HARRIS, R.;
                   WARNER, B.; EDWARDS, G. — Environmental Science & Technology, 31, 1334-1344, 1997
                 </li>
-
                 <li>
                   Sediment respiration and lake trophic state are important predictors of large CO2
                   evasion from small boreal lakes
@@ -1294,7 +1427,6 @@ const FurnasPage: React.FC = () => {
                   S.; LARMOLA, T.; SILVOLA, J.; MARTIKAINEN, P. J. — Global Change Biology, 12,
                   1554-1567, 2006
                 </li>
-
                 <li>
                   Spatial and seasonal variation in greenhouse gas and nutrient dynamics and their
                   interactions in the sediments of a boreal eutrophic lake
@@ -1303,13 +1435,11 @@ const FurnasPage: React.FC = () => {
                   SILVOLA, J.; ALM, J.; MARTIKAINEN, P. J. — Biogeochemistry, 65: 83-103, 2003,
                   Kluwer Academic Publishers
                 </li>
-
                 <li>
                   Biogeochemical distinction of methane releases from two Amazon hydroreservoirs
                   <br />
                   LIMA, I. B. T. — Chemosphere, 59, 1697-1702, 2005
                 </li>
-
                 <li>
                   Emissão de metano em reservatórios hidreléricos amazônicos através de leis de
                   potência
@@ -1317,7 +1447,6 @@ const FurnasPage: React.FC = () => {
                   LIMA, I. B. T. — Tese de Doutorado, Centro de Energia Nuclear na Agricultura -
                   USP, Piracicaba, 2002, 108p. (no prelo)
                 </li>
-
                 <li>
                   Carbon flows in the Tucuruí reservoir
                   <br />
@@ -1339,7 +1468,6 @@ const FurnasPage: React.FC = () => {
                   LIMA, I. B. T.; NOVO, E. M. L. M.; BALLESTER, M. V. F.; OMETTO, J. P. — IEEE,
                   2529-2531, 1998
                 </li>
-
                 <li>
                   Role of the macrophyte community in the CH4 production and emission in the
                   tropical reservoir of Tucuruí, Pará State, Brazil
@@ -1347,7 +1475,6 @@ const FurnasPage: React.FC = () => {
                   LIMA, I. B. T.; NOVO, E. M. L. M.; BALLESTER, M. V. R.; OMETTO, J. P. — Verh.
                   Internat. Verein. Limnol., 27:1437-1440, 2000
                 </li>
-
                 <li>
                   Methane, carbon dioxide, and nitrous oxide emissions from two Amazonian reservoirs
                   during high water table
@@ -1356,7 +1483,6 @@ const FurnasPage: React.FC = () => {
                   R.; OMETTO, J. P. — XXVIII Societas Internationalis Limnologiae Congress,
                   Melbourne, Australia, 2001. In press.
                 </li>
-
                 <li>
                   The effect of termite biomass and anthropogenic on the CH4 budgets of tropical
                   forests in Cameroon and Borneo
@@ -1364,19 +1490,16 @@ const FurnasPage: React.FC = () => {
                   MACDONALD, J. A.; JEEVA, D.; EGGLETON, P.; DAVIES, R.; BIGNELL, D. E.; FOWLER, D.;
                   LAWTON, J.; MARYATI, M. — Global Change Biology, 5, 869-879, 1999
                 </li>
-
                 <li>
                   Methane Emission from Lakes
                   <br />
                   MAKHOV, G. A.; BAZHIN, M. — Chemosphere, 38 (6), 1453-1459, 1999
                 </li>
-
                 <li>
                   Methane emissions from lakes and floodplains in Pantanal, Brazil
                   <br />
                   MARANI, L.; ALVALÁ, P. C. — Atmospheric Environment, 41, 1627-1633, 2007
                 </li>
-
                 <li>
                   Carbon Dioxide and Methane production in small reservoirs flooding upland boreal
                   forest
@@ -1384,7 +1507,6 @@ const FurnasPage: React.FC = () => {
                   MATTHEWS, C. J. D.; JOYCE, E. M.; ST. LOUIS, V. L.; SCHIFF, S. L.; VENKITESWARAN,
                   J. J.; HALL, B. D.; BODALY, R. A.; BEATY, K. G. — Ecosystems, 8: 267-285, 2005
                 </li>
-
                 <li>
                   Comparison of three techniques used to measure diffusive gas exchange from
                   sheltered aquatic surfaces
@@ -1392,27 +1514,23 @@ const FurnasPage: React.FC = () => {
                   MATTHEWS, C. J. D.; ST. LOUIS, V. L.; HESSLEIN, R. H. — Environment Science &
                   Technology, 37, 772-780, 2003
                 </li>
-
                 <li>
                   Flooding the land, warming the Earth: greenhouse gas emissions from dams
                   <br />
                   MCCULLY, P. — International Rivers Network, 2002
                 </li>
-
                 <li>
                   Tropical hydropower is a significant source of greenhouse gas emissions: a
                   response to the International Hydropower Association
                   <br />
                   MCCULLY, P. — International Rivers Network, 2004
                 </li>
-
                 <li>
                   Tropical hydropower is a significant source of greenhouse gas emissions: response
                   to the International Hydropower Association
                   <br />
                   MCCULLY, P. — International Rivers Network, 2004 - www.irn.org
                 </li>
-
                 <li>
                   Effect of temperature on production of CH4 and CO2 from peat in a natural and
                   flooded boreal forest wetland
@@ -1420,20 +1538,17 @@ const FurnasPage: React.FC = () => {
                   MCKENZIE, C.; SCHIFF, S.; ARAVENA, R.; KELLY, C.; ST. LOUIS, V. — Climatic Change,
                   40: 247-266, 1998
                 </li>
-
                 <li>
                   Nitrous oxide emissions to the atmosphere from an artificially oxygenated lake
                   <br />
                   MEYER, M.; GÄCHTER, R.; WEHRLI, B. — Limnol. Oceanogr., 41:548-553, 1996
                 </li>
-
                 <li>
                   Greenhouse gas emissions from building and operating electric power plants in the
                   upper Colorado river basin
                   <br />
                   PACCA, S.; HORVATH, A. — Environmental Science & Technology, 36, 3194-3200, 2002
                 </li>
-
                 <li>
                   Extreme event dynamics in methane ebullition fluxes from tropical reservoirs
                   <br />
@@ -1441,14 +1556,12 @@ const FurnasPage: React.FC = () => {
                   M. F. F. L.; OMETTO, J. P. H. B.; ASSIREU, A. T.; STECH, J. L. — Geophysical
                   Research Letters, 33 (21), CiteID L21404, 2006
                 </li>
-
                 <li>
                   Interannual variation and climatic regulation of the CO2 emission from large
                   boreal lakes
                   <br />
                   RANTAKARI, M.; KORTELAINEN, P. — Global Change Biology, 11, 1368-1380, 2005
                 </li>
-
                 <li>
                   Evolution of physico-chemical water quality and methane emissions in the tropical
                   hydroelectric reservoir of Petit Saut (French Guiana)
@@ -1473,7 +1586,6 @@ const FurnasPage: React.FC = () => {
                   RICHARD, S.; GOSSE, P.; GRÉGOIRE, A.; DELMAS, R.; GALY LACAUX, C. — In: A.
                   Tremblay et. al. op. cit., 329-560
                 </li>
-
                 <li>
                   Certainty and uncertainty in the science of greenhouse gas emissions from
                   hydroelectric reservoirs
@@ -1481,14 +1593,12 @@ const FurnasPage: React.FC = () => {
                   ROSA, L. P.; SANTOS, M. A. — Thematic Review II.2 prepared as an input to the
                   World Commission on Dams, Cape Town, 2000
                 </li>
-
                 <li>
                   Dams and climate change
                   <br />
                   ROSA, L. P.; SANTOS, M. A. (eds.) — Proceedings of International Workshop on Hydro
                   Dams, Lakes and Greenhouse Gas Emissions, Rio de Janeiro, Brazil, 1999
                 </li>
-
                 <li>
                   Hydropower plants and greenhouse gas emissions
                   <br />
@@ -1496,14 +1606,12 @@ const FurnasPage: React.FC = () => {
                   Greenhouse Gas Emissions from Hydroelectric Reservoirs, Rio de Janeiro, Brazil,
                   1997
                 </li>
-
                 <li>
                   Biogenic gas production from major Amazon reservoirs, Brazil
                   <br />
                   ROSA, L. P.; SANTOS, M. A.; MATVIENKO, B.; SIKAR, E.; LOURENÇO, R. S. M.; MENEZES,
                   C. F. S. — Hydrological Processes, 17, 1433-1450, 2003
                 </li>
-
                 <li>
                   Scientific errors in the Fearnside comments on Greenhouse Gas Emissions (GHG) from
                   hydroelectric dams and response to his political claiming
@@ -1511,20 +1619,17 @@ const FurnasPage: React.FC = () => {
                   ROSA, L. P.; SANTOS, M. A.; MATVIENKO, B.; SIKAR, E.; SANTOS, E. O. — Climatic
                   Change, 75: 91-102, 2006
                 </li>
-
                 <li>
                   Greenhouse gas emissions from hydroelectric reservoirs in tropical regions
                   <br />
                   ROSA, L. P.; SANTOS, M. A.; SIKAR, B. M.; SANTOS, E. O.; SIKAR, E. — Climatic
                   Change, 66:9-21, 2004, Netherlands
                 </li>
-
                 <li>
                   Greenhouse gas emissions from hydropower reservoirs and water quality
                   <br />
                   ROSA, L. P.; SANTOS, M. A.; TUNDISI, J. G. — COOPE/ UFRJ, 1st ed., 136 pp.
                 </li>
-
                 <li>
                   Measurements of greenhouse gas emission in Samuel, Tucuruí and Balbina dams -
                   Brazil
@@ -1533,19 +1638,16 @@ const FurnasPage: React.FC = () => {
                   and Greenhouse Gas Emissions, Rosa, L. P. & Santos, M. A. (eds.), COPPE
                   publication, Rio de Janeiro, 1997
                 </li>
-
                 <li>
                   Global warming potentials: the case of emissions from dams
                   <br />
                   ROSA, L. P.; SHAEFFER, R. — Energy Policy, 23 (2), pp. 149-158, 1995
                 </li>
-
                 <li>
                   Greenhouse gas emissions from hydroelectric reservoirs
                   <br />
                   ROSA, L. P.; SHAEFFER, R. — Ambio, 23 (2), pp. 164-165, 1994
                 </li>
-
                 <li>
                   Are hydroelectric dams in the Brazilian Amazon significant sources of greenhouse
                   gases
@@ -1553,7 +1655,6 @@ const FurnasPage: React.FC = () => {
                   ROSA, L. P.; SHAEFFER, R.; SANTOS, M. A. — Environmental Conservation, 66, n.1,
                   2-6, Cambridge University Press, UK, 1996
                 </li>
-
                 <li>
                   Methane and Carbon Dioxide emissions of hydroelectric power plants in the Amazon
                   compared to thermoelectric equivalents
@@ -1561,14 +1662,12 @@ const FurnasPage: React.FC = () => {
                   ROSA, L. P.; SHAEFFER, R.; SANTOS, M. A. — Unpublished report, Energy Planning
                   Program, COPPE/UFRJ, August, 1994 (manuscript, 48 pp.)
                 </li>
-
                 <li>
                   Emissões de gases de efeito estufa de reservatórios hidrelétricos
                   <br />
                   ROSA, L. P.; SIKAR, B. M.; SANTOS, M. A.; MONTEIRO, J. L.; SIKAR, E.; SILVA, M.
                   B.; SANTOS, E. O.; JUNIOR, A. P. B. — Publicação ANEEL, Brasília, 2002
                 </li>
-
                 <li>
                   Carbon budget in tropical reservoirs
                   <br />
@@ -1576,7 +1675,6 @@ const FurnasPage: React.FC = () => {
                   SILVA, M. B.; BENTES JR, A. P.; SIKAR, E.; PATCHINEELAM, S. R. — Global Warming
                   and Hydroelectric Reservoirs, op. cit., 95-100, 2005
                 </li>
-
                 <li>
                   Gas release in the filling stage
                   <br />
@@ -1584,19 +1682,16 @@ const FurnasPage: React.FC = () => {
                   Verhandlungen der Internationalen Vereinigung für Theoretische und Angewandte
                   Limnologie, 27, 1415-1419, 2000
                 </li>
-
                 <li>
                   Dams and climate change
                   <br />
                   SANTOS, M. A.; ROSA, L. P. — COOPE/ UFRJ 1st ed., 80 pp., 1999
                 </li>
-
                 <li>
                   Hydropower plants and greenhouse gas emissions
                   <br />
                   SANTOS, M. A.; ROSA, L. P. — COOPE/ UFRJ 1st ed., 120 pp., 1997
                 </li>
-
                 <li>
                   Gross greenhouse gas fluxes from hydro-power reservoir compared to thermo-power
                   plants
@@ -1604,7 +1699,6 @@ const FurnasPage: React.FC = () => {
                   SANTOS, M. A.; ROSA, L. P.; SIKAR, B.; SIKAR, E.; SANTOS, E. O. — Energy Policy,
                   34, 481-488, 2006
                 </li>
-
                 <li>
                   Emissões de gases de efeito estufa do reservatório hidrelétrico de Belo Monte -
                   fase de pré-enchimento do reservatório
@@ -1613,20 +1707,17 @@ const FurnasPage: React.FC = () => {
                   ROCHA, C. H. E. A.; JUNIOR, A. P. B.; SIKAR, E. — Relatório Técnico Final
                   COPPE/UFRJ-Eletrobrás, Rio de Janeiro, Agosto de 2004
                 </li>
-
                 <li>
                   Gross greenhouse gas emissions from Brazilian hydro reservoirs
                   <br />
                   SANTOS, M. A.; SIKAR, B. M.; ROSA, L. P.; SIKAR, E.; SANTOS, E. O. — In:
                   Greenhouse Gas Emission - Fluxes and Processes, Springer, Berlin, 2005
                 </li>
-
                 <li>
                   The importance of floating peat to methane fluxes from flooded peatlands
                   <br />
                   SCOTT, K. J.; KELLY, C. A.; RUDD, J. W. M. — Biogeochemistry, 47: 187-202, 1999
                 </li>
-
                 <li>
                   Contribution of tropical ecosystems to the global budgets of trace gases,
                   especially CH4, H2, CO, and N2O
@@ -1634,14 +1725,12 @@ const FurnasPage: React.FC = () => {
                   SEILER, W.; CONRAD, R. — In: R.E. Dickenson (ed.), The Geophysiology of Amazonia,
                   Vegetation and Climate Interactions. John-Wiley, NY, 1987
                 </li>
-
                 <li>
                   Gas release from a reservoir in the filling stage
                   <br />
                   SIKAR, B. M.; SIKAR, E.; ROSA, L. P.; SANTOS, M. A.; FILIPPO, R.; CIMBLERIS, A. C.
                   P. — Verh. Internat. Verein. Limnol., 27:1-5, 2000
                 </li>
-
                 <li>
                   Greenhouse gases and initial findings on the carbon circulation in two reservoirs
                   and their watersheds
@@ -1650,20 +1739,17 @@ const FurnasPage: React.FC = () => {
                   E. O.; BENTES JR, A. P.; ROSA, L. P. — Verhandlungen der Internationalen
                   Vereinigung für Theoretische und Angewandte Limnologie, 29, 573-576, 2005
                 </li>
-
                 <li>
                   Protein content and protein synthesis rates of planktonic marine bacteria
                   <br />
                   SIMON, M.; AZAM, F. — Mar. Ecol. Prog. Ser., 51:201-213, 1989
                 </li>
-
                 <li>
                   A simple, economical method for measuring bacterial protein synthesis rates in
                   seawater using 3H-leucine
                   <br />
                   SMITH, D. C.; AZAM, F. — Marine Microbial Food Webs, 6, 2:107-114, 1992
                 </li>
-
                 <li>
                   A carbon budget of a small humic lake: an example of the importance of lakes for
                   organic matter cycling in boreal catchments
@@ -1671,7 +1757,6 @@ const FurnasPage: React.FC = () => {
                   SOBEK, S.; SODERBACK, B.; KARLSSON, S.; ANDERSSON, E.; BRUNBERG, A. K. — Ambio, 35
                   (8), 469-475, 2006
                 </li>
-
                 <li>
                   Reservoir surface as source of greenhouse gases to the atmosphere: a global
                   estimate
@@ -1679,54 +1764,46 @@ const FurnasPage: React.FC = () => {
                   ST-LOUIS, V.; KELLY, C. A.; DUCHEMIN, E.; RUDD, J. W.; ROSENBERG, D. M. —
                   Bioscience, 50, 9:766-775, 2000
                 </li>
-
                 <li>
                   Atmospheric methane - tropical sources
                   <br />
                   STREET-PERROTT, F. A. — Nature, 355:23-24, 1992
                 </li>
-
                 <li>
                   Do hydroelectric reservoirs emit greenhouse gases?
                   <br />
                   TREMBLAY, A.; LAMBERT, M.; GAGNON, L. — Environmental Management, 33, Supplement
                   1, S509-S517, 2004
                 </li>
-
                 <li>
                   Greenhouse emissions: fluxes and processes
                   <br />
                   TREMBLAY, A.; VARFALVY, L.; ROEHM, C.; GARNEAU, M. — Environmental Sciences
                   Series, 732 pp. Berlin: Springer-Verlag
                 </li>
-
                 <li>
                   The issue of greenhouse gases from hydroelectric reservoirs: from boreal to
                   tropical regions
                   <br />
                   TREMBLAY, A.; VARFALVY, L.; ROEHM, C.; GARNEAU, M.
                 </li>
-
                 <li>
                   Integration of research and management in optimizing multiple uses of reservoirs:
                   the experience in South America and Brazilian case studies
                   <br />
                   TUNDISI, J. G.; MATSUMURA, T. — Hydrobiologia, 500: 231-242, 2003
                 </li>
-
                 <li>
                   Theoretical reservoir ecology and its applications
                   <br />
                   TUNDISI, J. G.; STRASKRABA, M. (eds.) — International Institute of Ecology,
                   Backhuys, The Netherlands, 1999
                 </li>
-
                 <li>
                   Methane oxidation: isotopic enrichment factors in freshwater boreal reservoirs
                   <br />
                   VENKITESWARAN, J. J.; SCHIFF, S. L. — Applied Geochemistry, 20, 683-690, 2005
                 </li>
-
                 <li>
                   Gas exchange in ecosystems: framework and case studies
                   <br />
@@ -1734,7 +1811,6 @@ const FurnasPage: React.FC = () => {
                   YOSHINARI, T.; YOSHIOKA, T.; VAN VUUREN, M. M. I. — Jpn. J. Limnol., 52,
                   4:263-281, 1991
                 </li>
-
                 <li>
                   Methane bubbling from Siberian thaw lakes as a positive feedback to climate
                   warming
@@ -1742,7 +1818,6 @@ const FurnasPage: React.FC = () => {
                   WALTER, K. M.; ZIMOV, S. A.; CHANTON, J. P.; VERBYLA, D.; CHAPIN, F. S. — Nature
                   Publishing Group, 443, 7, 2006
                 </li>
-
                 <li>
                   Limnological analyses
                   <br />
@@ -1753,6 +1828,7 @@ const FurnasPage: React.FC = () => {
           </Block>
         </>
       )}
+
       {active === "publicacoes" && (
         <PageContainer>
           <Block>
@@ -1960,6 +2036,9 @@ const FurnasPage: React.FC = () => {
           </Block>
         </PageContainer>
       )}
+
+      {/* ================= NOVA SEÇÃO DE DOWNLOAD ================= */}
+      {active === "download" && <DownloadContent />}
     </PageContainer>
   );
 };

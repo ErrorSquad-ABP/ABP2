@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { Download } from "lucide-react";
 
 // ================= Styled Components =================
 const PageContainer = styled.div`
@@ -13,8 +14,8 @@ const PageContainer = styled.div`
 
   @media (max-width: 768px) {
     font-size: 14px;
-    padding-bottom: 60px; /* espaço extra para navegação ou rolagem */
-    overflow-x: hidden; /* evita scroll lateral */
+    padding-bottom: 60px;
+    overflow-x: hidden;
   }
 `;
 
@@ -25,7 +26,7 @@ const HeaderWrapper = styled.div`
   align-items: center;
   background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding-bottom: 0; /* sem padding inferior, a separação será feita pela linha */
+  padding-bottom: 0;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -40,7 +41,7 @@ const HeaderContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1.5rem 0 0.5rem 0; /* topo maior, bottom menor para aproximar da linha */
+  padding: 1.5rem 0 0.5rem 0;
   box-sizing: border-box;
 
   @media (max-width: 768px) {
@@ -61,18 +62,18 @@ const HeaderText = styled.h1`
 `;
 
 const HeaderSeparator = styled.div`
-  width: 100%; /* centralizada */
-  height: 3px; /* largura mais fina, visual moderno */
-  background-color: rgba(255, 255, 255, 0.7); /* branco translúcido, destaca sobre o gradiente */
-  margin: 0.5rem 0; /* separação entre headerText e menu */
-  border-radius: 2px; /* cantos levemente arredondados para ficar mais moderno */
+  width: 100%;
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.7);
+  margin: 0.5rem 0;
+  border-radius: 2px;
 `;
 
 const Separator = styled.div`
   width: 60%;
   height: 2px;
   background-color: rgba(255, 255, 255, 0.5);
-  margin: 0.5rem 0 2rem 0; /* espaço inferior maior antes do corpo */
+  margin: 0.5rem 0 2rem 0;
 `;
 
 const Menu = styled.div`
@@ -84,6 +85,7 @@ const Menu = styled.div`
   @media (max-width: 768px) {
     gap: 15px;
     padding: 0.5rem;
+    flex-wrap: wrap;
   }
 `;
 
@@ -121,7 +123,7 @@ const MenuItem = styled.span<{ active?: boolean }>`
 const TwoColumnContainer = styled.div`
   display: flex;
   gap: 20px;
-  flex-wrap: wrap; /* permite que as colunas se ajustem em telas menores */
+  flex-wrap: wrap;
   justify-content: center;
 
   @media (max-width: 768px) {
@@ -131,10 +133,10 @@ const TwoColumnContainer = styled.div`
 `;
 
 const Column = styled.div`
-  flex: 1 1 400px; /* largura mínima de 400px, flexível se houver mais espaço */
+  flex: 1 1 400px;
   display: flex;
   flex-direction: column;
-  gap: 20px; /* espaço entre blocos dentro da coluna */
+  gap: 20px;
 
   @media (max-width: 900px) {
     flex: 1 1 100%;
@@ -150,11 +152,10 @@ const Block = styled.div`
   background-color: #fff;
   margin: 20px;
   min-height: 400px;
-  max-height: 90vh; /* limita bem em telas menores */
-  overflow: hidden; /* mantém aparência limpa */
+  max-height: 90vh;
+  overflow: hidden;
   position: relative;
 
-  /* garante que o conteúdo role corretamente dentro */
   > div:last-child {
     flex: 1;
     overflow-y: auto;
@@ -245,6 +246,70 @@ const Footer = styled.footer`
   }
 `;
 
+// ================= Novos componentes para Download =================
+const DownloadSection = styled.div`
+  padding: 20px;
+`;
+
+const DownloadGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+`;
+
+const DownloadCard = styled.div`
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+`;
+
+const DownloadCardTitle = styled.h3`
+  color: #1f2937;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+`;
+
+const DownloadCardDescription = styled.p`
+  color: #6b7280;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+`;
+
+const DownloadButton = styled.button<{ disabled?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: ${(props) => (props.disabled ? "#9ca3af" : "#2563eb")};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: ${(props) => (props.disabled ? "#9ca3af" : "#1e40af")};
+  }
+`;
+
+const DownloadInfo = styled.div`
+  background: #e8f4fd;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #b3d9ff;
+  margin-bottom: 20px;
+
+  p {
+    margin: 0;
+    color: #1e40af;
+    font-size: 0.9rem;
+  }
+`;
+
 // ================= Conteúdo das páginas =================
 const HomeContent = () => (
   <TwoColumnContainer>
@@ -303,7 +368,7 @@ const HomeContent = () => (
           <div style={{ gap: "7px" }}></div>
           Os dados são formados por coletas realizadas em 79 campanhas com datas e localidades
           (reservatórios) distintos com o objetivo de coletar parâmetros na interface
-          água-sedimento, coluna d’água e interface água-atmosfera. Mais detalhes sobre a base de
+          água-sedimento, coluna d'água e interface água-atmosfera. Mais detalhes sobre a base de
           dados podem ser encontrados em "descrição". Cada instituição participante tinha como
           objetivo estudar uma componente, e por consequência fazer leituras de parâmetros
           relacionados:
@@ -318,7 +383,7 @@ const HomeContent = () => (
             </li>
             <li>
               UFJF: determinação da produção primária, metabolismo bacteriano e concentrações de
-              nutrientes na coluna d’água;
+              nutrientes na coluna d'água;
             </li>
             <li>
               UFRJ/COPPE: estimativa de fluxos de gases de efeito estufa na interface água-atmosfera
@@ -420,18 +485,6 @@ const EquipeContent = () => (
 );
 
 const PublicacoesContent = () => {
-  /*
-  const PublicationLink = styled.a`
-    display: block;
-    color: #222;
-    text-decoration: none;
-    margin-bottom: 8px;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  `;
-*/
   return (
     <TwoColumnContainer>
       <Column>
@@ -1490,9 +1543,168 @@ const DescricaoContent = () => {
   );
 };
 
+// ================= Nova página de Download =================
+const DownloadContent = () => {
+  const [isDownloading, setIsDownloading] = useState<string | null>(null);
+
+  const handleDownload = async (table: string, format: "csv" | "json" | "pdf") => {
+    setIsDownloading(`${table}_${format}`);
+    try {
+      const response = await fetch(
+        `http://localhost:${import.meta.env.VITE_SERVER_PORT || 3001}/api/balcar/download/${table}?format=${format}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            filters: {},
+            columns: ["*"],
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Erro no download");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = `balcar_${table}_${Date.now()}.${format}`;
+
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Erro no download:", error);
+      alert("Erro ao fazer download. Tente novamente.");
+    } finally {
+      setIsDownloading(null);
+    }
+  };
+
+  const tables = [
+    {
+      name: "tbfluxoinpe",
+      title: "Fluxo INPE",
+      description: "Dados de fluxo coletados pelo INPE",
+    },
+    {
+      name: "tbcampanha",
+      title: "Campanhas",
+      description: "Informações sobre as campanhas realizadas",
+    },
+    {
+      name: "tbinstituicao",
+      title: "Instituições",
+      description: "Dados das instituições participantes",
+    },
+    {
+      name: "tbreservatorio",
+      title: "Reservatórios",
+      description: "Informações dos reservatórios estudados",
+    },
+    {
+      name: "tbsitio",
+      title: "Sítios",
+      description: "Dados dos sítios de coleta",
+    },
+    {
+      name: "tbtabelacampo",
+      title: "Tabela Campo",
+      description: "Metadados dos campos das tabelas",
+    },
+  ];
+
+  return (
+    <DownloadSection>
+      <DownloadInfo>
+        <p>
+          <strong>Download de Dados BALCAR</strong>
+          <br />
+          Aqui você pode baixar os dados completos das tabelas do projeto BALCAR nos formatos CSV,
+          JSON e PDF. Selecione a tabela desejada e o formato de exportação.
+        </p>
+      </DownloadInfo>
+
+      <DownloadGrid>
+        {tables.map((table) => (
+          <DownloadCard key={table.name}>
+            <DownloadCardTitle>{table.title}</DownloadCardTitle>
+            <DownloadCardDescription>{table.description}</DownloadCardDescription>
+
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <DownloadButton
+                onClick={() => handleDownload(table.name, "csv")}
+                disabled={isDownloading === `${table.name}_csv`}
+              >
+                <Download size={16} />
+                {isDownloading === `${table.name}_csv` ? "Baixando..." : "CSV"}
+              </DownloadButton>
+
+              <DownloadButton
+                onClick={() => handleDownload(table.name, "json")}
+                disabled={isDownloading === `${table.name}_json`}
+              >
+                <Download size={16} />
+                {isDownloading === `${table.name}_json` ? "Baixando..." : "JSON"}
+              </DownloadButton>
+
+              <DownloadButton
+                onClick={() => handleDownload(table.name, "pdf")}
+                disabled={isDownloading === `${table.name}_pdf`}
+              >
+                <Download size={16} />
+                {isDownloading === `${table.name}_pdf` ? "Baixando..." : "PDF"}
+              </DownloadButton>
+            </div>
+          </DownloadCard>
+        ))}
+      </DownloadGrid>
+
+      <Block style={{ marginTop: "30px" }}>
+        <BlockTitle>Informações sobre os Dados</BlockTitle>
+        <BlockText>
+          <p>
+            <strong>Formato CSV:</strong> Ideal para análise em planilhas (Excel, Google Sheets) e
+            programas estatísticos.
+          </p>
+          <p>
+            <strong>Formato JSON:</strong> Ideal para desenvolvedores e integração com outras
+            aplicações.
+          </p>
+          <p>
+            <strong>Formato PDF:</strong> Ideal para relatórios e documentação.
+          </p>
+          <p>
+            <strong>Nota:</strong> Todos os downloads incluem todos os registros disponíveis na
+            tabela selecionada.
+          </p>
+        </BlockText>
+      </Block>
+    </DownloadSection>
+  );
+};
+
 // ================= Componente principal =================
-const App: React.FC = () => {
-  const [page, setPage] = useState<"home" | "equipe" | "publicacoes" | "descricao">("home");
+const BalcarPage: React.FC = () => {
+  const [page, setPage] = useState<"home" | "equipe" | "publicacoes" | "descricao" | "download">(
+    "home",
+  );
 
   useEffect(() => {
     const ano = document.getElementById("ano");
@@ -1521,7 +1733,6 @@ const App: React.FC = () => {
         <Separator />
 
         <Menu>
-          {/* Menu */}
           <MenuItem active={page === "home"} onClick={() => setPage("home")}>
             Home
           </MenuItem>
@@ -1532,15 +1743,20 @@ const App: React.FC = () => {
             Publicações
           </MenuItem>
           <MenuItem active={page === "descricao"} onClick={() => setPage("descricao")}>
-            Descricao
+            Descrição
+          </MenuItem>
+          <MenuItem active={page === "download"} onClick={() => setPage("download")}>
+            Download de Dados
           </MenuItem>
         </Menu>
       </HeaderWrapper>
+
       {/* Conteúdo */}
       {page === "home" && <HomeContent />}
       {page === "equipe" && <EquipeContent />}
       {page === "publicacoes" && <PublicacoesContent />}
       {page === "descricao" && <DescricaoContent />}
+      {page === "download" && <DownloadContent />}
 
       {/* Footer */}
       <Footer>
@@ -1550,4 +1766,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default BalcarPage;

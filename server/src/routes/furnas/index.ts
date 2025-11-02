@@ -6,6 +6,7 @@ import reservatorio from "./reservatorio.routes";
 import sitio from "./sitio.routes";
 import data from "./data.routes";
 import dataUnion from "./dataUnion.routes";
+import download from "./download.routes";
 
 const router = express.Router();
 
@@ -16,5 +17,6 @@ router.use("/reservatorio", reservatorio);
 router.use("/sitio", sitio);
 router.use("/tables", data);
 router.use("/data", dataUnion);
+router.use("/download", download);
 
 export default router;

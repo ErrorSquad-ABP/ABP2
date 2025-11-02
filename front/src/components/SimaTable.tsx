@@ -1,5 +1,5 @@
 import type { Sima } from "../types/sima";
-import { useState, useMemo, JSX } from "react";
+import { useState, useMemo, JSX, useEffect } from "react";
 import styled from "styled-components";
 import { chunkArray } from "../utils/chunkArray";
 
@@ -16,6 +16,7 @@ interface SimaTableProps<T> {
   pageSize?: number;
   onPageChange?: (page: number) => void;
   onSort?: (field: keyof T, order: "asc" | "desc") => void;
+  onColumnsChange?: (columns: string[]) => void; // Nova prop para notificar colunas selecionadas
 }
 
 const TableWrapper = styled.div`
@@ -124,6 +125,34 @@ const ColumnSelector = styled.div`
   }
 `;
 
+const ColumnActions = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  button {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    background: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+
+    &:hover {
+      background: #e9ecef;
+    }
+  }
+`;
+
+const SelectedColumnsInfo = styled.div`
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 8px;
+  padding: 4px;
+  background: #f3f4f6;
+  border-radius: 4px;
+`;
+
 const SimaTable = ({
   columns,
   data,
@@ -131,6 +160,7 @@ const SimaTable = ({
   pageSize = 10,
   onPageChange,
   onSort,
+  onColumnsChange, // Nova prop
 }: SimaTableProps<Sima>) => {
   const [internalPage, setInternalPage] = useState(0);
   const [sortConfig, setSortConfig] = useState<{ field: keyof Sima; order: "asc" | "desc" } | null>(
@@ -140,6 +170,15 @@ const SimaTable = ({
   const [visibleColumns, setVisibleColumns] = useState(columns.map((c) => c.key));
 
   const page = controlledPage ?? internalPage;
+
+  // Notificar quando as colunas visíveis mudarem
+  useEffect(() => {
+    if (onColumnsChange) {
+      // Converter as chaves das colunas para strings para o download
+      const columnNames = visibleColumns.map((col) => String(col));
+      onColumnsChange(columnNames);
+    }
+  }, [visibleColumns, onColumnsChange]);
 
   const sortedData = useMemo(() => {
     if (!sortConfig) return data;
@@ -178,14 +217,34 @@ const SimaTable = ({
     );
   };
 
+  // Novas funções para gerenciar colunas
+  const selectAllColumns = () => {
+    setVisibleColumns(columns.map((c) => c.key));
+  };
+
+  const deselectAllColumns = () => {
+    setVisibleColumns([]);
+  };
+
+  const resetToDefaultColumns = () => {
+    setVisibleColumns(columns.map((c) => c.key));
+  };
+
   return (
     <TableWrapper>
       <ColumnControlButton onClick={() => setShowColumnSelector((prev) => !prev)}>
-        Organizar Colunas
+        {showColumnSelector ? "Fechar Seletor" : "Organizar Colunas"}({visibleColumns.length}/
+        {columns.length} selecionadas)
       </ColumnControlButton>
 
       {showColumnSelector && (
         <ColumnSelector>
+          <ColumnActions>
+            <button onClick={selectAllColumns}>Selecionar Todas</button>
+            <button onClick={deselectAllColumns}>Limpar Seleção</button>
+            <button onClick={resetToDefaultColumns}>Padrão</button>
+          </ColumnActions>
+
           {columns.map((col) => (
             <label key={String(col.key)}>
               <input
@@ -196,6 +255,12 @@ const SimaTable = ({
               {col.label}
             </label>
           ))}
+
+          <SelectedColumnsInfo>
+            {visibleColumns.length === columns.length
+              ? "Todas as colunas estão selecionadas"
+              : `${visibleColumns.length} de ${columns.length} colunas selecionadas`}
+          </SelectedColumnsInfo>
         </ColumnSelector>
       )}
 
