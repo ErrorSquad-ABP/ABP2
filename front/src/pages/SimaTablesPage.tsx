@@ -324,6 +324,51 @@ function Spinner() {
   );
 }
 
+/* ================= Download Buttons ================= */
+
+const DownloadButtonsContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+`;
+
+const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  background-color: ${(props) => {
+    switch (props.variant) {
+      case "csv":
+        return "#28a745";
+      case "json":
+        return "#17a2b8";
+      case "pdf":
+        return "#dc3545";
+      default:
+        return "#6c757d";
+    }
+  }};
+
+  color: white;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
 /* ================= Component ================= */
 
 export default function SimaTablesPage(): JSX.Element {
@@ -361,7 +406,7 @@ export default function SimaTablesPage(): JSX.Element {
 
   const [view, setView] = useState<"chart" | "map" | "table">("chart");
   const [loading, setLoading] = useState(false);
-  const [showExportOptions, setShowExportOptions] = useState(false);
+  //const [showExportOptions, setShowExportOptions] = useState(false);
   const [showTableView /*setShowTableView*/] = useState<boolean>(false);
   const [, /*showTable*/ setShowTable] = useState<boolean>(false);
 
@@ -372,6 +417,201 @@ export default function SimaTablesPage(): JSX.Element {
   const [page, setPage] = useState(0);
 
   const MapBrazilAny = MapBrazil as any;
+
+  /* ---------------- Funções de Download ---------------- */
+
+  const handleDownloadCSV = async () => {
+    if (!dataForTablePreview || dataForTablePreview.length === 0) {
+      alert("Gere os dados da tabela primeiro para exportar.");
+      return;
+    }
+
+    try {
+      // Tentar usar endpoint específico do SIMA
+      const params = new URLSearchParams();
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
+      if (selectedStations.length > 0) params.append("stations", selectedStations.join(","));
+      if (selectedColumns.length > 0) params.append("columns", selectedColumns.join(","));
+
+      const response = await fetch(`${API_BASE}/sima/${table}/download/csv?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          Accept: "text/csv",
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${table}_${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // Fallback para download local dos dados
+        downloadCSV();
+      }
+    } catch (error) {
+      console.error("Erro ao exportar CSV:", error);
+      alert("Erro ao exportar CSV. Usando método alternativo...");
+      downloadCSV(); // Fallback
+    }
+  };
+
+  const handleDownloadJSON = async () => {
+    if (!dataForTablePreview || dataForTablePreview.length === 0) {
+      alert("Gere os dados da tabela primeiro para exportar.");
+      return;
+    }
+
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
+      if (selectedStations.length > 0) params.append("stations", selectedStations.join(","));
+      if (selectedColumns.length > 0) params.append("columns", selectedColumns.join(","));
+
+      const response = await fetch(`${API_BASE}/sima/${table}/download/json?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${table}_${new Date().toISOString().split("T")[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // Fallback para dados atuais
+        const jsonData = {
+          table: table,
+          exportedAt: new Date().toISOString(),
+          totalRecords: dataForTablePreview.length,
+          stations: selectedStations,
+          period: { startDate, endDate },
+          data: dataForTablePreview,
+        };
+
+        const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${table}_${new Date().toISOString().split("T")[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("Erro ao exportar JSON:", error);
+      alert("Erro ao exportar JSON. Verifique o console para mais detalhes.");
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!dataForTablePreview || dataForTablePreview.length === 0) {
+      alert("Gere os dados da tabela primeiro para exportar.");
+      return;
+    }
+
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
+
+      const response = await fetch(`${API_BASE}/sima/${table}/download/pdf?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          Accept: "application/pdf",
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${table}_${new Date().toISOString().split("T")[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // Fallback para o método atual
+        exportPDF();
+      }
+    } catch (error) {
+      console.error("Erro ao exportar PDF:", error);
+      alert("Erro ao exportar PDF. Usando método alternativo...");
+      exportPDF(); // Fallback
+    }
+  };
+
+  // Funções de fallback existentes
+  function downloadCSV() {
+    if (!dataForTablePreview || !dataForTablePreview.length) {
+      alert("Gere o dado de tabela para ter dados para exportar.");
+      return;
+    }
+    const headers = Object.keys(dataForTablePreview[0] || {});
+    const rows = dataForTablePreview.map((r) =>
+      headers.map((h) => (r[h] === undefined ? "" : `${r[h]}`)),
+    );
+    const csv = [
+      headers.join(","),
+      ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${table || "table"}_export.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportPDF() {
+    if (!chartRef.current) {
+      alert("Gere/abra a tabela para ter conteúdo para exportar.");
+      return;
+    }
+    const html = `
+      <html>
+        <head>
+          <title>Export PDF</title>
+          <style>
+            body { font-family: Arial, Helvetica, sans-serif; padding: 16px; }
+            .wrap { width: 100%; }
+          </style>
+        </head>
+        <body>
+          <h3>Export - ${table}</h3>
+          <div class="wrap">${chartRef.current.innerHTML}</div>
+        </body>
+      </html>
+    `;
+    const w = window.open("", "_blank");
+    if (!w) {
+      alert("Permita popups para exportar PDF.");
+      return;
+    }
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => {
+      w.print();
+    }, 500);
+  }
 
   /* ---------------- fetch stations ---------------- */
 
@@ -1088,39 +1328,30 @@ export default function SimaTablesPage(): JSX.Element {
                 {view === "chart" ? "Ver mapa" : "Ver gráfico"}
               </Button>
 
-              <div style={{ position: "relative" }}>
-                <Button onClick={() => setShowExportOptions((s) => !s)}>Exportar ▾</Button>
-                {showExportOptions && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      marginTop: 8,
-                      background: "#fff",
-                      boxShadow: "0 6px 18px rgba(2,6,23,0.12)",
-                      borderRadius: 8,
-                      padding: 8,
-                    }}
-                  >
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <button
-                        onClick={() => {
-                          /* CSV */
-                        }}
-                      >
-                        CSV
-                      </button>
-                      <button
-                        onClick={() => {
-                          /* PDF */
-                        }}
-                      >
-                        PDF
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Botões de Download Diretos */}
+              <DownloadButtonsContainer>
+                <DownloadButton
+                  variant="csv"
+                  onClick={handleDownloadCSV}
+                  disabled={!dataForTablePreview || dataForTablePreview.length === 0 || loading}
+                >
+                  📥 CSV
+                </DownloadButton>
+                <DownloadButton
+                  variant="json"
+                  onClick={handleDownloadJSON}
+                  disabled={!dataForTablePreview || dataForTablePreview.length === 0 || loading}
+                >
+                  📥 JSON
+                </DownloadButton>
+                <DownloadButton
+                  variant="pdf"
+                  onClick={handleDownloadPDF}
+                  disabled={!dataForTablePreview || dataForTablePreview.length === 0 || loading}
+                >
+                  📥 PDF
+                </DownloadButton>
+              </DownloadButtonsContainer>
             </div>
           </ControlsTopRight>
 

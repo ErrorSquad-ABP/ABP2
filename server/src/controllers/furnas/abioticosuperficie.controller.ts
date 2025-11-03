@@ -10,11 +10,10 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
     const limit = Number(req.query.limit) || PAGE_SIZE;
     const offset = (page - 1) * limit;
 
-    // consulta com joins
     const result = await furnasPool.query(
       `
       SELECT 
-        a.idabioticocoluna,
+        a.idabioticosuperficie,
         a.datamedida,
         a.horamedida,
         a.profundidade,
@@ -29,24 +28,20 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
         c.nome AS sitio_nome,
         c.lat AS sitio_lat,
         c.lng AS sitio_lng
-      FROM tbabioticocoluna AS a
-      LEFT JOIN tbcampanha AS b
-        ON a.idcampanha = b.idcampanha
-      LEFT JOIN tbsitio AS c
-        ON a.idsitio = c.idsitio
+      FROM tbabioticosuperficie AS a
+      LEFT JOIN tbcampanha AS b ON a.idcampanha = b.idcampanha
+      LEFT JOIN tbsitio AS c ON a.idsitio = c.idsitio
       ORDER BY a.datamedida DESC, a.horamedida DESC
       LIMIT $1 OFFSET $2
       `,
       [limit, offset],
     );
 
-    // consulta total de registros
-    const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbabioticocoluna");
+    const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbabioticosuperficie");
     const total = Number(countResult.rows[0].count);
 
-    // dados formatados
     const data = result.rows.map((row: any) => ({
-      idabioticocoluna: row.idabioticocoluna,
+      idabioticosuperficie: row.idabioticosuperficie,
       campanha: row.idcampanha
         ? {
             idcampanha: row.idcampanha,
@@ -80,7 +75,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
       data,
     });
   } catch (error: any) {
-    logger.error("Erro ao consultar tbabioticocoluna", {
+    logger.error("Erro ao consultar tbabioticosuperficie", {
       message: error.message,
       stack: error.stack,
     });
@@ -94,12 +89,11 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
 
 export const downloadCSV = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { startDate, endDate, columns, filters } = req.query;
+    const { startDate, endDate } = req.query;
 
-    // Construir query base
     let query = `
       SELECT 
-        a.idabioticocoluna,
+        a.idabioticosuperficie,
         a.datamedida,
         a.horamedida,
         a.profundidade,
@@ -109,10 +103,8 @@ export const downloadCSV = async (req: Request, res: Response): Promise<void> =>
         a.delta13c,
         a.delta15n,
         b.nrocampanha,
-        c.nome as sitio_nome,
-        c.lat as sitio_lat,
-        c.lng as sitio_lng
-      FROM tbabioticocoluna AS a
+        c.nome as sitio_nome
+      FROM tbabioticosuperficie AS a
       LEFT JOIN tbcampanha AS b ON a.idcampanha = b.idcampanha
       LEFT JOIN tbsitio AS c ON a.idsitio = c.idsitio
       WHERE 1=1
@@ -121,7 +113,6 @@ export const downloadCSV = async (req: Request, res: Response): Promise<void> =>
     const params: any[] = [];
     let paramCount = 0;
 
-    // Aplicar filtros de data
     if (startDate) {
       paramCount++;
       query += ` AND a.datamedida >= $${paramCount}`;
@@ -134,12 +125,10 @@ export const downloadCSV = async (req: Request, res: Response): Promise<void> =>
       params.push(endDate);
     }
 
-    // Ordenação
     query += " ORDER BY a.datamedida DESC, a.horamedida DESC";
 
     const result = await furnasPool.query(query, params);
 
-    // Converter para CSV
     const headers = Object.keys(result.rows[0] || {}).join(",");
     const csvRows = result.rows.map((row) =>
       Object.values(row)
@@ -152,11 +141,11 @@ export const downloadCSV = async (req: Request, res: Response): Promise<void> =>
     res.setHeader("Content-Type", "text/csv");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="abioticocoluna_${new Date().toISOString().split("T")[0]}.csv"`,
+      `attachment; filename="abioticosuperficie_${new Date().toISOString().split("T")[0]}.csv"`,
     );
     res.status(200).send(csvContent);
   } catch (error: any) {
-    logger.error("Erro ao exportar CSV tbabioticocoluna", {
+    logger.error("Erro ao exportar CSV tbabioticosuperficie", {
       message: error.message,
       stack: error.stack,
     });
@@ -174,7 +163,7 @@ export const downloadJSON = async (req: Request, res: Response): Promise<void> =
 
     let query = `
       SELECT 
-        a.idabioticocoluna,
+        a.idabioticosuperficie,
         a.datamedida,
         a.horamedida,
         a.profundidade,
@@ -184,10 +173,8 @@ export const downloadJSON = async (req: Request, res: Response): Promise<void> =
         a.delta13c,
         a.delta15n,
         b.nrocampanha,
-        c.nome as sitio_nome,
-        c.lat as sitio_lat,
-        c.lng as sitio_lng
-      FROM tbabioticocoluna AS a
+        c.nome as sitio_nome
+      FROM tbabioticosuperficie AS a
       LEFT JOIN tbcampanha AS b ON a.idcampanha = b.idcampanha
       LEFT JOIN tbsitio AS c ON a.idsitio = c.idsitio
       WHERE 1=1
@@ -215,7 +202,7 @@ export const downloadJSON = async (req: Request, res: Response): Promise<void> =
     res.setHeader("Content-Type", "application/json");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="abioticocoluna_${new Date().toISOString().split("T")[0]}.json"`,
+      `attachment; filename="abioticosuperficie_${new Date().toISOString().split("T")[0]}.json"`,
     );
     res.status(200).json({
       success: true,
@@ -223,11 +210,11 @@ export const downloadJSON = async (req: Request, res: Response): Promise<void> =
       metadata: {
         exportedAt: new Date().toISOString(),
         totalRecords: result.rows.length,
-        table: "tbabioticocoluna",
+        table: "tbabioticosuperficie",
       },
     });
   } catch (error: any) {
-    logger.error("Erro ao exportar JSON tbabioticocoluna", {
+    logger.error("Erro ao exportar JSON tbabioticosuperficie", {
       message: error.message,
       stack: error.stack,
     });
@@ -241,12 +228,11 @@ export const downloadJSON = async (req: Request, res: Response): Promise<void> =
 
 export const downloadPDF = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Implementação básica de PDF - você pode usar bibliotecas como pdfkit ou puppeteer
     const { startDate, endDate } = req.query;
 
     let query = `
       SELECT 
-        a.idabioticocoluna,
+        a.idabioticosuperficie,
         a.datamedida,
         a.horamedida,
         a.profundidade,
@@ -257,7 +243,7 @@ export const downloadPDF = async (req: Request, res: Response): Promise<void> =>
         a.delta15n,
         b.nrocampanha,
         c.nome as sitio_nome
-      FROM tbabioticocoluna AS a
+      FROM tbabioticosuperficie AS a
       LEFT JOIN tbcampanha AS b ON a.idcampanha = b.idcampanha
       LEFT JOIN tbsitio AS c ON a.idsitio = c.idsitio
       WHERE 1=1
@@ -278,13 +264,12 @@ export const downloadPDF = async (req: Request, res: Response): Promise<void> =>
       params.push(endDate);
     }
 
-    query += " ORDER BY a.datamedida DESC, a.horamedida DESC LIMIT 1000"; // Limitar para PDF
+    query += " ORDER BY a.datamedida DESC, a.horamedida DESC LIMIT 1000";
 
     const result = await furnasPool.query(query, params);
 
-    // PDF simples em texto - para produção use uma biblioteca dedicada
     const pdfContent = `
-      RELATÓRIO - Dados Abióticos Coluna
+      RELATÓRIO - Dados Abióticos Superfície
       Data de exportação: ${new Date().toLocaleString("pt-BR")}
       Período: ${startDate || "Início"} à ${endDate || "Fim"}
       Total de registros: ${result.rows.length}
@@ -292,7 +277,7 @@ export const downloadPDF = async (req: Request, res: Response): Promise<void> =>
       ${result.rows
         .map(
           (row) =>
-            `ID: ${row.idabioticocoluna} | Data: ${row.datamedida} | Profundidade: ${row.profundidade} | DIC: ${row.dic}`,
+            `ID: ${row.idabioticosuperficie} | Data: ${row.datamedida} | Profundidade: ${row.profundidade} | DIC: ${row.dic}`,
         )
         .join("\n")}
     `;
@@ -300,11 +285,11 @@ export const downloadPDF = async (req: Request, res: Response): Promise<void> =>
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="abioticocoluna_${new Date().toISOString().split("T")[0]}.pdf"`,
+      `attachment; filename="abioticosuperficie_${new Date().toISOString().split("T")[0]}.pdf"`,
     );
     res.status(200).send(pdfContent);
   } catch (error: any) {
-    logger.error("Erro ao exportar PDF tbabioticocoluna", {
+    logger.error("Erro ao exportar PDF tbabioticosuperficie", {
       message: error.message,
       stack: error.stack,
     });
