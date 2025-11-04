@@ -37,13 +37,36 @@ const SERIES_COLORS: string[] = [
   "#7C3AED",
 ];
 const INSTITUTION_FILL_COLORS: string[] = [
-  "#ffd6d6",
-  "#fff0d6",
-  "#d6ffe8",
-  "#dff4ff",
-  "#f0e6ff",
-  "#fff8d6",
+  "#eaf8ff",
+  "#eef6ff",
+  "#eaf6f9",
+  "#eef8ff",
+  "#f0f6ff",
+  "#f7fbff",
 ];
+
+// helper para clarear hex (usado se necessário)
+function lightenHex(hex: string, amount = 0.04): string {
+  try {
+    if (!hex || typeof hex !== "string") return String(hex);
+    let h = hex.replace("#", "").trim();
+    // suporta formato curto (#abc)
+    if (h.length === 3) {
+      h = h
+        .split("")
+        .map((c) => c + c)
+        .join("");
+    }
+    if (h.length !== 6) return hex;
+    const num = parseInt(h, 16);
+    const r = Math.min(255, Math.floor(((num >> 16) & 0xff) * (1 + amount)));
+    const g = Math.min(255, Math.floor(((num >> 8) & 0xff) * (1 + amount)));
+    const b = Math.min(255, Math.floor(((num >> 0) & 0xff) * (1 + amount)));
+    return `rgb(${r}, ${g}, ${b})`;
+  } catch {
+    return hex;
+  }
+}
 
 function monthsBetweenDatesISO(startISO: string, endISO: string) {
   const start = new Date(startISO + "T00:00:00");
@@ -80,12 +103,19 @@ function makeMockMeasurementsForMonths(months: string[]) {
 
 /* ================= Styled (adaptado) ================= */
 
+const PRIMARY_BLUE = "#0b5fff"; // botão principal
+const PRIMARY_BLUE_HOVER = "#2a7bff"; // hover
+const MUTED_BLUE = "#e8f1ff"; // fundo leve de destaque
+const TEXT_DARK = "#0b2740";
+const SURFACE = "#ffffff";
+const BORDER = "#e6eefb";
+
 const Page = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #f6fbff 0%, #eef6ff 100%);
-  color: ${({ theme }) => theme.colors.text.default};
+  color: ${TEXT_DARK};
   font-family: "Helvetica Neue", Arial, sans-serif;
 `;
 
@@ -139,8 +169,33 @@ const Select = styled.select`
   background: white;
 `;
 
+/* Column list item (checkbox row) */
+const ColumnItem = styled.label`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    transform 0.12s ease;
+
+  &:hover {
+    background: rgba(11, 95, 255, 0.04);
+    transform: translateY(-1px);
+  }
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: ${PRIMARY_BLUE}; /* modern browsers */
+  }
+`;
+
+/* ColumnsBox (list container) */
 const ColumnsBox = styled.div`
-  background: #fff;
+  background: ${SURFACE};
   padding: 14px;
   border-radius: 12px;
   box-shadow: 0 8px 28px rgba(6, 58, 128, 0.04);
@@ -149,14 +204,6 @@ const ColumnsBox = styled.div`
   gap: 8px;
   overflow: auto;
   flex: 1 1 auto;
-`;
-
-const ColumnItem = styled.label`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 8px;
-  border-radius: 8px;
 `;
 
 const RightPanel = styled.div`
@@ -175,14 +222,37 @@ const ControlsTopRight = styled.div`
 const Button = styled.button<{ $primary?: boolean }>`
   padding: 10px 14px;
   border-radius: 10px;
-  border: none;
+  border: ${(p) => (p.$primary ? "none" : `1px solid ${BORDER}`)};
   cursor: pointer;
   font-weight: 700;
-  background: ${(p) => (p.$primary ? p.theme.colors.primary : "rgba(2,6,23,0.06)")};
-  color: ${(p) => (p.$primary ? "#fff" : "#04203a")};
-  margin-rigth: ${(p) => (p.$primary ? "12" : "0")};
-`;
+  background: ${(p) => (p.$primary ? PRIMARY_BLUE : SURFACE)};
+  color: ${(p) => (p.$primary ? "#fff" : TEXT_DARK)};
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: ${(p) => (p.$primary ? "0 6px 18px rgba(11,95,255,0.12)" : "none")};
+  transition:
+    transform 0.12s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease;
+  border-radius: 8px;
 
+  &:hover {
+    transform: translateY(-2px);
+    background: ${(p) => (p.$primary ? PRIMARY_BLUE_HOVER : MUTED_BLUE)};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  @media (max-width: 520px) {
+    width: 100%;
+  }
+`;
 const Panel = styled.div`
   background: #fff;
   padding: 20px;
@@ -268,27 +338,42 @@ const ZoomControls = styled.div`
     gap: 8px;
   }
 `;
-
 const TablePreview = styled.div`
   margin-top: 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: auto;
-  border: 1px solid #e6eefb;
-  background: #fff;
+  border: 1px solid ${BORDER};
+  background: ${SURFACE};
+  box-shadow: 0 8px 30px rgba(6, 58, 128, 0.04);
 `;
 
+/* Table element — clean blue headers */
 const TableElement = styled.table`
   width: 100%;
   border-collapse: collapse;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
   td,
   th {
-    padding: 8px;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 10px 12px;
+    border-bottom: 1px solid ${BORDER};
     text-align: left;
+    font-size: 14px;
+    color: ${TEXT_DARK};
   }
   thead th {
-    background: #f8fafc;
+    background: linear-gradient(180deg, ${PRIMARY_BLUE} 0%, ${PRIMARY_BLUE_HOVER} 100%);
+    color: #fff;
     font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    font-size: 13px;
+  }
+  tbody tr:hover {
+    background: ${MUTED_BLUE};
+  }
+  tbody td {
+    background: ${SURFACE};
   }
 `;
 
@@ -331,42 +416,47 @@ const DownloadButtonsContainer = styled.div`
   gap: 10px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  align-items: center;
 `;
 
 const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
-  padding: 8px 16px;
+  padding: 8px 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
+  font-weight: 700;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 86px;
+  justify-content: center;
 
-  background-color: ${(props) => {
-    switch (props.variant) {
-      case "csv":
-        return "#28a745";
-      case "json":
-        return "#17a2b8";
-      case "pdf":
-        return "#dc3545";
-      default:
-        return "#6c757d";
-    }
-  }};
-
-  color: white;
+  background: ${SURFACE};
+  color: ${TEXT_DARK};
+  border: 1px solid ${BORDER};
+  box-shadow: 0 6px 20px rgba(11, 95, 255, 0.06);
 
   &:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    background: ${MUTED_BLUE};
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
   }
+
+  /* accent bar by variant (all blue palette, subtle) */
+  ${(p) =>
+    p.variant === "csv"
+      ? `border-left: 4px solid ${PRIMARY_BLUE};`
+      : p.variant === "json"
+        ? `border-left: 4px solid ${PRIMARY_BLUE_HOVER};`
+        : `border-left: 4px solid ${lightenHex(PRIMARY_BLUE, -0.05)};`}
 `;
 
 /* ================= Component ================= */
@@ -406,7 +496,6 @@ export default function SimaTablesPage(): JSX.Element {
 
   const [view, setView] = useState<"chart" | "map" | "table">("chart");
   const [loading, setLoading] = useState(false);
-  //const [showExportOptions, setShowExportOptions] = useState(false);
   const [showTableView /*setShowTableView*/] = useState<boolean>(false);
   const [, /*showTable*/ setShowTable] = useState<boolean>(false);
 
@@ -1335,21 +1424,21 @@ export default function SimaTablesPage(): JSX.Element {
                   onClick={handleDownloadCSV}
                   disabled={!dataForTablePreview || dataForTablePreview.length === 0 || loading}
                 >
-                  📥 CSV
+                  CSV
                 </DownloadButton>
                 <DownloadButton
                   variant="json"
                   onClick={handleDownloadJSON}
                   disabled={!dataForTablePreview || dataForTablePreview.length === 0 || loading}
                 >
-                  📥 JSON
+                  JSON
                 </DownloadButton>
                 <DownloadButton
                   variant="pdf"
                   onClick={handleDownloadPDF}
                   disabled={!dataForTablePreview || dataForTablePreview.length === 0 || loading}
                 >
-                  📥 PDF
+                  PDF
                 </DownloadButton>
               </DownloadButtonsContainer>
             </div>

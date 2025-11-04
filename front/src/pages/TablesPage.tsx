@@ -371,7 +371,10 @@ export default function TablesPage(): JSX.Element {
 
   // columnsFromMetadata keyed by API name
   const [columnsFromMetadata, setColumnsFromMetadata] = useState<any>({});
-  const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<string, any> | null>(null);
+  const [responsibleFromMetadata, setResponsibleFromMetadata] = useState<Record<
+    string,
+    any
+  > | null>(null);
 
   // tablesOptions: array of { api: 'tb...', label: 'Abióticos coluna' }
   const [tablesOptions, setTablesOptions] = useState<Array<{ api: string; label: string }>>([]);
@@ -560,19 +563,16 @@ export default function TablesPage(): JSX.Element {
   /* ================= metadata load ================= */
 
   // Insira no início do componente TablesPage, junto com os outros useState/useEffect
-useEffect(() => {
-  if (selectedReservatorios.length > 0) {
-    fetchAvailableDatesForSelectedReservatorios(selectedReservatorios);
-  } else {
-    setAvailableDates([]);
-    setStartDate("");
-    setEndDate("");
-  }
-}, [selectedReservatorios]);
+  useEffect(() => {
+    if (selectedReservatorios.length > 0) {
+      fetchAvailableDatesForSelectedReservatorios(selectedReservatorios);
+    } else {
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+    }
+  }, [selectedReservatorios]);
 
-
-
-  
   useEffect(() => {
     async function load() {
       try {
@@ -632,7 +632,11 @@ useEffect(() => {
 
       const fetches: Promise<Campanha[]>[] = [];
 
-      if (responsibleVal && typeof responsibleVal === "string" && responsibleVal.includes("Furnas")) {
+      if (
+        responsibleVal &&
+        typeof responsibleVal === "string" &&
+        responsibleVal.includes("Furnas")
+      ) {
         fetches.push(
           axios
             .get(`${API_BASE}/tables/furnas/tbcampanha`)
@@ -640,11 +644,13 @@ useEffect(() => {
         );
       }
 
-      if (responsibleVal && typeof responsibleVal === "string" && responsibleVal.includes("Balcar")) {
+      if (
+        responsibleVal &&
+        typeof responsibleVal === "string" &&
+        responsibleVal.includes("Balcar")
+      ) {
         fetches.push(
-          axios
-            .get(`${API_BASE}/balcar/campanha`)
-            .then((res) => res.data.data as Campanha[]),
+          axios.get(`${API_BASE}/balcar/campanha`).then((res) => res.data.data as Campanha[]),
         );
       }
 
@@ -721,85 +727,81 @@ useEffect(() => {
   }
 
   /* ---------------- helper: resolveApiTableName (defensive) ---------------- */
-function resolveApiTableName(tableName: string) {
-  // remove espaços, acentos e transforma em lowercase
-  return tableName
-    .normalize("NFD") // separa acentos
-    .replace(/[\u0300-\u036f]/g, "") // remove acentos
-    .replace(/\s+/g, "") // remove espaços
-    .toLowerCase()
-    .replace(/^abiotico(s)?coluna$/, "tbabioticocoluna"); // exemplo específico se quiser mapear nomes
-}
+  function resolveApiTableName(tableName: string) {
+    // remove espaços, acentos e transforma em lowercase
+    return tableName
+      .normalize("NFD") // separa acentos
+      .replace(/[\u0300-\u036f]/g, "") // remove acentos
+      .replace(/\s+/g, "") // remove espaços
+      .toLowerCase()
+      .replace(/^abiotico(s)?coluna$/, "tbabioticocoluna"); // exemplo específico se quiser mapear nomes
+  }
 
+  // ---------- add inside component (TablesPage), after resolveApiTableName ----------
+  function getProviderForApi(apiName?: string): string | null {
+    if (!apiName) return null;
+    const key = String(apiName);
 
-// ---------- add inside component (TablesPage), after resolveApiTableName ----------
-function getProviderForApi(apiName?: string): string | null {
-  if (!apiName) return null;
-  const key = String(apiName);
-
-  // 1) check responsibleFromMetadata (fast path)
-  try {
-    if (responsibleFromMetadata && typeof responsibleFromMetadata === "object") {
-      const resp = responsibleFromMetadata[key] ?? responsibleFromMetadata[key.toLowerCase()];
-      if (resp) {
-        const r = String(resp).toLowerCase();
-        if (r.includes("furnas")) return "furnas";
-        if (r.includes("balcar")) return "balcar";
-        if (r.includes("sima")) return "sima";
+    // 1) check responsibleFromMetadata (fast path)
+    try {
+      if (responsibleFromMetadata && typeof responsibleFromMetadata === "object") {
+        const resp = responsibleFromMetadata[key] ?? responsibleFromMetadata[key.toLowerCase()];
+        if (resp) {
+          const r = String(resp).toLowerCase();
+          if (r.includes("furnas")) return "furnas";
+          if (r.includes("balcar")) return "balcar";
+          if (r.includes("sima")) return "sima";
+        }
       }
+    } catch (e) {
+      // ignore
     }
-  } catch (e) {
-    // ignore
-  }
 
-  // 2) check metadata array (if present)
-  try {
-    if (metadata && Array.isArray(metadata)) {
-      const found =
-        metadata.find((m: any) => {
-          if (!m) return false;
-          // match by API name fields used in metadata
-          const candidates = [
-            m.name,
-            m.id,
-            m.tableName,
-            (m as any).apiName,
-            m.title,
-            m.label,
-          ].filter(Boolean).map((c: any) => String(c).toLowerCase());
-          return candidates.includes(key.toLowerCase());
-        }) ||
-        metadata.find((m: any) => {
-          if (!m) return false;
-          const resp = String(m.responsible ?? m.source ?? "").toLowerCase();
-          return resp && resp.includes("furnas") && (m.name === key || String(m.name).toLowerCase().includes(String(key).toLowerCase()));
-        });
+    // 2) check metadata array (if present)
+    try {
+      if (metadata && Array.isArray(metadata)) {
+        const found =
+          metadata.find((m: any) => {
+            if (!m) return false;
+            // match by API name fields used in metadata
+            const candidates = [m.name, m.id, m.tableName, (m as any).apiName, m.title, m.label]
+              .filter(Boolean)
+              .map((c: any) => String(c).toLowerCase());
+            return candidates.includes(key.toLowerCase());
+          }) ||
+          metadata.find((m: any) => {
+            if (!m) return false;
+            const resp = String(m.responsible ?? m.source ?? "").toLowerCase();
+            return (
+              resp &&
+              resp.includes("furnas") &&
+              (m.name === key || String(m.name).toLowerCase().includes(String(key).toLowerCase()))
+            );
+          });
 
-      if (found) {
-        const r = String(found.responsible ?? found.source ?? "").toLowerCase();
-        if (r.includes("furnas")) return "furnas";
-        if (r.includes("balcar")) return "balcar";
-        if (r.includes("sima")) return "sima";
+        if (found) {
+          const r = String(found.responsible ?? found.source ?? "").toLowerCase();
+          if (r.includes("furnas")) return "furnas";
+          if (r.includes("balcar")) return "balcar";
+          if (r.includes("sima")) return "sima";
+        }
       }
+    } catch (e) {
+      // ignore
     }
-  } catch (e) {
-    // ignore
+
+    // 3) last-ditch heuristics: table name prefix/contains
+    try {
+      const n = key.toLowerCase();
+      if (n.startsWith("tb") && n.includes("sima")) return "sima";
+      if (n.startsWith("tb") && n.includes("balcar")) return "balcar";
+      if (n.startsWith("tb")) return "furnas"; // heuristic: most tb* are furnas in your dataset
+    } catch (e) {
+      // ignore
+    }
+
+    return null;
   }
-
-  // 3) last-ditch heuristics: table name prefix/contains
-  try {
-    const n = key.toLowerCase();
-    if (n.startsWith("tb") && n.includes("sima")) return "sima";
-    if (n.startsWith("tb") && n.includes("balcar")) return "balcar";
-    if (n.startsWith("tb")) return "furnas"; // heuristic: most tb* are furnas in your dataset
-  } catch (e) {
-    // ignore
-  }
-
-  return null;
-}
-
-
 
   /* ---------------- UI helpers and actions ---------------- */
 
@@ -811,233 +813,243 @@ function getProviderForApi(apiName?: string): string | null {
     }
   }
 
-// Função para buscar datas disponíveis de acordo com os reservatórios selecionados
-async function fetchAvailableDatesForTableAndReservatorios(
-  selectedReservatorios: (string | number)[],
-  tableApiName: string
-) {
-  if (!selectedReservatorios.length || !tableApiName) {
-    setAvailableDates([]);
-    setStartDate("");
-    setEndDate("");
-    return;
-  }
-
-  // tbcampanha é quem guarda as datas, sempre usar provider "furnas"
-  const endpoint = `${API_BASE}/tables/furnas/tbcampanha`;
-
-  let rows: any[] = [];
-  try {
-    const resp = await fetch(endpoint);
-    if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
-    const json = await resp.json();
-    rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
-  } catch (err) {
-    console.error("[dates] tbcampanha fetch failed:", err);
-    setAvailableDates([]);
-    setStartDate("");
-    setEndDate("");
-    return;
-  }
-
-  // Filtra apenas as datas dos reservatórios selecionados
-  const selectedSet = new Set(selectedReservatorios.map(String));
-  const foundDates = new Set<string>();
-
-  for (const r of rows) {
-    const rid = r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio ?? null;
-    if (rid != null && selectedSet.size && !selectedSet.has(String(rid))) continue;
-
-    const dtRaw = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data ?? null;
-    if (!dtRaw) continue;
-
-    const d = new Date(dtRaw);
-    if (!isNaN(d.getTime())) foundDates.add(isoDate(d));
-    else {
-      const maybe = String(dtRaw).slice(0, 10);
-      if (/^\d{4}-\d{2}-\d{2}$/.test(maybe)) foundDates.add(maybe);
+  // Função para buscar datas disponíveis de acordo com os reservatórios selecionados
+  async function fetchAvailableDatesForTableAndReservatorios(
+    selectedReservatorios: (string | number)[],
+    tableApiName: string,
+  ) {
+    if (!selectedReservatorios.length || !tableApiName) {
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+      return;
     }
-  }
 
-  const arr = Array.from(foundDates).sort(
-    (a, b) => new Date(a).getTime() - new Date(b).getTime()
-  );
+    // tbcampanha é quem guarda as datas, sempre usar provider "furnas"
+    const endpoint = `${API_BASE}/tables/furnas/tbcampanha`;
 
-  setAvailableDates(arr);
-  if (arr.length) {
-    setStartDate(arr[0]);
-    setEndDate(arr[arr.length - 1]);
-  } else {
-    setStartDate("");
-    setEndDate("");
-  }
-}
-
-// Função para buscar colunas da tabela selecionada
-async function fetchColumnsForTable(tableName: string) {
-  setColumnsForTable([]);
-  if (!tableName) return;
-
-  const apiTable = resolveApiTableName(tableName);
-  const provider = getProviderForApi(apiTable);
-  const isFurnas = provider === "furnas";
-
-  const tryUrls: string[] = [];
-
-  if (provider) {
-    tryUrls.push(`${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}`);
-    tryUrls.push(`${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida,idreservatorio`);
-    tryUrls.push(`${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida`);
-    tryUrls.push(`${API_BASE}/${provider}/${encodeURIComponent(apiTable)}`);
-  }
-
-  // Fallbacks genéricos
-  tryUrls.push(`${API_BASE}/tables/${encodeURIComponent(apiTable)}`);
-  tryUrls.push(`${API_BASE}/tables/${encodeURIComponent(apiTable)}?colunas=dataHora,idreservatorio`);
-  tryUrls.push(`${API_BASE}/tables/${encodeURIComponent(apiTable)}?colunas=dataHora`);
-  tryUrls.push(`${API_BASE}/${encodeURIComponent(apiTable)}`);
-
-  for (const url of tryUrls) {
+    let rows: any[] = [];
     try {
-      console.debug("[fetchColumnsForTable] trying url:", url);
-      const res = await fetch(url);
-      if (!res.ok) {
-        console.debug("[fetchColumnsForTable] not ok:", res.status, url);
-        continue;
-      }
-      const j = await res.json();
-      const rows = Array.isArray(j) ? j : j?.data || j?.rows || [];
-      if (rows && rows.length) {
-        const keys = Object.keys(rows[0] || {}).map((k) => {
-          const val = rows[0][k];
-          const type =
-            typeof val === "number"
-              ? "number"
-              : /data|hora|inicio|fim|medida/i.test(k)
-              ? "date"
-              : "string";
-          return { nome: k, label: k, type };
-        });
-        setColumnsForTable(keys);
-        return;
-      }
+      const resp = await fetch(endpoint);
+      if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
+      const json = await resp.json();
+      rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
     } catch (err) {
-      console.warn("[fetchColumnsForTable] attempt error:", err);
-      continue;
+      console.error("[dates] tbcampanha fetch failed:", err);
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+      return;
     }
-  }
 
-  setColumnsForTable([]);
-  console.warn("[fetchColumnsForTable] no columns found for", apiTable);
-}
-
-
-// Função para buscar os dados da tabela selecionada
-async function handleGenerateTableForCurrentSelection() {
-  if (!selectedReservatorios.length) {
-    alert("Selecione ao menos um reservatório.");
-    return;
-  }
-  if (!selectedColumns.length) {
-    alert("Selecione ao menos uma coluna para visualizar/exportar.");
-    return;
-  }
-  if (!startDate || !endDate) {
-    alert("Escolha período.");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const apiTable = resolveApiTableName(table);
-    const provider = getProviderForApi(apiTable); // ex: "furnas"
-    const dataCol = provider === "furnas" ? "dataMedida" : "dataHora";
-
-    const cols = ["idreservatorio", dataCol, ...selectedColumns].filter(Boolean);
-    const colsParam = cols.map(encodeURIComponent).join(",");
-
-    const endpoint = provider
-      ? `${API_BASE}/tables/${provider}/${apiTable}?colunas=${colsParam}`
-      : `${API_BASE}/tables/${apiTable}?colunas=${colsParam}`;
-
-    const resp = await fetch(endpoint);
-    if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
-
-    const json = await resp.json();
-    const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
-
-    const filtered = rows.filter((r: any) => {
-      const rid = r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio ?? null;
-      if (rid == null) return false;
-      const matchesReserv = selectedReservatorios.some((sel) => {
-        const a = Number(sel);
-        const b = Number(rid);
-        return !Number.isNaN(a) && !Number.isNaN(b) ? a === b : String(sel) === String(rid);
-      });
-      if (!matchesReserv) return false;
-
-      const dv = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data ?? null;
-      if (!dv) return false;
-      const d = new Date(dv);
-      if (isNaN(d.getTime())) return false;
-      const day = isoDate(d);
-      return day >= startDate && day <= endDate;
-    });
-
-    setData(filtered);
-    setShowTable(true);
-    setView("chart");
-    setTimeout(() => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
-  } catch (err) {
-    console.error("[generate-table] error fetching/processing data:", err);
-    alert("Erro ao gerar tabela. Veja console para detalhes.");
-  } finally {
-    setLoading(false);
-  }
-}
-
-
-async function fetchAvailableDatesForSelectedReservatorios(reservs: (string | number)[]) {
-  if (!reservs.length) {
-    setAvailableDates([]);
-    setStartDate("");
-    setEndDate("");
-    return;
-  }
-
-  const endpoint = `${API_BASE}/tables/furnas/tbcampanha`; // ✅ garante /furnas/
-  try {
-    const resp = await fetch(endpoint);
-    if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
-    const json = await resp.json();
-    const rows: any[] = Array.isArray(json) ? json : json?.data || json?.rows || [];
-
-    const filteredDates = new Set<string>();
-    const selectedSet = new Set(reservs.map(r => String(r)));
+    // Filtra apenas as datas dos reservatórios selecionados
+    const selectedSet = new Set(selectedReservatorios.map(String));
+    const foundDates = new Set<string>();
 
     for (const r of rows) {
-      const rid = r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio;
-      if (!rid || (!selectedSet.has(String(rid)) && reservs.length !== rows.length)) continue;
+      const rid =
+        r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio ?? null;
+      if (rid != null && selectedSet.size && !selectedSet.has(String(rid))) continue;
 
-      const dtRaw = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data;
+      const dtRaw = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data ?? null;
       if (!dtRaw) continue;
 
       const d = new Date(dtRaw);
-      if (!isNaN(d.getTime())) filteredDates.add(d.toISOString().slice(0, 10));
+      if (!isNaN(d.getTime())) foundDates.add(isoDate(d));
+      else {
+        const maybe = String(dtRaw).slice(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(maybe)) foundDates.add(maybe);
+      }
     }
 
-    const arr = Array.from(filteredDates).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    setAvailableDates(arr);
-    setStartDate(arr[0] ?? "");
-    setEndDate(arr[arr.length - 1] ?? "");
-  } catch (err) {
-    console.error("[dates] tbcampanha fetch failed:", err);
-    setAvailableDates([]);
-    setStartDate("");
-    setEndDate("");
-  }
-}
+    const arr = Array.from(foundDates).sort(
+      (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+    );
 
+    setAvailableDates(arr);
+    if (arr.length) {
+      setStartDate(arr[0]);
+      setEndDate(arr[arr.length - 1]);
+    } else {
+      setStartDate("");
+      setEndDate("");
+    }
+  }
+
+  // Função para buscar colunas da tabela selecionada
+  async function fetchColumnsForTable(tableName: string) {
+    setColumnsForTable([]);
+    if (!tableName) return;
+
+    const apiTable = resolveApiTableName(tableName);
+    const provider = getProviderForApi(apiTable);
+    const isFurnas = provider === "furnas";
+
+    const tryUrls: string[] = [];
+
+    if (provider) {
+      tryUrls.push(`${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}`);
+      tryUrls.push(
+        `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida,idreservatorio`,
+      );
+      tryUrls.push(
+        `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida`,
+      );
+      tryUrls.push(`${API_BASE}/${provider}/${encodeURIComponent(apiTable)}`);
+    }
+
+    // Fallbacks genéricos
+    tryUrls.push(`${API_BASE}/tables/${encodeURIComponent(apiTable)}`);
+    tryUrls.push(
+      `${API_BASE}/tables/${encodeURIComponent(apiTable)}?colunas=dataHora,idreservatorio`,
+    );
+    tryUrls.push(`${API_BASE}/tables/${encodeURIComponent(apiTable)}?colunas=dataHora`);
+    tryUrls.push(`${API_BASE}/${encodeURIComponent(apiTable)}`);
+
+    for (const url of tryUrls) {
+      try {
+        console.debug("[fetchColumnsForTable] trying url:", url);
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.debug("[fetchColumnsForTable] not ok:", res.status, url);
+          continue;
+        }
+        const j = await res.json();
+        const rows = Array.isArray(j) ? j : j?.data || j?.rows || [];
+        if (rows && rows.length) {
+          const keys = Object.keys(rows[0] || {}).map((k) => {
+            const val = rows[0][k];
+            const type =
+              typeof val === "number"
+                ? "number"
+                : /data|hora|inicio|fim|medida/i.test(k)
+                  ? "date"
+                  : "string";
+            return { nome: k, label: k, type };
+          });
+          setColumnsForTable(keys);
+          return;
+        }
+      } catch (err) {
+        console.warn("[fetchColumnsForTable] attempt error:", err);
+        continue;
+      }
+    }
+
+    setColumnsForTable([]);
+    console.warn("[fetchColumnsForTable] no columns found for", apiTable);
+  }
+
+  // Função para buscar os dados da tabela selecionada
+  async function handleGenerateTableForCurrentSelection() {
+    if (!selectedReservatorios.length) {
+      alert("Selecione ao menos um reservatório.");
+      return;
+    }
+    if (!selectedColumns.length) {
+      alert("Selecione ao menos uma coluna para visualizar/exportar.");
+      return;
+    }
+    if (!startDate || !endDate) {
+      alert("Escolha período.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const apiTable = resolveApiTableName(table);
+      const provider = getProviderForApi(apiTable); // ex: "furnas"
+      const dataCol = provider === "furnas" ? "dataMedida" : "dataHora";
+
+      const cols = ["idreservatorio", dataCol, ...selectedColumns].filter(Boolean);
+      const colsParam = cols.map(encodeURIComponent).join(",");
+
+      const endpoint = provider
+        ? `${API_BASE}/tables/${provider}/${apiTable}?colunas=${colsParam}`
+        : `${API_BASE}/tables/${apiTable}?colunas=${colsParam}`;
+
+      const resp = await fetch(endpoint);
+      if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
+
+      const json = await resp.json();
+      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+
+      const filtered = rows.filter((r: any) => {
+        const rid =
+          r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio ?? null;
+        if (rid == null) return false;
+        const matchesReserv = selectedReservatorios.some((sel) => {
+          const a = Number(sel);
+          const b = Number(rid);
+          return !Number.isNaN(a) && !Number.isNaN(b) ? a === b : String(sel) === String(rid);
+        });
+        if (!matchesReserv) return false;
+
+        const dv = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data ?? null;
+        if (!dv) return false;
+        const d = new Date(dv);
+        if (isNaN(d.getTime())) return false;
+        const day = isoDate(d);
+        return day >= startDate && day <= endDate;
+      });
+
+      setData(filtered);
+      setShowTable(true);
+      setView("chart");
+      setTimeout(
+        () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
+        50,
+      );
+    } catch (err) {
+      console.error("[generate-table] error fetching/processing data:", err);
+      alert("Erro ao gerar tabela. Veja console para detalhes.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchAvailableDatesForSelectedReservatorios(reservs: (string | number)[]) {
+    if (!reservs.length) {
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
+
+    const endpoint = `${API_BASE}/tables/furnas/tbcampanha`; // ✅ garante /furnas/
+    try {
+      const resp = await fetch(endpoint);
+      if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
+      const json = await resp.json();
+      const rows: any[] = Array.isArray(json) ? json : json?.data || json?.rows || [];
+
+      const filteredDates = new Set<string>();
+      const selectedSet = new Set(reservs.map((r) => String(r)));
+
+      for (const r of rows) {
+        const rid = r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio;
+        if (!rid || (!selectedSet.has(String(rid)) && reservs.length !== rows.length)) continue;
+
+        const dtRaw = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data;
+        if (!dtRaw) continue;
+
+        const d = new Date(dtRaw);
+        if (!isNaN(d.getTime())) filteredDates.add(d.toISOString().slice(0, 10));
+      }
+
+      const arr = Array.from(filteredDates).sort(
+        (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+      );
+      setAvailableDates(arr);
+      setStartDate(arr[0] ?? "");
+      setEndDate(arr[arr.length - 1] ?? "");
+    } catch (err) {
+      console.error("[dates] tbcampanha fetch failed:", err);
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+    }
+  }
 
   async function handleConfirmReservatorios() {
     if (!selectedReservatorios.length) {
@@ -1082,44 +1094,45 @@ async function fetchAvailableDatesForSelectedReservatorios(reservs: (string | nu
     }
   }
 
-
   async function fetchAvailableDatesForReservatorios(reservatorios: (string | number)[]) {
-  if (!reservatorios.length) {
-    setAvailableDates([]);
-    setStartDate("");
-    setEndDate("");
-    return;
-  }
-
-  // Monta query para tbcampanha filtrando por idreservatorio
-  const ids = reservatorios.map(String).join(",");
-  const url = `${API_BASE}/tables/furnas/tbcampanha?colunas=dataMedida,idreservatorio&idreservatorio=${ids}`;
-
-  try {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
-    const json = await resp.json();
-    const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
-
-    const datesSet = new Set<string>();
-    for (const r of rows) {
-      const dtRaw = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? null;
-      if (!dtRaw) continue;
-      const d = new Date(dtRaw);
-      if (!isNaN(d.getTime())) datesSet.add(isoDate(d));
+    if (!reservatorios.length) {
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+      return;
     }
 
-    const sortedDates = Array.from(datesSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    setAvailableDates(sortedDates);
-    setStartDate(sortedDates[0] ?? "");
-    setEndDate(sortedDates[sortedDates.length - 1] ?? "");
-  } catch (err) {
-    console.error("Erro ao buscar datas:", err);
-    setAvailableDates([]);
-    setStartDate("");
-    setEndDate("");
+    // Monta query para tbcampanha filtrando por idreservatorio
+    const ids = reservatorios.map(String).join(",");
+    const url = `${API_BASE}/tables/furnas/tbcampanha?colunas=dataMedida,idreservatorio&idreservatorio=${ids}`;
+
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
+      const json = await resp.json();
+      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+
+      const datesSet = new Set<string>();
+      for (const r of rows) {
+        const dtRaw = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? null;
+        if (!dtRaw) continue;
+        const d = new Date(dtRaw);
+        if (!isNaN(d.getTime())) datesSet.add(isoDate(d));
+      }
+
+      const sortedDates = Array.from(datesSet).sort(
+        (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+      );
+      setAvailableDates(sortedDates);
+      setStartDate(sortedDates[0] ?? "");
+      setEndDate(sortedDates[sortedDates.length - 1] ?? "");
+    } catch (err) {
+      console.error("Erro ao buscar datas:", err);
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+    }
   }
-}
 
   async function fetchColumnsForTable(tableName: string) {
     setColumnsForTable([]);
@@ -1133,21 +1146,24 @@ async function fetchAvailableDatesForSelectedReservatorios(reservs: (string | nu
 
     if (provider) {
       tryUrls.push(`${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}`);
-      tryUrls.push(`${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida,idreservatorio`);
-      tryUrls.push(`${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida`);
+      tryUrls.push(
+        `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida,idreservatorio`,
+      );
+      tryUrls.push(
+        `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida`,
+      );
       tryUrls.push(`${API_BASE}/${provider}/${encodeURIComponent(apiTable)}`);
     }
 
-if (provider) {
-  tryUrls.push(`${API_BASE}/tables/${provider}/${apiTable}`);
-  tryUrls.push(`${API_BASE}/tables/${provider}/${apiTable}?colunas=dataMedida,idreservatorio`);
-  tryUrls.push(`${API_BASE}/tables/${provider}/${apiTable}?colunas=dataMedida`);
-} else {
-  tryUrls.push(`${API_BASE}/tables/${apiTable}`);
-  tryUrls.push(`${API_BASE}/tables/${apiTable}?colunas=dataHora,idreservatorio`);
-  tryUrls.push(`${API_BASE}/tables/${apiTable}?colunas=dataHora`);
-}
-
+    if (provider) {
+      tryUrls.push(`${API_BASE}/tables/${provider}/${apiTable}`);
+      tryUrls.push(`${API_BASE}/tables/${provider}/${apiTable}?colunas=dataMedida,idreservatorio`);
+      tryUrls.push(`${API_BASE}/tables/${provider}/${apiTable}?colunas=dataMedida`);
+    } else {
+      tryUrls.push(`${API_BASE}/tables/${apiTable}`);
+      tryUrls.push(`${API_BASE}/tables/${apiTable}?colunas=dataHora,idreservatorio`);
+      tryUrls.push(`${API_BASE}/tables/${apiTable}?colunas=dataHora`);
+    }
 
     for (const url of tryUrls) {
       try {
@@ -1166,8 +1182,8 @@ if (provider) {
               typeof val === "number"
                 ? "number"
                 : /data|hora|inicio|fim|medida/i.test(k)
-                ? "date"
-                : "string";
+                  ? "date"
+                  : "string";
             return { nome: k, label: k, type };
           });
           setColumnsForTable(keys);
@@ -1210,10 +1226,9 @@ if (provider) {
       const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
 
       // provider-aware endpoint (no all=true, no limit)
-     const endpoint = provider
-      ? `${API_BASE}/tables/${provider}/${apiTable}?colunas=${colsParam}`
-      : `${API_BASE}/tables/${apiTable}?colunas=${colsParam}`;
-
+      const endpoint = provider
+        ? `${API_BASE}/tables/${provider}/${apiTable}?colunas=${colsParam}`
+        : `${API_BASE}/tables/${apiTable}?colunas=${colsParam}`;
 
       console.debug("[generate-table] fetching endpoint:", endpoint);
       const resp = await fetch(endpoint);
@@ -1225,7 +1240,8 @@ if (provider) {
       console.debug("[generate-table] fetched rows:", rows?.length ?? 0);
 
       const filtered = (rows || []).filter((r: any) => {
-        const rid = r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio ?? null;
+        const rid =
+          r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio ?? null;
         if (rid == null) return false;
         const matchesReserv = selectedReservatorios.some((sel) => {
           const a = Number(sel);
@@ -1247,7 +1263,10 @@ if (provider) {
       setData(filtered);
       setShowTable(true);
       setView("chart");
-      setTimeout(() => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+      setTimeout(
+        () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
+        50,
+      );
     } catch (err) {
       console.error("[generate-table] error fetching/processing data:", err);
       alert("Erro ao gerar tabela. Veja console para detalhes.");
@@ -1401,120 +1420,131 @@ if (provider) {
       alert("Data final deve ser maior ou igual à data de início!");
     }
   }
-/* ---------------- UI render ---------------- */
-return (
-  <Page>
-    <Container>
-      <LeftColumn>
-        <Controls>
-          {/* Stage 1: Reservatórios */}
-          {stage >= 1 && (
-            <>
-              <div style={{ fontWeight: 700 }}>1) Escolha o(s) reservatório(s)</div>
+  /* ---------------- UI render ---------------- */
+  return (
+    <Page>
+      <Container>
+        <LeftColumn>
+          <Controls>
+            {/* Stage 1: Reservatórios */}
+            {stage >= 1 && (
+              <>
+                <div style={{ fontWeight: 700 }}>1) Escolha o(s) reservatório(s)</div>
 
-              <div style={{ marginTop: 8 }}>
-                <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <input
-                    type="checkbox"
-                    checked={selectAllReservatorios}
-                    onChange={(e) => {
-                      const v = e.target.checked;
-                      setSelectAllReservatorios(v);
+                <div style={{ marginTop: 8 }}>
+                  <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input
+                      type="checkbox"
+                      checked={selectAllReservatorios}
+                      onChange={(e) => {
+                        const v = e.target.checked;
+                        setSelectAllReservatorios(v);
 
-                      if (v) {
-                        // selecionar apenas os reservatórios que estão habilitados (possuem campanha)
-                        const enabled = reservatorios
-                          .filter((r: any) => {
-                            const id = r.idreservatorio ?? r.id ?? r.idReservatorio;
-                            // se não houver dados de campanha carregados, considerar todos como habilitados
-                            if (!campanhas || campanhas.length === 0) return true;
-                            const hasCamp = campanhas.some((c: any) => {
-                              const cid = c.idreservatorio ?? c.id_reservatorio ?? c.idReservatorio ?? c.reservatorio;
-                              return String(cid) === String(id);
-                            });
-                            return hasCamp;
-                          })
-                          .map((r: any) => r.idreservatorio ?? r.id ?? r.idReservatorio);
-                        setSelectedReservatorios(enabled);
-                      } else {
-                        setSelectedReservatorios([]);
-                      }
-                    }}
-                    // deixar esse checkbox habilitado — seleção em massa respeita campanhas
-                  />
-                  <span>Selecionar todos os reservatórios</span>
-                </label>
-              </div>
+                        if (v) {
+                          // selecionar apenas os reservatórios que estão habilitados (possuem campanha)
+                          const enabled = reservatorios
+                            .filter((r: any) => {
+                              const id = r.idreservatorio ?? r.id ?? r.idReservatorio;
+                              // se não houver dados de campanha carregados, considerar todos como habilitados
+                              if (!campanhas || campanhas.length === 0) return true;
+                              const hasCamp = campanhas.some((c: any) => {
+                                const cid =
+                                  c.idreservatorio ??
+                                  c.id_reservatorio ??
+                                  c.idReservatorio ??
+                                  c.reservatorio;
+                                return String(cid) === String(id);
+                              });
+                              return hasCamp;
+                            })
+                            .map((r: any) => r.idreservatorio ?? r.id ?? r.idReservatorio);
+                          setSelectedReservatorios(enabled);
+                        } else {
+                          setSelectedReservatorios([]);
+                        }
+                      }}
+                      // deixar esse checkbox habilitado — seleção em massa respeita campanhas
+                    />
+                    <span>Selecionar todos os reservatórios</span>
+                  </label>
+                </div>
 
-              <div
-                style={{
-                  maxHeight: 220,
-                  overflowY: "auto",
-                  marginTop: 8,
-                  padding: 8,
-                  border: "1px solid #eef2ff",
-                  borderRadius: 8,
-                }}
-              >
-                {reservatorios.length ? (
-                  reservatorios.map((r: any) => {
-                    const id = r.idreservatorio ?? r.id ?? r.idReservatorio;
-                    const checked = selectedReservatorios.some((s) => String(s) === String(id));
-
-                    // determinar se este reservatório tem campanha (usar 'campanhas' carregadas)
-                    const hasCampaign =
-                      campanhas && campanhas.length
-                        ? campanhas.some((c: any) => {
-                            const cid = c.idreservatorio ?? c.id_reservatorio ?? c.idReservatorio ?? c.reservatorio;
-                            return String(cid) === String(id);
-                          })
-                        : true; // se campanhas não carregadas, assumir true para não bloquear UX
-
-                    const disabled = !hasCampaign;
-
-                    return (
-                      <div
-                        key={String(id)}
-                        style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          disabled={disabled}
-                          onChange={(e) => {
-                            // apenas permitir toggle para itens habilitados (mas disabled previne a ação)
-                            setSelectAllReservatorios(false);
-                            toggleReservatorio(id, e.target.checked);
-                          }}
-                        />
-                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                          <div>{r.nome ?? r.name ?? `Reservatório ${id}`}</div>
-                          {disabled ? (
-                            <small style={{ color: "#94a3b8", marginLeft: 6 }} title="Sem campanhas disponíveis">
-                              (sem campanhas)
-                            </small>
-                          ) : null}
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div>Carregando reservatórios...</div>
-                )}
-              </div>
-
-              <div style={{ marginTop: 12 }}>
-                <Button
-                  $primary
-                  onClick={() => {
-                    handleConfirmReservatorios();
+                <div
+                  style={{
+                    maxHeight: 220,
+                    overflowY: "auto",
+                    marginTop: 8,
+                    padding: 8,
+                    border: "1px solid #eef2ff",
+                    borderRadius: 8,
                   }}
                 >
-                  Confirmar reservatórios
-                </Button>
-              </div>
-            </>
-          )}
+                  {reservatorios.length ? (
+                    reservatorios.map((r: any) => {
+                      const id = r.idreservatorio ?? r.id ?? r.idReservatorio;
+                      const checked = selectedReservatorios.some((s) => String(s) === String(id));
+
+                      // determinar se este reservatório tem campanha (usar 'campanhas' carregadas)
+                      const hasCampaign =
+                        campanhas && campanhas.length
+                          ? campanhas.some((c: any) => {
+                              const cid =
+                                c.idreservatorio ??
+                                c.id_reservatorio ??
+                                c.idReservatorio ??
+                                c.reservatorio;
+                              return String(cid) === String(id);
+                            })
+                          : true; // se campanhas não carregadas, assumir true para não bloquear UX
+
+                      const disabled = !hasCampaign;
+
+                      return (
+                        <div
+                          key={String(id)}
+                          style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={disabled}
+                            onChange={(e) => {
+                              // apenas permitir toggle para itens habilitados (mas disabled previne a ação)
+                              setSelectAllReservatorios(false);
+                              toggleReservatorio(id, e.target.checked);
+                            }}
+                          />
+                          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            <div>{r.nome ?? r.name ?? `Reservatório ${id}`}</div>
+                            {disabled ? (
+                              <small
+                                style={{ color: "#94a3b8", marginLeft: 6 }}
+                                title="Sem campanhas disponíveis"
+                              >
+                                (sem campanhas)
+                              </small>
+                            ) : null}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div>Carregando reservatórios...</div>
+                  )}
+                </div>
+
+                <div style={{ marginTop: 12 }}>
+                  <Button
+                    $primary
+                    onClick={() => {
+                      handleConfirmReservatorios();
+                    }}
+                  >
+                    Confirmar reservatórios
+                  </Button>
+                </div>
+              </>
+            )}
 
             {/* Stage 2: Tabela */}
             {stage >= 2 && (
@@ -1639,7 +1669,8 @@ return (
             <ColumnsBox aria-label="Lista de colunas">
               <div style={{ fontWeight: 700 }}>Colunas disponíveis</div>
               <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                As colunas relacionadas à tabela selecionada aparecerão aqui após confirmar o período.
+                As colunas relacionadas à tabela selecionada aparecerão aqui após confirmar o
+                período.
               </div>
             </ColumnsBox>
           )}
@@ -1653,7 +1684,10 @@ return (
                   variant="csv"
                   onClick={async () => {
                     const apiTable = table;
-                    const isFurnas = responsibleFromMetadata && apiTable && String(responsibleFromMetadata[apiTable]).includes("Furnas");
+                    const isFurnas =
+                      responsibleFromMetadata &&
+                      apiTable &&
+                      String(responsibleFromMetadata[apiTable]).includes("Furnas");
                     if (isFurnas) {
                       await handleDownloadCSV();
                     } else {
@@ -1686,15 +1720,23 @@ return (
 
               <Button onClick={() => setShowTableView((s) => !s)}>Visualizar Tabela ▾</Button>
 
-              <Button onClick={() => {
-                // fallback generator kept for convenience
-                setLoading(true);
-                axios.get(`${API_BASE}/sima/all`).then(res => {
-                  const payload:any = res.data;
-                  setData(payload?.data ?? payload ?? []);
-                  setShowTable(true);
-                }).catch(err => console.error(err)).finally(()=>setLoading(false));
-              }} disabled={loading} style={{ marginLeft: 6 }}>
+              <Button
+                onClick={() => {
+                  // fallback generator kept for convenience
+                  setLoading(true);
+                  axios
+                    .get(`${API_BASE}/sima/all`)
+                    .then((res) => {
+                      const payload: any = res.data;
+                      setData(payload?.data ?? payload ?? []);
+                      setShowTable(true);
+                    })
+                    .catch((err) => console.error(err))
+                    .finally(() => setLoading(false));
+                }}
+                disabled={loading}
+                style={{ marginLeft: 6 }}
+              >
                 {loading ? "Carregando..." : "Gerar Tabelas"}
               </Button>
             </div>
@@ -1881,7 +1923,6 @@ return (
                               typeof p.latitude === "number" && typeof p.longitude === "number",
                           )
                           .map((p) => ({
-
                             id: p.id,
                             lat: Number(p.latitude),
                             lon: Number(p.longitude),
