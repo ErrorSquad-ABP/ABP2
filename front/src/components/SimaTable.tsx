@@ -426,40 +426,6 @@ const SimaTable = ({
 
   return (
     <TableWrapper>
-      <ControlButtonsContainer>
-        <ColumnControlButton onClick={() => setShowColumnSelector((prev) => !prev)}>
-          📊 Organizar Colunas
-        </ColumnControlButton>
-
-        <DownloadButton
-          variant="csv"
-          onClick={() => handleQuickDownload("csv")}
-          disabled={!data || data.length === 0}
-        >
-          📥 CSV
-        </DownloadButton>
-
-        <DownloadButton
-          variant="json"
-          onClick={() => handleQuickDownload("json")}
-          disabled={!data || data.length === 0}
-        >
-          📥 JSON
-        </DownloadButton>
-
-        <DownloadButton
-          variant="pdf"
-          onClick={() => handleQuickDownload("pdf")}
-          disabled={!data || data.length === 0}
-        >
-          📥 PDF
-        </DownloadButton>
-
-        <ColumnControlButton onClick={() => setShowDownloadOptions((prev) => !prev)}>
-          ⚙️ Mais Opções
-        </ColumnControlButton>
-      </ControlButtonsContainer>
-
       {showColumnSelector && (
         <ColumnSelector>
           <h4 style={{ margin: "0 0 8px 0" }}>Colunas Visíveis</h4>
