@@ -2,7 +2,7 @@
 // front/src/pages/TablesPage.tsx
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import MapBrazil from "../components/MapBrazil";
 import SimaTable from "../components/SimaTable";
 import axios from "axios";
@@ -10,9 +10,9 @@ import axios from "axios";
 /**
  * TablesPage
  *
- * Notes:
- * - Use Vite env via import.meta (not process.env).
- * - This file uses a small runtime-safe access to import.meta.env to avoid TS/Bundler errors.
+ * - Visual estilo azul/branco (sem libs, apenas styled-components).
+ * - Corrige fetch final (não pede idreservatorio nas colunas).
+ * - Filtra linhas por reservatório usando idreservatorio direto ou via idcampanha -> campanhas.
  */
 
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
@@ -20,11 +20,11 @@ const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:30
 interface Campanha {
   idcampanha: number;
   idreservatorio: number;
-  idinstituicao: number;
-  nrocampanha: number;
+  idinstituicao?: number;
+  nrocampanha?: number;
   datainicio: string;
   datafim: string;
-  responsible: string; // FURNAS ou BALCAR
+  // maybe other fields
 }
 
 type ColumnMeta = {
@@ -48,14 +48,46 @@ function isoDate(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
-/* ================= Styled (unchanged) ================= */
+/* ================= small helpers to normalize fields ================= */
+
+/**
+ * getField(obj, candidates) - retorna o primeiro campo definido dentre candidates.
+ * candidates: array de strings com possíveis nomes do campo (ex: ["dataMedida","dataHora","datainicio"])
+ */
+function getField(obj: any, candidates: string[] = []) {
+  if (!obj || typeof obj !== "object") return undefined;
+  for (const c of candidates) {
+    if (c in obj && obj[c] != null) return obj[c];
+    const lower = c.toLowerCase();
+    // tentar chaves em diferentes formatos (snake_case / camelCase)
+    for (const k of Object.keys(obj)) {
+      if (k.toLowerCase() === lower) return obj[k];
+    }
+  }
+  return undefined;
+}
+
+function hasField(obj: any, candidates: string[] = []) {
+  return getField(obj, candidates) !== undefined;
+}
+
+/* ================= Styled (azul / branco) ================= */
+
+/* ---------------- Theme & shared colors ---------------- */
+
+const PRIMARY_BLUE = "#0b5fff";
+const PRIMARY_BLUE_HOVER = "#2a7bff";
+const MUTED_BLUE = "#e8f1ff";
+const TEXT_DARK = "#0b2740";
+const SURFACE = "#ffffff";
+const BORDER = "#e6eefb";
 
 const Page = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #f6fbff 0%, #eef6ff 100%);
-  color: ${({ theme }) => theme.colors.text.default};
+  color: ${TEXT_DARK};
   font-family: "Helvetica Neue", Arial, sans-serif;
 `;
 
@@ -67,7 +99,7 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: minmax(300px, 460px) minmax(0, 1fr);
   gap: 24px;
-  align-items: stretch; /* ensure both columns stretch to same height */
+  align-items: stretch;
   min-height: 640px;
 
   @media (max-width: 1100px) {
@@ -84,7 +116,7 @@ const LeftColumn = styled.div`
 `;
 
 const Controls = styled.div`
-  background: #fff;
+  background: ${SURFACE};
   padding: 16px;
   border-radius: 12px;
   box-shadow: 0 8px 28px rgba(6, 58, 128, 0.06);
@@ -123,8 +155,33 @@ const Select = styled.select`
   background: white;
 `;
 
+/* Column list item (checkbox row) */
+const ColumnItem = styled.label`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    transform 0.12s ease;
+
+  &:hover {
+    background: rgba(11, 95, 255, 0.04);
+    transform: translateY(-1px);
+  }
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: ${PRIMARY_BLUE};
+  }
+`;
+
+/* ColumnsBox (list container) */
 const ColumnsBox = styled.div`
-  background: #fff;
+  background: ${SURFACE};
   padding: 14px;
   border-radius: 12px;
   box-shadow: 0 8px 28px rgba(6, 58, 128, 0.04);
@@ -133,19 +190,6 @@ const ColumnsBox = styled.div`
   gap: 8px;
   overflow: auto;
   flex: 1 1 auto;
-`;
-
-const ColumnItem = styled.label`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-
-  &:hover {
-    background: rgba(37, 99, 235, 0.04);
-  }
 `;
 
 const RightPanel = styled.div`
@@ -167,29 +211,8 @@ const ControlsTopRight = styled.div`
   }
 `;
 
-const Button = styled.button<{ $primary?: boolean }>`
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-weight: 700;
-  background: ${(p) => (p.$primary ? p.theme.colors.primary : "rgba(2,6,23,0.06)")};
-  color: ${(p) => (p.$primary ? "#fff" : "#04203a")};
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-
-  @media (max-width: 520px) {
-    width: 100%;
-  }
-`;
-
 const Panel = styled.div`
-  background: #fff;
+  background: ${SURFACE};
   padding: 20px;
   border-radius: 12px;
   height: 100%;
@@ -200,29 +223,40 @@ const Panel = styled.div`
 
 const ChartWrapper = styled.div`
   flex: 1;
-  display: flex;
-  gap: 16px;
-  align-items: stretch;
-  justify-content: stretch;
-
-  @media (max-width: 900px) {
-    flex-direction: column;
-  }
 `;
 
 const ChartMain = styled.div`
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
   padding: 12px;
   border-radius: 8px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: inset 0 4px 14px rgba(2, 6, 23, 0.02);
   position: relative;
-  overflow: auto;
-  min-height: 440px;
+  min-height: 420px;
+`;
+
+/* Tooltip kept light — can be reused if needed */
+const Tooltip = styled.div<{ left: number; top: number; color: string }>`
+  position: absolute;
+  left: ${(p) => p.left}px;
+  top: ${(p) => p.top}px;
+  transform: translate(-8px, -100%);
+  background: ${SURFACE};
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: 0 6px 20px rgba(2, 6, 23, 0.12);
+  font-size: 13px;
+`;
+
+const Legend = styled.div`
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+`;
+
+const LegendItem = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
 `;
 
 const MapPlaceholder = styled.div`
@@ -266,85 +300,236 @@ const ZoomControls = styled.div`
   }
 `;
 
+/* Wrapper para aplicar estilo idêntico ao cabeçalho do SimaTablesPage nas tabelas internas */
+const SimaTableWrapper = styled.div`
+  /* aplica estilo ao thead das tabelas renderizadas dentro do SimaTable */
+  table thead th {
+    background: linear-gradient(180deg, ${PRIMARY_BLUE} 0%, ${PRIMARY_BLUE_HOVER} 100%) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 3 !important;
+    font-size: 13px !important;
+    padding: 10px 12px !important;
+  }
+
+  /* linhas ao passar o mouse */
+  table tbody tr:hover {
+    background: ${MUTED_BLUE} !important;
+  }
+
+  /* células do corpo, fonte e padding */
+  table tbody td {
+    padding: 10px 12px !important;
+    color: ${TEXT_DARK} !important;
+    font-size: 14px !important;
+  }
+
+  /* ---------- esconder toolbars / ações internas do SimaTable (os botões acima da tabela) ---------- */
+  /* regras genéricas que cobrem a maioria dos componentes/table libs */
+  [role="toolbar"],
+  .sima-table-toolbar,
+  .table-toolbar,
+  .table-actions,
+  .rt-table__toolbar,
+  .react-table-toolbar,
+  .SimaTable__toolbar,
+  .sima-toolbar,
+  .MuiTableToolbar-root {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Caso haja botões soltos dentro do wrapper (por ex. ícones com emojis) — oculta linhas directas acima da tabela */
+  > div > .toolbar,
+  > .toolbar {
+    display: none !important;
+  }
+`;
+
+/* Table preview and table element similar to SimaTablesPage */
 const TablePreview = styled.div`
   margin-top: 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: auto;
-  border: 1px solid #e6eefb;
-  background: #fff;
+  border: 1px solid ${BORDER};
+  background: ${SURFACE};
+  box-shadow: 0 8px 30px rgba(6, 58, 128, 0.04);
 `;
 
 const TableElement = styled.table`
   width: 100%;
   border-collapse: collapse;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
   td,
   th {
-    padding: 8px;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 10px 12px;
+    border-bottom: 1px solid ${BORDER};
     text-align: left;
+    font-size: 14px;
+    color: ${TEXT_DARK};
   }
   thead th {
-    background: #f8fafc;
+    background: linear-gradient(180deg, ${PRIMARY_BLUE} 0%, ${PRIMARY_BLUE_HOVER} 100%);
+    color: #fff;
     font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    font-size: 13px;
+  }
+  tbody tr:hover {
+    background: ${MUTED_BLUE};
+  }
+  tbody td {
+    background: ${SURFACE};
   }
 `;
 
-const DownloadButtonsContainer = styled.div`
+/* ---------------- Spinner (correto) ---------------- */
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const SpinnerWrapper = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+`;
+
+const SpinnerCircle = styled.div`
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid rgba(37, 99, 235, 0.15);
+  border-top-color: rgba(37, 99, 235, 1);
+  animation: ${spin} 0.9s linear infinite;
+`;
+
+function Spinner() {
+  return (
+    <SpinnerWrapper aria-hidden>
+      <SpinnerCircle />
+    </SpinnerWrapper>
+  );
+}
+
+/* ---------------- Download buttons & table visuals (Sima-style) ---------------- */
+
+const DownloadButtonsWrapper = styled.div`
+  display: flex;
+  justify-content: space-between; /* separa os lados */
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+`;
+
+const LeftSection = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const RightSection = styled.div`
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  align-items: center;
   flex-wrap: wrap;
 `;
 
 const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
-  padding: 8px 16px;
+  padding: 8px 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
+  font-weight: 700;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 86px;
+  justify-content: center;
 
-  background-color: ${(props) => {
-    switch (props.variant) {
-      case "csv":
-        return "#28a745";
-      case "json":
-        return "#17a2b8";
-      case "pdf":
-        return "#dc3545";
-      default:
-        return "#6c757d";
-    }
-  }};
-
-  color: white;
+  background: ${SURFACE};
+  color: ${TEXT_DARK};
+  border: 1px solid ${BORDER};
+  box-shadow: 0 6px 20px rgba(11, 95, 255, 0.06);
 
   &:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    background: ${MUTED_BLUE};
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
+  }
+
+  ${(p) =>
+    p.variant === "csv" || p.variant === "json" || p.variant === "xml"
+      ? `border-left: 4px solid #007bff;`
+      : `border-left: 4px solid #007bff;`}
+`;
+
+/* Replaces previous Button style to match SimaTablesPage visuals */
+const Button = styled.button<{ $primary?: boolean }>`
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: ${(p) => (p.$primary ? "none" : `1px solid ${BORDER}`)};
+  cursor: pointer;
+  font-weight: 700;
+  background: ${(p) => (p.$primary ? PRIMARY_BLUE : SURFACE)};
+  color: ${(p) => (p.$primary ? "#fff" : TEXT_DARK)};
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: ${(p) => (p.$primary ? "0 6px 18px rgba(11,95,255,0.12)" : "none")};
+  transition:
+    transform 0.12s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: ${(p) => (p.$primary ? PRIMARY_BLUE_HOVER : MUTED_BLUE)};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  @media (max-width: 520px) {
+    width: 100%;
   }
 `;
 
-/* ================= helper: detect id/data columns ================= */
+/* ================= helper: detect id/date columns ================= */
 function isIdOrDateColumn(name?: string) {
   if (!name) return false;
   const n = String(name).toLowerCase();
   if (/^id/.test(n) || /id$/.test(n)) return true;
-  if (/\b(id|idestacao|idsima|regno|nro|numero|num|uid|registro|idreservatorio)\b/.test(n))
+  if (
+    /\b(id|idestacao|idsima|regno|nro|numero|num|uid|registro|idreservatorio|idcampanha)\b/.test(n)
+  )
     return true;
   if (
     /\bdatahora\b/.test(n) ||
-    /\bdata_hour\b/.test(n) ||
     /\bdatamedida\b/.test(n) ||
-    /\bdata\b/.test(n) ||
-    /\bdatetime\b/.test(n)
+    /\bdatainicio\b/.test(n) ||
+    /\bdata\b/.test(n)
   )
     return true;
   return false;
@@ -395,7 +580,7 @@ export default function TablesPage(): JSX.Element {
   // novo: controle de exibição do preview de tabela (botão Visualizar Tabela)
   const [showTableView, setShowTableView] = useState<boolean>(false);
 
-  // available dates derived from table rows filtered by selectedReservatorios
+  // available dates derived from tbcampanha filtered by selectedReservatorios
   const [availableDates, setAvailableDates] = useState<string[]>([]);
 
   // zoom & labels
@@ -408,31 +593,27 @@ export default function TablesPage(): JSX.Element {
 
   // view toggle between "chart" (table preview) and "map"
   const [view, setView] = useState<"chart" | "map">("chart");
-
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
+  // pagination state for SimaTable
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  function handlePageChange(newPage: number) {
+    // atualiza a página sem forçar scroll pesado
+    setPage(newPage);
+    // Se quiser um scroll leve opcional (não centraliza), descomente a linha abaixo:
+    // setTimeout(() => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+  }
 
   /* ================= helper download wrappers (added) ================= */
-
-  function getProviderForApi(apiTable: string | undefined): "" | "furnas" | "balcar" | "sima" {
-    if (!apiTable || !responsibleFromMetadata) return "";
-    const r = responsibleFromMetadata[apiTable];
-    if (!r) return "";
-    const s = String(r).toLowerCase();
-    if (s.includes("furnas")) return "furnas";
-    if (s.includes("balcar")) return "balcar";
-    if (s.includes("sima")) return "sima";
-    // some metadata may contain multiple like "Furnas, Balcar"
-    if (s.includes("furnas")) return "furnas";
-    return "";
-  }
 
   async function handleDownloadCSV() {
     if (!data || data.length === 0) {
       alert("Gere os dados da tabela primeiro para exportar.");
       return;
     }
-
+    // try provider-specific endpoint if available
     try {
       if (table) {
         const provider = getProviderForApi(table) || "furnas";
@@ -441,30 +622,32 @@ export default function TablesPage(): JSX.Element {
         if (endDate) params.append("endDate", endDate);
         if (selectedColumns.length > 0) params.append("columns", selectedColumns.join(","));
 
-        const response = await axios.get(
+        const response = await fetch(
           `${API_BASE}/${provider}/${encodeURIComponent(table)}/download/csv?${params.toString()}`,
-          { responseType: "blob" },
+          {
+            method: "GET",
+            headers: { Accept: "text/csv" },
+          },
         );
 
-        const blob = new Blob([response.data]);
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${table}_${new Date().toISOString().split("T")[0]}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        return;
-      } else {
-        // fallback
-        downloadCSV();
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `${table}_${new Date().toISOString().split("T")[0]}.csv`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          return;
+        }
       }
-    } catch (error) {
-      console.error("Erro ao exportar CSV:", error);
-      alert("Erro ao exportar CSV. Usando método alternativo...");
-      downloadCSV(); // Fallback
+    } catch (err) {
+      console.warn("download csv via provider failed:", err);
     }
+    // fallback local
+    downloadCSV();
   }
 
   async function handleDownloadJSON() {
@@ -496,29 +679,28 @@ export default function TablesPage(): JSX.Element {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
         return;
-      } else {
-        // fallback to local JSON
-        const jsonData = {
-          table: table || "unknown",
-          exportedAt: new Date().toISOString(),
-          totalRecords: data.length,
-          data: data,
-        };
-
-        const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${table || "data"}_${new Date().toISOString().split("T")[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error("Erro ao exportar JSON:", error);
-      alert("Erro ao exportar JSON. Verifique o console para mais detalhes.");
+      console.error("Erro ao exportar JSON via provider:", error);
     }
+
+    // fallback to local JSON
+    const jsonData = {
+      table: table || "unknown",
+      exportedAt: new Date().toISOString(),
+      totalRecords: data.length,
+      data: data,
+    };
+
+    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${table || "data"}_${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   }
 
   async function handleDownloadPDF() {
@@ -549,730 +731,12 @@ export default function TablesPage(): JSX.Element {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
         return;
-      } else {
-        // fallback to exportPDF
-        exportPDF();
       }
     } catch (error) {
-      console.error("Erro ao exportar PDF:", error);
-      alert("Erro ao exportar PDF. Usando método alternativo...");
-      exportPDF(); // Fallback
+      console.error("Erro ao exportar PDF via provider:", error);
     }
-  }
-
-  /* ================= metadata load ================= */
-
-  // Insira no início do componente TablesPage, junto com os outros useState/useEffect
-  useEffect(() => {
-    if (selectedReservatorios.length > 0) {
-      fetchAvailableDatesForSelectedReservatorios(selectedReservatorios);
-    } else {
-      setAvailableDates([]);
-      setStartDate("");
-      setEndDate("");
-    }
-  }, [selectedReservatorios]);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const metaRes = await fetch(`${API_BASE}/metadata/${encodeURIComponent(topicSlug)}`);
-
-        if (metaRes.ok) {
-          const m = await metaRes.json();
-          const data = m.data ?? [];
-          setMetadata(Array.isArray(data) ? data : []);
-
-          // Build tablesOptions using item.id as api when available.
-          const opts = (Array.isArray(data) ? data : [])
-            .map((item: any) => {
-              const api = item.id || item.name || item.tableName || item.apiName;
-              const label = item.name || item.title || item.label || String(api);
-              return { api: String(api), label: String(label) };
-            })
-            .filter((opt) => !!opt.api);
-
-          setTablesOptions(opts);
-
-          // prepare columnsFromMetadata keyed by API name (use item.id when possible)
-          const clms: Record<string, any> = {};
-          const resp: Record<string, any> = {};
-          (Array.isArray(data) ? data : []).forEach((tb: any) => {
-            const apiName = tb.id || tb.name || tb.tableName || tb.apiName;
-            if (apiName) {
-              clms[apiName] = tb.colunas ?? tb.columns ?? tb.coluna ?? [];
-              resp[apiName] = tb.responsible ?? tb.responsibleName ?? tb.source ?? "";
-            }
-          });
-          setColumnsFromMetadata(clms);
-          setResponsibleFromMetadata(resp);
-
-          // set initial table to first API name (if any)
-          const firstApi = opts[0]?.api;
-          if (firstApi) setTable(firstApi);
-        } else {
-          setMetadata([]);
-          setTablesOptions([]);
-        }
-      } catch (err) {
-        console.error("Error fetching metadata: ", err);
-        setMetadata([]);
-        setTablesOptions([]);
-      }
-    }
-
-    load();
-  }, [topicSlug]);
-
-  /* ---------------- fetch campanhas (kept) ---------------- */
-  useEffect(() => {
-    const fetchCampanhas = async () => {
-      if (!table || !responsibleFromMetadata) return;
-      const responsibleVal = responsibleFromMetadata[table];
-
-      const fetches: Promise<Campanha[]>[] = [];
-
-      if (
-        responsibleVal &&
-        typeof responsibleVal === "string" &&
-        responsibleVal.includes("Furnas")
-      ) {
-        fetches.push(
-          axios
-            .get(`${API_BASE}/tables/furnas/tbcampanha`)
-            .then((res) => res.data.data as Campanha[]),
-        );
-      }
-
-      if (
-        responsibleVal &&
-        typeof responsibleVal === "string" &&
-        responsibleVal.includes("Balcar")
-      ) {
-        fetches.push(
-          axios.get(`${API_BASE}/balcar/campanha`).then((res) => res.data.data as Campanha[]),
-        );
-      }
-
-      try {
-        const results = await Promise.all(fetches);
-        const combined = results.flat();
-
-        const uniqueDates = combined.reduce((acc: Campanha[], curr) => {
-          const exists = acc.some(
-            (d) =>
-              String(d.datainicio).slice(0, 10) === String(curr.datainicio).slice(0, 10) ||
-              String(d.datafim).slice(0, 10) === String(curr.datafim).slice(0, 10) ||
-              d.idcampanha === curr.idcampanha,
-          );
-          if (!exists) acc.push(curr);
-          return acc;
-        }, []);
-
-        setCampanhas(uniqueDates);
-      } catch (err) {
-        console.error("Erro ao carregar campanhas", err);
-      }
-    };
-
-    fetchCampanhas();
-  }, [table, responsibleFromMetadata]);
-
-  useEffect(() => {
-    if (campanhas) {
-      setOrderedCampanhas(
-        campanhas.sort(
-          (a: any, b: any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime(),
-        ),
-      );
-    }
-  }, [campanhas]);
-
-  /* ---------------- fetch reservatórios (Furnas) - etapa 1 ---------------- */
-  useEffect(() => {
-    const fetchReservatorios = async () => {
-      try {
-        // endpoint solicitado: /tables/furnas/tbreservatorio?colunas=nome,idreservatorio
-        const url = `${API_BASE}/tables/furnas/tbreservatorio?colunas=nome,idreservatorio`;
-        const res = await fetch(url);
-        if (!res.ok) {
-          // fallback
-          const res2 = await fetch(`${API_BASE}/furnas/reservatorio/all`);
-          if (!res2.ok) {
-            setReservatorios([]);
-            return;
-          }
-          const json2 = await res2.json();
-          const list2 = json2?.data ?? json2;
-          setReservatorios(Array.isArray(list2) ? list2 : []);
-          return;
-        }
-        const json = await res.json();
-        const rows = json?.data ?? json;
-        setReservatorios(Array.isArray(rows) ? rows : []);
-      } catch (err) {
-        console.error("Erro ao buscar reservatórios:", err);
-      }
-    };
-
-    fetchReservatorios();
-  }, []);
-
-  function testDates(c: Campanha) {
-    if (!orderedCampanhas) {
-      return "Carregando...";
-    } else {
-      return c.datainicio.slice(0, 10).split("-").reverse().join("/");
-    }
-  }
-
-  /* ---------------- helper: resolveApiTableName (defensive) ---------------- */
-  function resolveApiTableName(tableName: string) {
-    // remove espaços, acentos e transforma em lowercase
-    return tableName
-      .normalize("NFD") // separa acentos
-      .replace(/[\u0300-\u036f]/g, "") // remove acentos
-      .replace(/\s+/g, "") // remove espaços
-      .toLowerCase()
-      .replace(/^abiotico(s)?coluna$/, "tbabioticocoluna"); // exemplo específico se quiser mapear nomes
-  }
-
-  // ---------- add inside component (TablesPage), after resolveApiTableName ----------
-  function getProviderForApi(apiName?: string): string | null {
-    if (!apiName) return null;
-    const key = String(apiName);
-
-    // 1) check responsibleFromMetadata (fast path)
-    try {
-      if (responsibleFromMetadata && typeof responsibleFromMetadata === "object") {
-        const resp = responsibleFromMetadata[key] ?? responsibleFromMetadata[key.toLowerCase()];
-        if (resp) {
-          const r = String(resp).toLowerCase();
-          if (r.includes("furnas")) return "furnas";
-          if (r.includes("balcar")) return "balcar";
-          if (r.includes("sima")) return "sima";
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-
-    // 2) check metadata array (if present)
-    try {
-      if (metadata && Array.isArray(metadata)) {
-        const found =
-          metadata.find((m: any) => {
-            if (!m) return false;
-            // match by API name fields used in metadata
-            const candidates = [m.name, m.id, m.tableName, (m as any).apiName, m.title, m.label]
-              .filter(Boolean)
-              .map((c: any) => String(c).toLowerCase());
-            return candidates.includes(key.toLowerCase());
-          }) ||
-          metadata.find((m: any) => {
-            if (!m) return false;
-            const resp = String(m.responsible ?? m.source ?? "").toLowerCase();
-            return (
-              resp &&
-              resp.includes("furnas") &&
-              (m.name === key || String(m.name).toLowerCase().includes(String(key).toLowerCase()))
-            );
-          });
-
-        if (found) {
-          const r = String(found.responsible ?? found.source ?? "").toLowerCase();
-          if (r.includes("furnas")) return "furnas";
-          if (r.includes("balcar")) return "balcar";
-          if (r.includes("sima")) return "sima";
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-
-    // 3) last-ditch heuristics: table name prefix/contains
-    try {
-      const n = key.toLowerCase();
-      if (n.startsWith("tb") && n.includes("sima")) return "sima";
-      if (n.startsWith("tb") && n.includes("balcar")) return "balcar";
-      if (n.startsWith("tb")) return "furnas"; // heuristic: most tb* are furnas in your dataset
-    } catch (e) {
-      // ignore
-    }
-
-    return null;
-  }
-
-  /* ---------------- UI helpers and actions ---------------- */
-
-  function toggleReservatorio(id: string | number, checked: boolean) {
-    if (checked) {
-      setSelectedReservatorios((s) => Array.from(new Set([...s, id])));
-    } else {
-      setSelectedReservatorios((s) => s.filter((x) => x !== id));
-    }
-  }
-
-  // Função para buscar datas disponíveis de acordo com os reservatórios selecionados
-  async function fetchAvailableDatesForTableAndReservatorios(
-    selectedReservatorios: (string | number)[],
-    tableApiName: string,
-  ) {
-    if (!selectedReservatorios.length || !tableApiName) {
-      setAvailableDates([]);
-      setStartDate("");
-      setEndDate("");
-      return;
-    }
-
-    // tbcampanha é quem guarda as datas, sempre usar provider "furnas"
-    const endpoint = `${API_BASE}/tables/furnas/tbcampanha`;
-
-    let rows: any[] = [];
-    try {
-      const resp = await fetch(endpoint);
-      if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
-      const json = await resp.json();
-      rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
-    } catch (err) {
-      console.error("[dates] tbcampanha fetch failed:", err);
-      setAvailableDates([]);
-      setStartDate("");
-      setEndDate("");
-      return;
-    }
-
-    // Filtra apenas as datas dos reservatórios selecionados
-    const selectedSet = new Set(selectedReservatorios.map(String));
-    const foundDates = new Set<string>();
-
-    for (const r of rows) {
-      const rid =
-        r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio ?? null;
-      if (rid != null && selectedSet.size && !selectedSet.has(String(rid))) continue;
-
-      const dtRaw = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data ?? null;
-      if (!dtRaw) continue;
-
-      const d = new Date(dtRaw);
-      if (!isNaN(d.getTime())) foundDates.add(isoDate(d));
-      else {
-        const maybe = String(dtRaw).slice(0, 10);
-        if (/^\d{4}-\d{2}-\d{2}$/.test(maybe)) foundDates.add(maybe);
-      }
-    }
-
-    const arr = Array.from(foundDates).sort(
-      (a, b) => new Date(a).getTime() - new Date(b).getTime(),
-    );
-
-    setAvailableDates(arr);
-    if (arr.length) {
-      setStartDate(arr[0]);
-      setEndDate(arr[arr.length - 1]);
-    } else {
-      setStartDate("");
-      setEndDate("");
-    }
-  }
-
-  // Função para buscar colunas da tabela selecionada
-  async function fetchColumnsForTable(tableName: string) {
-    setColumnsForTable([]);
-    if (!tableName) return;
-
-    const apiTable = resolveApiTableName(tableName);
-    const provider = getProviderForApi(apiTable);
-    const isFurnas = provider === "furnas";
-
-    const tryUrls: string[] = [];
-
-    if (provider) {
-      tryUrls.push(`${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}`);
-      tryUrls.push(
-        `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida,idreservatorio`,
-      );
-      tryUrls.push(
-        `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida`,
-      );
-      tryUrls.push(`${API_BASE}/${provider}/${encodeURIComponent(apiTable)}`);
-    }
-
-    // Fallbacks genéricos
-    tryUrls.push(`${API_BASE}/tables/${encodeURIComponent(apiTable)}`);
-    tryUrls.push(
-      `${API_BASE}/tables/${encodeURIComponent(apiTable)}?colunas=dataHora,idreservatorio`,
-    );
-    tryUrls.push(`${API_BASE}/tables/${encodeURIComponent(apiTable)}?colunas=dataHora`);
-    tryUrls.push(`${API_BASE}/${encodeURIComponent(apiTable)}`);
-
-    for (const url of tryUrls) {
-      try {
-        console.debug("[fetchColumnsForTable] trying url:", url);
-        const res = await fetch(url);
-        if (!res.ok) {
-          console.debug("[fetchColumnsForTable] not ok:", res.status, url);
-          continue;
-        }
-        const j = await res.json();
-        const rows = Array.isArray(j) ? j : j?.data || j?.rows || [];
-        if (rows && rows.length) {
-          const keys = Object.keys(rows[0] || {}).map((k) => {
-            const val = rows[0][k];
-            const type =
-              typeof val === "number"
-                ? "number"
-                : /data|hora|inicio|fim|medida/i.test(k)
-                  ? "date"
-                  : "string";
-            return { nome: k, label: k, type };
-          });
-          setColumnsForTable(keys);
-          return;
-        }
-      } catch (err) {
-        console.warn("[fetchColumnsForTable] attempt error:", err);
-        continue;
-      }
-    }
-
-    setColumnsForTable([]);
-    console.warn("[fetchColumnsForTable] no columns found for", apiTable);
-  }
-
-  // Função para buscar os dados da tabela selecionada
-  async function handleGenerateTableForCurrentSelection() {
-    if (!selectedReservatorios.length) {
-      alert("Selecione ao menos um reservatório.");
-      return;
-    }
-    if (!selectedColumns.length) {
-      alert("Selecione ao menos uma coluna para visualizar/exportar.");
-      return;
-    }
-    if (!startDate || !endDate) {
-      alert("Escolha período.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const apiTable = resolveApiTableName(table);
-      const provider = getProviderForApi(apiTable); // ex: "furnas"
-      const dataCol = provider === "furnas" ? "dataMedida" : "dataHora";
-
-      const cols = ["idreservatorio", dataCol, ...selectedColumns].filter(Boolean);
-      const colsParam = cols.map(encodeURIComponent).join(",");
-
-      const endpoint = provider
-        ? `${API_BASE}/tables/${provider}/${apiTable}?colunas=${colsParam}`
-        : `${API_BASE}/tables/${apiTable}?colunas=${colsParam}`;
-
-      const resp = await fetch(endpoint);
-      if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
-
-      const json = await resp.json();
-      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
-
-      const filtered = rows.filter((r: any) => {
-        const rid =
-          r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio ?? null;
-        if (rid == null) return false;
-        const matchesReserv = selectedReservatorios.some((sel) => {
-          const a = Number(sel);
-          const b = Number(rid);
-          return !Number.isNaN(a) && !Number.isNaN(b) ? a === b : String(sel) === String(rid);
-        });
-        if (!matchesReserv) return false;
-
-        const dv = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data ?? null;
-        if (!dv) return false;
-        const d = new Date(dv);
-        if (isNaN(d.getTime())) return false;
-        const day = isoDate(d);
-        return day >= startDate && day <= endDate;
-      });
-
-      setData(filtered);
-      setShowTable(true);
-      setView("chart");
-      setTimeout(
-        () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
-        50,
-      );
-    } catch (err) {
-      console.error("[generate-table] error fetching/processing data:", err);
-      alert("Erro ao gerar tabela. Veja console para detalhes.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchAvailableDatesForSelectedReservatorios(reservs: (string | number)[]) {
-    if (!reservs.length) {
-      setAvailableDates([]);
-      setStartDate("");
-      setEndDate("");
-      return;
-    }
-
-    const endpoint = `${API_BASE}/tables/furnas/tbcampanha`; // ✅ garante /furnas/
-    try {
-      const resp = await fetch(endpoint);
-      if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
-      const json = await resp.json();
-      const rows: any[] = Array.isArray(json) ? json : json?.data || json?.rows || [];
-
-      const filteredDates = new Set<string>();
-      const selectedSet = new Set(reservs.map((r) => String(r)));
-
-      for (const r of rows) {
-        const rid = r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio;
-        if (!rid || (!selectedSet.has(String(rid)) && reservs.length !== rows.length)) continue;
-
-        const dtRaw = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data;
-        if (!dtRaw) continue;
-
-        const d = new Date(dtRaw);
-        if (!isNaN(d.getTime())) filteredDates.add(d.toISOString().slice(0, 10));
-      }
-
-      const arr = Array.from(filteredDates).sort(
-        (a, b) => new Date(a).getTime() - new Date(b).getTime(),
-      );
-      setAvailableDates(arr);
-      setStartDate(arr[0] ?? "");
-      setEndDate(arr[arr.length - 1] ?? "");
-    } catch (err) {
-      console.error("[dates] tbcampanha fetch failed:", err);
-      setAvailableDates([]);
-      setStartDate("");
-      setEndDate("");
-    }
-  }
-
-  async function handleConfirmReservatorios() {
-    if (!selectedReservatorios.length) {
-      alert("Selecione ao menos um reservatório antes de continuar.");
-      return;
-    }
-    setStage(2);
-  }
-
-  async function handleConfirmTable() {
-    if (!selectedReservatorios.length) {
-      alert("Selecione ao menos um reservatório antes de confirmar tabela.");
-      return;
-    }
-    if (!table) {
-      alert("Selecione uma tabela antes de confirmar.");
-      return;
-    }
-    setLoading(true);
-    const apiTable = resolveApiTableName(table);
-    await fetchAvailableDatesForTableAndReservatorios(selectedReservatorios, apiTable);
-    setStage(3);
-    setLoading(false);
-  }
-
-  async function handleConfirmPeriod() {
-    if (!startDate || !endDate) {
-      alert("Escolha data início e fim.");
-      return;
-    }
-    setLoading(true);
-    const apiTable = resolveApiTableName(table);
-    try {
-      await fetchColumnsForTable(apiTable);
-      setStage(4);
-    } catch (err) {
-      console.error("Erro ao buscar colunas:", err);
-      setColumnsForTable([]);
-      alert("Erro ao carregar colunas. Veja console.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchAvailableDatesForReservatorios(reservatorios: (string | number)[]) {
-    if (!reservatorios.length) {
-      setAvailableDates([]);
-      setStartDate("");
-      setEndDate("");
-      return;
-    }
-
-    // Monta query para tbcampanha filtrando por idreservatorio
-    const ids = reservatorios.map(String).join(",");
-    const url = `${API_BASE}/tables/furnas/tbcampanha?colunas=dataMedida,idreservatorio&idreservatorio=${ids}`;
-
-    try {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
-      const json = await resp.json();
-      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
-
-      const datesSet = new Set<string>();
-      for (const r of rows) {
-        const dtRaw = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? null;
-        if (!dtRaw) continue;
-        const d = new Date(dtRaw);
-        if (!isNaN(d.getTime())) datesSet.add(isoDate(d));
-      }
-
-      const sortedDates = Array.from(datesSet).sort(
-        (a, b) => new Date(a).getTime() - new Date(b).getTime(),
-      );
-      setAvailableDates(sortedDates);
-      setStartDate(sortedDates[0] ?? "");
-      setEndDate(sortedDates[sortedDates.length - 1] ?? "");
-    } catch (err) {
-      console.error("Erro ao buscar datas:", err);
-      setAvailableDates([]);
-      setStartDate("");
-      setEndDate("");
-    }
-  }
-
-  async function fetchColumnsForTable(tableName: string) {
-    setColumnsForTable([]);
-    if (!tableName) return;
-    const apiTable = resolveApiTableName(tableName);
-    const provider = getProviderForApi(apiTable);
-    const isFurnas = provider === "furnas";
-
-    // **IMPORTANTE**: não usar all=true nem limit=1 — tentar endpoints "limpos"
-    const tryUrls: string[] = [];
-
-    if (provider) {
-      tryUrls.push(`${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}`);
-      tryUrls.push(
-        `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida,idreservatorio`,
-      );
-      tryUrls.push(
-        `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida`,
-      );
-      tryUrls.push(`${API_BASE}/${provider}/${encodeURIComponent(apiTable)}`);
-    }
-
-    if (provider) {
-      tryUrls.push(`${API_BASE}/tables/${provider}/${apiTable}`);
-      tryUrls.push(`${API_BASE}/tables/${provider}/${apiTable}?colunas=dataMedida,idreservatorio`);
-      tryUrls.push(`${API_BASE}/tables/${provider}/${apiTable}?colunas=dataMedida`);
-    } else {
-      tryUrls.push(`${API_BASE}/tables/${apiTable}`);
-      tryUrls.push(`${API_BASE}/tables/${apiTable}?colunas=dataHora,idreservatorio`);
-      tryUrls.push(`${API_BASE}/tables/${apiTable}?colunas=dataHora`);
-    }
-
-    for (const url of tryUrls) {
-      try {
-        console.debug("[fetchColumnsForTable] trying url:", url);
-        const res = await fetch(url);
-        if (!res.ok) {
-          console.debug("[fetchColumnsForTable] not ok:", res.status, url);
-          continue;
-        }
-        const j = await res.json();
-        const rows = Array.isArray(j) ? j : j?.data || j?.rows || [];
-        if (rows && rows.length) {
-          const keys = Object.keys(rows[0] || {}).map((k) => {
-            const val = rows[0][k];
-            const type =
-              typeof val === "number"
-                ? "number"
-                : /data|hora|inicio|fim|medida/i.test(k)
-                  ? "date"
-                  : "string";
-            return { nome: k, label: k, type };
-          });
-          setColumnsForTable(keys);
-          return;
-        }
-      } catch (err) {
-        console.warn("[fetchColumnsForTable] attempt error:", err);
-        continue;
-      }
-    }
-
-    setColumnsForTable([]);
-    console.warn("[fetchColumnsForTable] no columns found for", apiTable);
-  }
-
-  function toggleColumnLocal(name: string) {
-    if (isIdOrDateColumn(name)) return;
-    setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
-  }
-
-  async function handleGenerateTableForCurrentSelection() {
-    if (!selectedReservatorios.length) {
-      alert("Selecione ao menos um reservatório.");
-      return;
-    }
-    if (!selectedColumns.length) {
-      alert("Selecione ao menos uma coluna para visualizar/exportar.");
-      return;
-    }
-    if (!startDate || !endDate) {
-      alert("Escolha período.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const apiTable = resolveApiTableName(table);
-      const provider = getProviderForApi(apiTable);
-      const dataCol = provider === "furnas" ? "dataMedida" : "dataHora";
-      const cols = ["idreservatorio", dataCol, ...selectedColumns].filter(Boolean);
-      const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
-
-      // provider-aware endpoint (no all=true, no limit)
-      const endpoint = provider
-        ? `${API_BASE}/tables/${provider}/${apiTable}?colunas=${colsParam}`
-        : `${API_BASE}/tables/${apiTable}?colunas=${colsParam}`;
-
-      console.debug("[generate-table] fetching endpoint:", endpoint);
-      const resp = await fetch(endpoint);
-      if (!resp.ok) {
-        throw new Error(`fetch failed: ${resp.status} ${resp.statusText}`);
-      }
-      const json = await resp.json();
-      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
-      console.debug("[generate-table] fetched rows:", rows?.length ?? 0);
-
-      const filtered = (rows || []).filter((r: any) => {
-        const rid =
-          r.idreservatorio ?? r.id_reservatorio ?? r.idReservatorio ?? r.reservatorio ?? null;
-        if (rid == null) return false;
-        const matchesReserv = selectedReservatorios.some((sel) => {
-          const a = Number(sel);
-          const b = Number(rid);
-          return !Number.isNaN(a) && !Number.isNaN(b) ? a === b : String(sel) === String(rid);
-        });
-        if (!matchesReserv) return false;
-
-        const dv = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data ?? null;
-        if (!dv) return false;
-        const d = new Date(dv);
-        if (isNaN(d.getTime())) return false;
-        const day = isoDate(d);
-        return day >= startDate && day <= endDate;
-      });
-
-      console.debug("[generate-table] filtered rows:", filtered.length);
-
-      setData(filtered);
-      setShowTable(true);
-      setView("chart");
-      setTimeout(
-        () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
-        50,
-      );
-    } catch (err) {
-      console.error("[generate-table] error fetching/processing data:", err);
-      alert("Erro ao gerar tabela. Veja console para detalhes.");
-    } finally {
-      setLoading(false);
-    }
+    // fallback
+    exportPDF();
   }
 
   function downloadCSV() {
@@ -1325,6 +789,667 @@ export default function TablesPage(): JSX.Element {
     setTimeout(() => {
       w.print();
     }, 500);
+  }
+
+  /* ================= metadata load ================= */
+
+  // selectedReservatorios -> update available dates (when changed)
+  useEffect(() => {
+    if (selectedReservatorios.length > 0) {
+      fetchAvailableDatesForSelectedReservatorios(selectedReservatorios);
+    } else {
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+    }
+  }, [selectedReservatorios]);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const metaRes = await fetch(`${API_BASE}/metadata/${encodeURIComponent(topicSlug)}`);
+
+        if (metaRes.ok) {
+          const m = await metaRes.json();
+          const data = m.data ?? [];
+          setMetadata(Array.isArray(data) ? data : []);
+
+          const opts = (Array.isArray(data) ? data : [])
+            .map((item: any) => {
+              const api = item.id || item.name || item.tableName || item.apiName;
+              const label = item.name || item.title || item.label || String(api);
+              return { api: String(api), label: String(label) };
+            })
+            .filter((opt) => !!opt.api);
+
+          setTablesOptions(opts);
+
+          const clms: Record<string, any> = {};
+          const resp: Record<string, any> = {};
+          (Array.isArray(data) ? data : []).forEach((tb: any) => {
+            const apiName = tb.id || tb.name || tb.tableName || tb.apiName;
+            if (apiName) {
+              clms[apiName] = tb.colunas ?? tb.columns ?? tb.coluna ?? [];
+              resp[apiName] = tb.responsible ?? tb.responsibleName ?? tb.source ?? "";
+            }
+          });
+          setColumnsFromMetadata(clms);
+          setResponsibleFromMetadata(resp);
+
+          const firstApi = opts[0]?.api;
+          if (firstApi) setTable(firstApi);
+        } else {
+          setMetadata([]);
+          setTablesOptions([]);
+        }
+      } catch (err) {
+        console.error("Error fetching metadata: ", err);
+        setMetadata([]);
+        setTablesOptions([]);
+      }
+    }
+
+    load();
+  }, [topicSlug]);
+
+  /* ---------------- fetch campanhas (kept) ---------------- */
+  useEffect(() => {
+    const fetchCampanhas = async () => {
+      if (!table || !responsibleFromMetadata) return;
+      const responsibleVal = responsibleFromMetadata[table];
+
+      const fetches: Promise<Campanha[]>[] = [];
+
+      if (
+        responsibleVal &&
+        typeof responsibleVal === "string" &&
+        responsibleVal.toLowerCase().includes("furnas")
+      ) {
+        fetches.push(
+          axios
+            .get(`${API_BASE}/tables/furnas/tbcampanha`)
+            .then((res) => (res.data?.data ?? res.data) as Campanha[]),
+        );
+      }
+
+      if (
+        responsibleVal &&
+        typeof responsibleVal === "string" &&
+        responsibleVal.toLowerCase().includes("balcar")
+      ) {
+        fetches.push(
+          axios
+            .get(`${API_BASE}/balcar/campanha`)
+            .then((res) => (res.data?.data ?? res.data) as Campanha[]),
+        );
+      }
+
+      try {
+        const results = await Promise.all(fetches);
+        const combined = results.flat();
+
+        // unify and unique by idcampanha (or datainicio/datafim)
+        const unique: Campanha[] = [];
+        for (const c of combined) {
+          const exists = unique.some((u) => u.idcampanha === c.idcampanha);
+          if (!exists) unique.push(c);
+        }
+
+        setCampanhas(unique);
+      } catch (err) {
+        console.error("Erro ao carregar campanhas", err);
+      }
+    };
+
+    fetchCampanhas();
+  }, [table, responsibleFromMetadata]);
+
+  useEffect(() => {
+    if (campanhas) {
+      setOrderedCampanhas(
+        [...campanhas].sort(
+          (a: any, b: any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime(),
+        ),
+      );
+    }
+  }, [campanhas]);
+
+  /* ---------------- fetch reservatórios (Furnas) - etapa 1 ---------------- */
+  useEffect(() => {
+    const fetchReservatorios = async () => {
+      try {
+        const url = `${API_BASE}/tables/furnas/tbreservatorio?colunas=nome,idreservatorio`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          const res2 = await fetch(`${API_BASE}/furnas/reservatorio/all`);
+          if (!res2.ok) {
+            setReservatorios([]);
+            return;
+          }
+          const json2 = await res2.json();
+          const list2 = json2?.data ?? json2;
+          setReservatorios(Array.isArray(list2) ? list2 : []);
+          return;
+        }
+        const json = await res.json();
+        const rows = json?.data ?? json;
+        setReservatorios(Array.isArray(rows) ? rows : []);
+      } catch (err) {
+        console.error("Erro ao buscar reservatórios:", err);
+      }
+    };
+
+    fetchReservatorios();
+  }, []);
+
+  function testDates(c: Campanha) {
+    if (!orderedCampanhas) {
+      return "Carregando...";
+    } else {
+      return c.datainicio.slice(0, 10).split("-").reverse().join("/");
+    }
+  }
+
+  /* ---------------- helper: resolveApiTableName (defensive) ---------------- */
+  // normalize -> garante formato de "db table name" (ex: tbabioticocoluna)
+  // Substitui a função antiga por esta (corrige tbabioticoscoluna -> tbabioticocoluna)
+  function resolveApiTableName(tableName: string) {
+    if (!tableName) return "";
+
+    // base normalize (remove acentos, espaços, lower)
+    let t = String(tableName)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // remove acentos
+      .replace(/\s+/g, "") // remove espaços
+      .toLowerCase();
+
+    // garantir prefixo 'tb' (se o usuário passou label sem 'tb')
+    if (!t.startsWith("tb")) t = "tb" + t;
+
+    // Mapa de correções pontuais (adicionar aqui outros casos conhecidos)
+    const FIXES: Record<string, string> = {
+      // correção que você reportou: remove o 's' extra
+      tbabioticoscoluna: "tbabioticocoluna",
+      // variações sem 'tb' também cobertas por prefixo acima
+      abioticoscoluna: "tbabioticocoluna",
+      abiotico_coluna: "tbabioticocoluna",
+      "abiotico-coluna": "tbabioticocoluna",
+    };
+
+    if (FIXES[t]) return FIXES[t];
+
+    // heurística extra: se houver "...scoluna" (plural antes de 'coluna') normaliza para singular
+    t = t.replace(/scoluna$/, "coluna");
+
+    // correções genéricas: se houver 'abioticos' -> 'abiotico' antes de 'coluna'
+    t = t.replace(/abioticoscoluna$/, "abioticocoluna");
+
+    // última garantia: remover caracteres inválidos
+    t = t.replace(/[^a-z0-9_]/g, "");
+
+    return t;
+  }
+
+  // provider detection (kept but small improvements)
+  function getProviderForApi(apiName?: string): string | null {
+    if (!apiName) return null;
+    const key = String(apiName);
+
+    try {
+      if (responsibleFromMetadata && typeof responsibleFromMetadata === "object") {
+        const resp = responsibleFromMetadata[key] ?? responsibleFromMetadata[key.toLowerCase()];
+        if (resp) {
+          const r = String(resp).toLowerCase();
+          if (r.includes("furnas")) return "furnas";
+          if (r.includes("balcar")) return "balcar";
+          if (r.includes("sima")) return "sima";
+        }
+      }
+    } catch {}
+
+    try {
+      if (metadata && Array.isArray(metadata)) {
+        const found =
+          metadata.find((m: any) => {
+            if (!m) return false;
+            const candidates = [m.name, m.id, m.tableName, (m as any).apiName, m.title, m.label]
+              .filter(Boolean)
+              .map((c: any) => String(c).toLowerCase());
+            return candidates.includes(key.toLowerCase());
+          }) ||
+          metadata.find((m: any) => {
+            if (!m) return false;
+            const resp = String(m.responsible ?? m.source ?? "").toLowerCase();
+            return (
+              resp &&
+              resp.includes("furnas") &&
+              (m.name === key || String(m.name).toLowerCase().includes(String(key).toLowerCase()))
+            );
+          });
+
+        if (found) {
+          const r = String(found.responsible ?? found.source ?? "").toLowerCase();
+          if (r.includes("furnas")) return "furnas";
+          if (r.includes("balcar")) return "balcar";
+          if (r.includes("sima")) return "sima";
+        }
+      }
+    } catch {}
+
+    try {
+      const n = key.toLowerCase();
+      if (n.startsWith("tb") && n.includes("sima")) return "sima";
+      if (n.startsWith("tb") && n.includes("balcar")) return "balcar";
+      if (n.startsWith("tb")) return "furnas";
+    } catch {}
+
+    return null;
+  }
+
+  /* ---------------- UI helpers and actions ---------------- */
+
+  function toggleReservatorio(id: string | number, checked: boolean) {
+    if (checked) {
+      setSelectedReservatorios((s) => Array.from(new Set([...s, id])));
+    } else {
+      setSelectedReservatorios((s) => s.filter((x) => x !== id));
+    }
+  }
+
+  // Função para buscar datas disponíveis de acordo com os reservatórios selecionados
+  async function fetchAvailableDatesForTableAndReservatorios(
+    selectedReservatorios: (string | number)[],
+    tableApiName: string,
+  ) {
+    if (!selectedReservatorios.length || !tableApiName) {
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
+
+    // tbcampanha é quem guarda as datas, sempre usar provider "furnas"
+    const endpoint = `${API_BASE}/tables/furnas/tbcampanha`;
+
+    let rows: any[] = [];
+    try {
+      const resp = await fetch(endpoint);
+      if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
+      const json = await resp.json();
+      rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+    } catch (err) {
+      console.error("[dates] tbcampanha fetch failed:", err);
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
+
+    // Filtra apenas as datas dos reservatórios selecionados
+    const selectedSet = new Set(selectedReservatorios.map(String));
+    const foundDates = new Set<string>();
+
+    for (const r of rows) {
+      const rid = getField(r, [
+        "idreservatorio",
+        "id_reservatorio",
+        "idReservatorio",
+        "reservatorio",
+      ]);
+      if (rid != null && selectedSet.size && !selectedSet.has(String(rid))) continue;
+
+      const dtRaw = getField(r, ["datainicio", "dataMedida", "dataHora", "data", "datahora"]);
+      if (!dtRaw) continue;
+
+      const d = new Date(dtRaw);
+      if (!isNaN(d.getTime())) foundDates.add(isoDate(d));
+      else {
+        const maybe = String(dtRaw).slice(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(maybe)) foundDates.add(maybe);
+      }
+    }
+
+    const arr = Array.from(foundDates).sort(
+      (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+    );
+
+    setAvailableDates(arr);
+    if (arr.length) {
+      setStartDate(arr[0]);
+      setEndDate(arr[arr.length - 1]);
+    } else {
+      setStartDate("");
+      setEndDate("");
+    }
+  }
+
+  async function fetchAvailableDatesForSelectedReservatorios(reservs: (string | number)[]) {
+    if (!reservs.length) {
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
+
+    const endpoint = `${API_BASE}/tables/furnas/tbcampanha`; // ✅ garante /furnas/
+    try {
+      const resp = await fetch(endpoint);
+      if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
+      const json = await resp.json();
+      const rows: any[] = Array.isArray(json) ? json : json?.data || json?.rows || [];
+
+      const filteredDates = new Set<string>();
+      const selectedSet = new Set(reservs.map((r) => String(r)));
+
+      for (const r of rows) {
+        const rid = getField(r, [
+          "idreservatorio",
+          "id_reservatorio",
+          "idReservatorio",
+          "reservatorio",
+        ]);
+        // if no campaigns loaded, assume enabled; otherwise require match
+        if (!rid && campanhas && campanhas.length) {
+          // if no rid and campaigns exist, skip
+          continue;
+        }
+        if (rid && !selectedSet.has(String(rid)) && reservs.length !== rows.length) continue;
+
+        const dtRaw = getField(r, ["datainicio", "dataMedida", "dataHora", "data", "datahora"]);
+        if (!dtRaw) continue;
+        const d = new Date(dtRaw);
+        if (!isNaN(d.getTime())) filteredDates.add(isoDate(d));
+      }
+
+      const arr = Array.from(filteredDates).sort(
+        (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+      );
+      setAvailableDates(arr);
+      setStartDate(arr[0] ?? "");
+      setEndDate(arr[arr.length - 1] ?? "");
+    } catch (err) {
+      console.error("[dates] tbcampanha fetch failed:", err);
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+    }
+  }
+
+  async function handleConfirmReservatorios() {
+    if (!selectedReservatorios.length) {
+      alert("Selecione ao menos um reservatório antes de continuar.");
+      return;
+    }
+    setStage(2);
+  }
+
+  async function handleConfirmTable() {
+    if (!selectedReservatorios.length) {
+      alert("Selecione ao menos um reservatório antes de confirmar tabela.");
+      return;
+    }
+    if (!table) {
+      alert("Selecione uma tabela antes de confirmar.");
+      return;
+    }
+    setLoading(true);
+    const apiTable = resolveApiTableName(table);
+    console.debug("[debug] resolved apiTable:", apiTable);
+    await fetchAvailableDatesForTableAndReservatorios(selectedReservatorios, apiTable);
+    setStage(3);
+    setLoading(false);
+  }
+
+  async function handleConfirmPeriod() {
+    if (!startDate || !endDate) {
+      alert("Escolha data início e fim.");
+      return;
+    }
+    setLoading(true);
+    const apiTable = resolveApiTableName(table);
+    console.debug("[debug] resolved apiTable:", apiTable);
+    try {
+      await fetchColumnsForTable(apiTable);
+      setStage(4);
+    } catch (err) {
+      console.error("Erro ao buscar colunas:", err);
+      setColumnsForTable([]);
+      alert("Erro ao carregar colunas. Veja console.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchAvailableDatesForReservatorios(reservatorios: (string | number)[]) {
+    if (!reservatorios.length) {
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
+
+    // Monta query para tbcampanha filtrando por idreservatorio
+    const ids = reservatorios.map(String).join(",");
+    const url = `${API_BASE}/tables/furnas/tbcampanha?colunas=dataMedida,idreservatorio&idreservatorio=${encodeURIComponent(ids)}`;
+
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
+      const json = await resp.json();
+      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+
+      const datesSet = new Set<string>();
+      for (const r of rows) {
+        const dtRaw = getField(r, [
+          "dataMedida",
+          "datamedida",
+          "dataHora",
+          "datahora",
+          "datainicio",
+          "data",
+        ]);
+        if (!dtRaw) continue;
+        const d = new Date(dtRaw);
+        if (!isNaN(d.getTime())) datesSet.add(isoDate(d));
+      }
+
+      const sortedDates = Array.from(datesSet).sort(
+        (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+      );
+      setAvailableDates(sortedDates);
+      setStartDate(sortedDates[0] ?? "");
+      setEndDate(sortedDates[sortedDates.length - 1] ?? "");
+    } catch (err) {
+      console.error("Erro ao buscar datas:", err);
+      setAvailableDates([]);
+      setStartDate("");
+      setEndDate("");
+    }
+  }
+
+  async function fetchColumnsForTable(tableName: string) {
+    setColumnsForTable([]);
+    if (!tableName) return;
+
+    const apiTable = resolveApiTableName(tableName);
+    // garante provider (por padrão 'furnas' se heurística falhar)
+    const provider = getProviderForApi(apiTable) || "furnas";
+
+    // tentativas de endpoint, do mais específico ao fallback
+    const tryUrls: string[] = [
+      `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}`,
+      `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida,idreservatorio`,
+      `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida`,
+      // fallback sem /tables/ (alguns endpoints do backend usam outra rota)
+      `${API_BASE}/${provider}/${encodeURIComponent(apiTable)}`,
+      // generic fallback (sem provider) — mantido por segurança
+      `${API_BASE}/tables/${encodeURIComponent(apiTable)}`,
+      `${API_BASE}/${encodeURIComponent(apiTable)}`,
+    ];
+
+    for (const url of tryUrls) {
+      try {
+        console.debug("[fetchColumnsForTable] trying url:", url);
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.debug("[fetchColumnsForTable] not ok:", res.status, url);
+          continue;
+        }
+        const j = await res.json();
+        const rows = Array.isArray(j) ? j : j?.data || j?.rows || [];
+        if (rows && rows.length) {
+          const keys = Object.keys(rows[0] || {}).map((k) => {
+            const val = rows[0][k];
+            const type =
+              typeof val === "number"
+                ? "number"
+                : /data|hora|inicio|fim|medida/i.test(k)
+                  ? "date"
+                  : "string";
+            return { nome: k, label: k, type };
+          });
+          setColumnsForTable(keys);
+          return;
+        }
+      } catch (err) {
+        console.warn("[fetchColumnsForTable] attempt error:", err);
+        continue;
+      }
+    }
+
+    setColumnsForTable([]);
+    console.warn("[fetchColumnsForTable] no columns found for", apiTable);
+  }
+
+  function toggleColumnLocal(name: string) {
+    if (isIdOrDateColumn(name)) return;
+    setSelectedColumns((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
+  }
+
+  /**
+   * handleGenerateTableForCurrentSelection
+   * - Builds colsParam WITHOUT idreservatorio
+   * - Fetches rows from provider-aware endpoint
+   * - Filters rows by selectedReservatorios using:
+   *    - idreservatorio in row OR
+   *    - idcampanha in row -> lookup campanhas[] to resolve idreservatorio
+   */
+  async function handleGenerateTableForCurrentSelection() {
+    if (!selectedReservatorios.length) {
+      alert("Selecione ao menos um reservatório.");
+      return;
+    }
+    if (!selectedColumns.length) {
+      alert("Selecione ao menos uma coluna para visualizar/exportar.");
+      return;
+    }
+    if (!startDate || !endDate) {
+      alert("Escolha período.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const apiTable = resolveApiTableName(table);
+      console.debug("[debug] resolved apiTable:", apiTable);
+      const provider = getProviderForApi(apiTable) || "furnas";
+      // determine data column expected by provider/backend
+      const dataCol = provider === "furnas" ? "dataMedida" : "dataHora";
+
+      // IMPORTANT: NÃO incluir idreservatorio nas colunas se a tabela não possuir
+      // para evitar fetch errado. Vamos pedir apenas data + selectedColumns.
+      const cols = [dataCol, ...selectedColumns].filter(Boolean);
+      const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
+
+      const endpoint = `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=${colsParam}`;
+
+      console.debug("[generate-table] fetching endpoint:", endpoint);
+      const resp = await fetch(endpoint);
+      if (!resp.ok) {
+        throw new Error(`fetch failed: ${resp.status} ${resp.statusText}`);
+      }
+      const json = await resp.json();
+      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+      console.debug("[generate-table] fetched rows:", rows?.length ?? 0);
+
+      // Agora filtramos por campanha/reservatório usando as informações de campanha (tbcampanha)
+      // Algumas tabelas não têm idreservatorio — nesses casos, precisamos usar tbcampanha para relacionar.
+      // Vamos tentar obter idcampanha -> idreservatorio se for necessário.
+      const needsReservFilter = rows.some((r: any) =>
+        ["idreservatorio", "id_reservatorio", "reservatorio", "idReservatorio"].some(
+          (k) => r[k] !== undefined,
+        ),
+      );
+
+      let enrichedRows = rows;
+
+      if (!needsReservFilter) {
+        // tabela não traz idReservatorio — então filtramos pela data através de tbcampanha:
+        // obter campanhas do período selecionado para os reservatórios escolhidos
+        try {
+          const campUrl = `${API_BASE}/tables/furnas/tbcampanha?colunas=idcampanha,idreservatorio,datainicio,datafim`;
+          const campResp = await fetch(campUrl);
+          if (campResp.ok) {
+            const campJson = await campResp.json();
+            const campRows = Array.isArray(campJson)
+              ? campJson
+              : campJson?.data || campJson?.rows || [];
+            // criar set de campanhas válidas (pelo intervalo e reservatório)
+            const validCampaigns = new Set(
+              campRows
+                .filter((c: any) => {
+                  const rid = c.idreservatorio ?? c.id_reservatorio ?? c.idReservatorio ?? null;
+                  if (!rid) return false;
+                  if (!selectedReservatorios.some((sr) => String(sr) === String(rid))) return false;
+                  const start = new Date(c.datainicio ?? c.datainicio);
+                  const end = new Date(c.datafim ?? c.datafim);
+                  const selStart = new Date(startDate);
+                  const selEnd = new Date(endDate);
+                  // campaign overlaps selected period?
+                  return !(end < selStart || start > selEnd);
+                })
+                .map((c: any) => String(c.idcampanha ?? c.id_campanha ?? c.id)),
+            );
+
+            // if table contains idcampanha column, filter by campaign
+            enrichedRows = rows.filter((r: any) => {
+              const cid = r.idcampanha ?? r.id_campanha ?? r.idCampanha ?? r.campanha ?? null;
+              if (cid != null) {
+                return validCampaigns.has(String(cid));
+              }
+              // fallback: keep row and rely on date compare below (we still require date inside range)
+              return true;
+            });
+          }
+        } catch (err) {
+          console.warn("[generate-table] campanha fetch/filter failed:", err);
+        }
+      }
+
+      // final date filter (aplica tanto para tabelas com idreservatorio quanto para que não têm)
+      const filtered = (enrichedRows || []).filter((r: any) => {
+        const dv = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data ?? null;
+        if (!dv) return false;
+        const d = new Date(dv);
+        if (isNaN(d.getTime())) return false;
+        const day = isoDate(d);
+        return day >= startDate && day <= endDate;
+      });
+
+      console.debug("[generate-table] filtered rows:", filtered.length);
+
+      setData(filtered);
+      setShowTable(true);
+      setView("chart");
+      setTimeout(
+        () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
+        50,
+      );
+    } catch (err) {
+      console.error("[generate-table] error fetching/processing data:", err);
+      alert("Erro ao gerar tabela. Veja console para detalhes.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   /* ================= metadata-derived helpers ================= */
@@ -1420,6 +1545,7 @@ export default function TablesPage(): JSX.Element {
       alert("Data final deve ser maior ou igual à data de início!");
     }
   }
+
   /* ---------------- UI render ---------------- */
   return (
     <Page>
@@ -1445,7 +1571,6 @@ export default function TablesPage(): JSX.Element {
                           const enabled = reservatorios
                             .filter((r: any) => {
                               const id = r.idreservatorio ?? r.id ?? r.idReservatorio;
-                              // se não houver dados de campanha carregados, considerar todos como habilitados
                               if (!campanhas || campanhas.length === 0) return true;
                               const hasCamp = campanhas.some((c: any) => {
                                 const cid =
@@ -1463,7 +1588,6 @@ export default function TablesPage(): JSX.Element {
                           setSelectedReservatorios([]);
                         }
                       }}
-                      // deixar esse checkbox habilitado — seleção em massa respeita campanhas
                     />
                     <span>Selecionar todos os reservatórios</span>
                   </label>
@@ -1475,7 +1599,7 @@ export default function TablesPage(): JSX.Element {
                     overflowY: "auto",
                     marginTop: 8,
                     padding: 8,
-                    border: "1px solid #eef2ff",
+                    border: `1px solid ${MUTED_BLUE}`,
                     borderRadius: 8,
                   }}
                 >
@@ -1484,7 +1608,6 @@ export default function TablesPage(): JSX.Element {
                       const id = r.idreservatorio ?? r.id ?? r.idReservatorio;
                       const checked = selectedReservatorios.some((s) => String(s) === String(id));
 
-                      // determinar se este reservatório tem campanha (usar 'campanhas' carregadas)
                       const hasCampaign =
                         campanhas && campanhas.length
                           ? campanhas.some((c: any) => {
@@ -1495,7 +1618,7 @@ export default function TablesPage(): JSX.Element {
                                 c.reservatorio;
                               return String(cid) === String(id);
                             })
-                          : true; // se campanhas não carregadas, assumir true para não bloquear UX
+                          : true;
 
                       const disabled = !hasCampaign;
 
@@ -1509,7 +1632,6 @@ export default function TablesPage(): JSX.Element {
                             checked={checked}
                             disabled={disabled}
                             onChange={(e) => {
-                              // apenas permitir toggle para itens habilitados (mas disabled previne a ação)
                               setSelectAllReservatorios(false);
                               toggleReservatorio(id, e.target.checked);
                             }}
@@ -1679,66 +1801,19 @@ export default function TablesPage(): JSX.Element {
         <RightPanel>
           <ControlsTopRight>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <DownloadButtonsContainer>
-                <DownloadButton
-                  variant="csv"
-                  onClick={async () => {
-                    const apiTable = table;
-                    const isFurnas =
-                      responsibleFromMetadata &&
-                      apiTable &&
-                      String(responsibleFromMetadata[apiTable]).includes("Furnas");
-                    if (isFurnas) {
-                      await handleDownloadCSV();
-                    } else {
-                      downloadCSV();
-                    }
-                  }}
-                  disabled={!data || data.length === 0 || loading}
-                >
-                  📥 CSV
-                </DownloadButton>
-                <DownloadButton
-                  variant="json"
-                  onClick={handleDownloadJSON}
-                  disabled={!data || data.length === 0 || loading}
-                >
-                  📥 JSON
-                </DownloadButton>
-                <DownloadButton
-                  variant="pdf"
-                  onClick={handleDownloadPDF}
-                  disabled={!data || data.length === 0 || loading}
-                >
-                  📥 PDF
-                </DownloadButton>
-              </DownloadButtonsContainer>
+              <DownloadButtonsWrapper>
+                <LeftSection>
+                  <Button onClick={() => setView((v) => (v === "chart" ? "map" : "chart"))}>
+                    {view === "chart" ? "Ver mapa" : "Ver tabela"}
+                  </Button>
+                </LeftSection>
 
-              <Button onClick={() => setView((v) => (v === "chart" ? "map" : "chart"))}>
-                {view === "chart" ? "Ver mapa" : "Ver tabela"}
-              </Button>
-
-              <Button onClick={() => setShowTableView((s) => !s)}>Visualizar Tabela ▾</Button>
-
-              <Button
-                onClick={() => {
-                  // fallback generator kept for convenience
-                  setLoading(true);
-                  axios
-                    .get(`${API_BASE}/sima/all`)
-                    .then((res) => {
-                      const payload: any = res.data;
-                      setData(payload?.data ?? payload ?? []);
-                      setShowTable(true);
-                    })
-                    .catch((err) => console.error(err))
-                    .finally(() => setLoading(false));
-                }}
-                disabled={loading}
-                style={{ marginLeft: 6 }}
-              >
-                {loading ? "Carregando..." : "Gerar Tabelas"}
-              </Button>
+                <RightSection>
+                  <DownloadButton variant="csv">Baixar CSV</DownloadButton>
+                  <DownloadButton variant="json">Baixar JSON</DownloadButton>
+                  <DownloadButton variant="pdf">Baixar PDF</DownloadButton>
+                </RightSection>
+              </DownloadButtonsWrapper>
             </div>
           </ControlsTopRight>
 
@@ -1819,19 +1894,23 @@ export default function TablesPage(): JSX.Element {
                           width: "100%",
                         }}
                       >
-                        <SimaTable
-                          columns={
-                            selectedColumns && selectedColumns.length
-                              ? selectedColumns.map((c) => ({ key: c, label: c }))
-                              : Object.keys(data[0] || {})
-                                  .slice(0, 6)
-                                  .map((k) => ({ key: k, label: k }))
-                          }
-                          data={data}
-                          page={1}
-                          pageSize={10}
-                          onPageChange={() => {}}
-                        />
+                        <SimaTableWrapper>
+                          <SimaTable
+                            columns={
+                              selectedColumns && selectedColumns.length
+                                ? selectedColumns.map((c) => ({ key: c, label: c }))
+                                : Object.keys(data[0] || {})
+                                    .slice(0, 6)
+                                    .map((k) => ({ key: k, label: k }))
+                            }
+                            data={data}
+                            page={page}
+                            pageSize={pageSize}
+                            onPageChange={(newPage: number) => handlePageChange(newPage)}
+                            // se o SimaTable suportar desabilitar toolbar, passa a prop:
+                            showToolbar={false}
+                          />
+                        </SimaTableWrapper>
                       </div>
                     ) : (
                       <div style={{ padding: 16, color: "#64748b" }}>
