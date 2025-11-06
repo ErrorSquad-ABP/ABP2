@@ -2,7 +2,7 @@
 // front/src/pages/TablesPage.tsx
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
 import SimaTable from "../components/SimaTable";
 import axios from "axios";
@@ -27,21 +27,15 @@ interface Campanha {
   // maybe other fields
 }
 
-type ColumnMeta = {
-  name?: string;
-  nome?: string;
-  label?: string;
-  type?: "number" | "string" | "date" | "geom";
-};
-
 type TableMetadata = {
   id?: string;
-  name?: string; // API table name (ex: tbabioticocoluna)
-  title?: string; // display title (ex: "Abióticos coluna")
+  name?: string;
+  title?: string;
   label?: string;
   description?: string;
   colunas?: Array<object>;
   responsible?: string;
+  source?: string; // <-- adicionar esta linha
 };
 
 function isoDate(date: Date) {
@@ -65,10 +59,6 @@ function getField(obj: any, candidates: string[] = []) {
     }
   }
   return undefined;
-}
-
-function hasField(obj: any, candidates: string[] = []) {
-  return getField(obj, candidates) !== undefined;
 }
 
 /* ================= Styled (azul / branco) ================= */
@@ -233,32 +223,6 @@ const ChartMain = styled.div`
   min-height: 420px;
 `;
 
-/* Tooltip kept light — can be reused if needed */
-const Tooltip = styled.div<{ left: number; top: number; color: string }>`
-  position: absolute;
-  left: ${(p) => p.left}px;
-  top: ${(p) => p.top}px;
-  transform: translate(-8px, -100%);
-  background: ${SURFACE};
-  border-radius: 8px;
-  padding: 8px 10px;
-  box-shadow: 0 6px 20px rgba(2, 6, 23, 0.12);
-  font-size: 13px;
-`;
-
-const Legend = styled.div`
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-`;
-
-const LegendItem = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-`;
-
 const MapPlaceholder = styled.div`
   position: relative;
   flex: 1;
@@ -391,37 +355,6 @@ const TableElement = styled.table`
   }
 `;
 
-/* ---------------- Spinner (correto) ---------------- */
-const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
-const SpinnerWrapper = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-`;
-
-const SpinnerCircle = styled.div`
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 3px solid rgba(37, 99, 235, 0.15);
-  border-top-color: rgba(37, 99, 235, 1);
-  animation: ${spin} 0.9s linear infinite;
-`;
-
-function Spinner() {
-  return (
-    <SpinnerWrapper aria-hidden>
-      <SpinnerCircle />
-    </SpinnerWrapper>
-  );
-}
-
 /* ---------------- Download buttons & table visuals (Sima-style) ---------------- */
 
 const DownloadButtonsWrapper = styled.div`
@@ -474,11 +407,6 @@ const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
     transform: none;
     box-shadow: none;
   }
-
-  ${(p) =>
-    p.variant === "csv" || p.variant === "json" || p.variant === "xml"
-      ? `border-left: 4px solid #007bff;`
-      : `border-left: 4px solid #007bff;`}
 `;
 
 /* Replaces previous Button style to match SimaTablesPage visuals */
@@ -549,7 +477,6 @@ export default function TablesPage(): JSX.Element {
   );
   const [endDate, setEndDate] = useState<string>(() => isoDate(new Date()));
   const [table, setTable] = useState<string>(""); // stores API table name (ex: tbabioticocoluna)
-  const [columns, setColumns] = useState<ColumnMeta[]>([]);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [responsible, setResponsible] = useState<string>();
   const [metadata, setMetadata] = useState<TableMetadata[] | null>(null);
@@ -565,7 +492,6 @@ export default function TablesPage(): JSX.Element {
   const [tablesOptions, setTablesOptions] = useState<Array<{ api: string; label: string }>>([]);
 
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
-  const [orderedCampanhas, setOrderedCampanhas] = useState<Campanha[]>([]);
   const [reservatorios, setReservatorios] = useState<any[]>([]);
 
   // novo: selected reservatorios (etapa 1)
@@ -578,7 +504,7 @@ export default function TablesPage(): JSX.Element {
   const [showTable, setShowTable] = useState<boolean>(false);
 
   // novo: controle de exibição do preview de tabela (botão Visualizar Tabela)
-  const [showTableView, setShowTableView] = useState<boolean>(false);
+  const [showTableView] = useState<boolean>(false);
 
   // available dates derived from tbcampanha filtered by selectedReservatorios
   const [availableDates, setAvailableDates] = useState<string[]>([]);
@@ -597,7 +523,7 @@ export default function TablesPage(): JSX.Element {
   const chartMainRef = useRef<HTMLDivElement | null>(null);
   // pagination state for SimaTable
   const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize] = useState<number>(10);
 
   function handlePageChange(newPage: number) {
     // atualiza a página sem forçar scroll pesado
@@ -607,189 +533,6 @@ export default function TablesPage(): JSX.Element {
   }
 
   /* ================= helper download wrappers (added) ================= */
-
-  async function handleDownloadCSV() {
-    if (!data || data.length === 0) {
-      alert("Gere os dados da tabela primeiro para exportar.");
-      return;
-    }
-    // try provider-specific endpoint if available
-    try {
-      if (table) {
-        const provider = getProviderForApi(table) || "furnas";
-        const params = new URLSearchParams();
-        if (startDate) params.append("startDate", startDate);
-        if (endDate) params.append("endDate", endDate);
-        if (selectedColumns.length > 0) params.append("columns", selectedColumns.join(","));
-
-        const response = await fetch(
-          `${API_BASE}/${provider}/${encodeURIComponent(table)}/download/csv?${params.toString()}`,
-          {
-            method: "GET",
-            headers: { Accept: "text/csv" },
-          },
-        );
-
-        if (response.ok) {
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `${table}_${new Date().toISOString().split("T")[0]}.csv`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
-          return;
-        }
-      }
-    } catch (err) {
-      console.warn("download csv via provider failed:", err);
-    }
-    // fallback local
-    downloadCSV();
-  }
-
-  async function handleDownloadJSON() {
-    if (!data || data.length === 0) {
-      alert("Gere os dados da tabela primeiro para exportar.");
-      return;
-    }
-
-    try {
-      if (table) {
-        const provider = getProviderForApi(table) || "furnas";
-        const params = new URLSearchParams();
-        if (startDate) params.append("startDate", startDate);
-        if (endDate) params.append("endDate", endDate);
-        if (selectedColumns.length > 0) params.append("columns", selectedColumns.join(","));
-
-        const response = await axios.get(
-          `${API_BASE}/${provider}/${encodeURIComponent(table)}/download/json?${params.toString()}`,
-          { responseType: "blob" },
-        );
-
-        const blob = new Blob([response.data]);
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${table}_${new Date().toISOString().split("T")[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        return;
-      }
-    } catch (error) {
-      console.error("Erro ao exportar JSON via provider:", error);
-    }
-
-    // fallback to local JSON
-    const jsonData = {
-      table: table || "unknown",
-      exportedAt: new Date().toISOString(),
-      totalRecords: data.length,
-      data: data,
-    };
-
-    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${table || "data"}_${new Date().toISOString().split("T")[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  }
-
-  async function handleDownloadPDF() {
-    if (!data || data.length === 0) {
-      alert("Gere os dados da tabela primeiro para exportar.");
-      return;
-    }
-
-    try {
-      if (table) {
-        const provider = getProviderForApi(table) || "furnas";
-        const params = new URLSearchParams();
-        if (startDate) params.append("startDate", startDate);
-        if (endDate) params.append("endDate", endDate);
-
-        const response = await axios.get(
-          `${API_BASE}/${provider}/${encodeURIComponent(table)}/download/pdf?${params.toString()}`,
-          { responseType: "blob" },
-        );
-
-        const blob = new Blob([response.data], { type: "application/pdf" });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${table}_${new Date().toISOString().split("T")[0]}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        return;
-      }
-    } catch (error) {
-      console.error("Erro ao exportar PDF via provider:", error);
-    }
-    // fallback
-    exportPDF();
-  }
-
-  function downloadCSV() {
-    if (!data || !data.length) {
-      alert("Gere o dado de tabela para ter dados para exportar.");
-      return;
-    }
-    const headers = Object.keys(data[0] || {});
-    const rows = data.map((r) => headers.map((h) => (r[h] === undefined ? "" : `${r[h]}`)));
-    const csv = [
-      headers.join(","),
-      ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")),
-    ].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${table || "table"}_export.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function exportPDF() {
-    if (!chartRef.current) {
-      alert("Gere/abra a tabela para ter conteúdo para exportar.");
-      return;
-    }
-    const html = `
-      <html>
-        <head>
-          <title>Export PDF</title>
-          <style>
-            body { font-family: Arial, Helvetica, sans-serif; padding: 16px; }
-            .wrap { width: 100%; }
-          </style>
-        </head>
-        <body>
-          <h3>Export - ${table}</h3>
-          <div class="wrap">${chartRef.current.innerHTML}</div>
-        </body>
-      </html>
-    `;
-    const w = window.open("", "_blank");
-    if (!w) {
-      alert("Permita popups para exportar PDF.");
-      return;
-    }
-    w.document.write(html);
-    w.document.close();
-    setTimeout(() => {
-      w.print();
-    }, 500);
-  }
 
   /* ================= metadata load ================= */
 
@@ -904,16 +647,6 @@ export default function TablesPage(): JSX.Element {
     fetchCampanhas();
   }, [table, responsibleFromMetadata]);
 
-  useEffect(() => {
-    if (campanhas) {
-      setOrderedCampanhas(
-        [...campanhas].sort(
-          (a: any, b: any) => new Date(a.datainicio).getTime() - new Date(b.datainicio).getTime(),
-        ),
-      );
-    }
-  }, [campanhas]);
-
   /* ---------------- fetch reservatórios (Furnas) - etapa 1 ---------------- */
   useEffect(() => {
     const fetchReservatorios = async () => {
@@ -941,14 +674,6 @@ export default function TablesPage(): JSX.Element {
 
     fetchReservatorios();
   }, []);
-
-  function testDates(c: Campanha) {
-    if (!orderedCampanhas) {
-      return "Carregando...";
-    } else {
-      return c.datainicio.slice(0, 10).split("-").reverse().join("/");
-    }
-  }
 
   /* ---------------- helper: resolveApiTableName (defensive) ---------------- */
   // normalize -> garante formato de "db table name" (ex: tbabioticocoluna)
@@ -1220,53 +945,6 @@ export default function TablesPage(): JSX.Element {
     }
   }
 
-  async function fetchAvailableDatesForReservatorios(reservatorios: (string | number)[]) {
-    if (!reservatorios.length) {
-      setAvailableDates([]);
-      setStartDate("");
-      setEndDate("");
-      return;
-    }
-
-    // Monta query para tbcampanha filtrando por idreservatorio
-    const ids = reservatorios.map(String).join(",");
-    const url = `${API_BASE}/tables/furnas/tbcampanha?colunas=dataMedida,idreservatorio&idreservatorio=${encodeURIComponent(ids)}`;
-
-    try {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
-      const json = await resp.json();
-      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
-
-      const datesSet = new Set<string>();
-      for (const r of rows) {
-        const dtRaw = getField(r, [
-          "dataMedida",
-          "datamedida",
-          "dataHora",
-          "datahora",
-          "datainicio",
-          "data",
-        ]);
-        if (!dtRaw) continue;
-        const d = new Date(dtRaw);
-        if (!isNaN(d.getTime())) datesSet.add(isoDate(d));
-      }
-
-      const sortedDates = Array.from(datesSet).sort(
-        (a, b) => new Date(a).getTime() - new Date(b).getTime(),
-      );
-      setAvailableDates(sortedDates);
-      setStartDate(sortedDates[0] ?? "");
-      setEndDate(sortedDates[sortedDates.length - 1] ?? "");
-    } catch (err) {
-      console.error("Erro ao buscar datas:", err);
-      setAvailableDates([]);
-      setStartDate("");
-      setEndDate("");
-    }
-  }
-
   async function fetchColumnsForTable(tableName: string) {
     setColumnsForTable([]);
     if (!tableName) return;
@@ -1472,7 +1150,7 @@ export default function TablesPage(): JSX.Element {
 
   useEffect(() => {
     if (table) {
-      setColumns(columnsFromMetadata[table] || []);
+      setColumnsForTable(columnsFromMetadata[table] || []);
       setResponsible(responsibleFromMetadata ? responsibleFromMetadata[table] : undefined);
     }
   }, [table, columnsFromMetadata, responsibleFromMetadata]);
@@ -1907,8 +1585,6 @@ export default function TablesPage(): JSX.Element {
                             page={page}
                             pageSize={pageSize}
                             onPageChange={(newPage: number) => handlePageChange(newPage)}
-                            // se o SimaTable suportar desabilitar toolbar, passa a prop:
-                            showToolbar={false}
                           />
                         </SimaTableWrapper>
                       </div>
