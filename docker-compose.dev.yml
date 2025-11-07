@@ -1,58 +1,128 @@
-version: "3.9"
-
 services:
-  front:
-    build:
-      context: ./front
-      dockerfile: Dockerfile
-    container_name: abp2-front-dev
-    env_file:
-      - ./.env
+  postgres-furnas-campanha:
+    image: postgres:17-alpine
+    container_name: postgres-furnas-campanha
+    restart: always
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://server:3001}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bdfurnas-campanha
     ports:
-      - "${FRONT_HOST_PORT:-3002}:8080"   # host:container (ajuste se seu Dockerfile usar outra porta)
+      - "5433:5432"
     volumes:
-      - ./front:/app
-      - /app/node_modules
-    depends_on:
-      - server
-      - postgres
+      - furnas_campanha_data:/var/lib/postgresql/data
+      - ./furnas-campanha/create-table.sql:/docker-entrypoint-initdb.d/1-create-table.sql
+      - ./furnas-campanha/copy-table.sql:/docker-entrypoint-initdb.d/2-copy-table.sql
+      - ./furnas-campanha/csv:/csv
+    networks:
+      - abp-network
 
-  server:
+  postgres-sima:
+    image: postgres:17-alpine
+    container_name: postgres-sima
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bdsima
+    ports:
+      - "5434:5432"
+    volumes:
+      - sima_data:/var/lib/postgresql/data
+      - ./sima/create-table.sql:/docker-entrypoint-initdb.d/1-create-table.sql
+      - ./sima/copy-table.sql:/docker-entrypoint-initdb.d/2-copy-table.sql
+      - ./sima/csv:/csv
+    networks:
+      - abp-network
+
+  postgres-balcar-campanha:
+    image: postgres:17-alpine
+    container_name: postgres-balcar-campanha
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bdbalcar-campanha
+    ports:
+      - "5435:5432"
+    volumes:
+      - balcar_campanha_data:/var/lib/postgresql/data
+      - ./balcar-campanha/create-table.sql:/docker-entrypoint-initdb.d/1-create-table.sql
+      - ./balcar-campanha/copy-table.sql:/docker-entrypoint-initdb.d/2-copy-table.sql
+      - ./balcar-campanha/csv:/csv
+    networks:
+      - abp-network
+
+  server-app:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: abp2-server-dev
-    env_file:
-      - ./.env
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=${DATABASE_URL}
-    ports:
-      - "${SERVER_HOST_PORT:-3001}:3001"
-    volumes:
-      - ./server:/app
-      - /app/node_modules
+    container_name: server-app
+    restart: always
+    networks:
+      - abp-network
     depends_on:
-      - postgres
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O- http://localhost:3001/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres:
-    image: postgres:15
-    container_name: abp2-postgres-dev
+      - postgres-furnas-campanha
+      - postgres-sima
+      - postgres-balcar-campanha
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-abp2}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-abp2pass}
-      POSTGRES_DB: ${POSTGRES_DB:-abp2db}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      PORT: 3000
+      HOST_PORT: 3001
+
+      DB_FURNAS_HOST: postgres-furnas-campanha
+      DB_FURNAS_PORT: 5432
+      DB_FURNAS_USER: postgres
+      DB_FURNAS_PASSWORD: postgres
+      DB_FURNAS_NAME: bdfurnas-campanha
+
+      DB_SIMA_HOST: postgres-sima
+      DB_SIMA_PORT: 5432
+      DB_SIMA_USER: postgres
+      DB_SIMA_PASSWORD: postgres
+      DB_SIMA_NAME: bdsima
+
+      DB_BALCAR_HOST: postgres-balcar-campanha
+      DB_BALCAR_PORT: 5432
+      DB_BALCAR_USER: postgres
+      DB_BALCAR_PASSWORD: postgres
+      DB_BALCAR_NAME: bdbalcar-campanha
+
+      PAGE_SIZE: 20
+      LOG_LEVEL: debug
+      CORS_ORIGIN: http://localhost:3002
     volumes:
-      - pgdata_dev:/var/lib/postgresql/data
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./logs:/usr/src/app/logs
+    command: npm run dev
+    ports:
+      - "3001:3000"
+
+  front-app:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: front-app
+    restart: always
+    networks:
+      - abp-network
+    depends_on:
+      - server-app
+    environment:
+      VITE_SERVER_PORT: 3001
+      CHOKIDAR_USEPOLLING: "true" # garante hot reload dentro do container
+    volumes:
+      - ./front:/usr/src/app # código local
+      - /usr/src/app/node_modules # mantém dependências no container
+    command: npm run dev -- --host
+    ports:
+      - "3002:5173"
 
 volumes:
-  pgdata_dev:
+  furnas_campanha_data:
+  sima_data:
+  balcar_campanha_data:
+
+networks:
+  abp-network:
+    driver: bridge
