@@ -1,50 +1,51 @@
 version: "3.9"
 
 services:
+  # ================= FRONTEND =================
   front:
     build:
       context: ./front
       dockerfile: Dockerfile
-    container_name: abp2-front-dev
+    container_name: abp2-front
+    restart: unless-stopped
     env_file:
-      - ./.env
+      - .env
     environment:
       - VITE_API_URL=${VITE_API_URL:-http://server:3001}
     ports:
-      - "${FRONT_HOST_PORT:-3002}:8080"   # host:container (ajuste se seu Dockerfile usar outra porta)
-    volumes:
-      - ./front:/app
-      - /app/node_modules
+      - "${FRONT_HOST_PORT:-3002}:8080"   # host:container
     depends_on:
       - server
-      - postgres
 
+  # ================= BACKEND =================
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: abp2-server-dev
+    container_name: abp2-server
+    restart: unless-stopped
     env_file:
-      - ./.env
+      - .env
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=${DATABASE_URL}
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:-postgres://abp2:abp2pass@postgres:5432/abp2db}
+      - PORT=3001
     ports:
       - "${SERVER_HOST_PORT:-3001}:3001"
-    volumes:
-      - ./server:/app
-      - /app/node_modules
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O- http://localhost:3001/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # ================= DATABASE =================
   postgres:
     image: postgres:15
-    container_name: abp2-postgres-dev
+    container_name: abp2-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-abp2}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-abp2pass}
@@ -52,7 +53,12 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - pgdata_dev:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-abp2}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  pgdata_dev:
+  pgdata:
