@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    image: abp2/front:latest
+    container_name: abp2-front
+    env_file:
+      - ./.env
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+    ports:
+      - "${FRONT_HOST_PORT:-3002}:80"    # em prod é comum servir build via nginx (ajuste se seu Dockerfile já usa 80/8080)
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: abp2/server:latest
+    container_name: abp2-server
+    env_file:
+      - ./.env
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "${SERVER_HOST_PORT:-3001}:3001"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    container_name: abp2-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-abp2}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-abp2pass}
+      POSTGRES_DB: ${POSTGRES_DB:-abp2db}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata_prod:
