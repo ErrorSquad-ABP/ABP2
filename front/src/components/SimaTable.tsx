@@ -12,22 +12,27 @@ import { chunkArray } from "../utils/chunkArray";
 
 /* ----------------- Types ----------------- */
 
-type ColumnDef = {
+// RowData aceita qualquer objeto que possa ser indexado por string
+type RowData = {
+  [key: string]: string | number | boolean | null | undefined;
+};
+
+type ColumnDef<T = RowData> = {
   key: string;
   label: string;
   sortable?: boolean;
-  render?: (value: any, row: any) => JSX.Element | string;
+  render?: (value: string | number | boolean | null | undefined, row: T) => JSX.Element | string;
 };
 
-interface SimaTableProps {
-  columns: ColumnDef[];
-  data: any[];
+interface SimaTableProps<T = RowData> {
+  columns: ColumnDef<T>[];
+  data: T[];
   page?: number;
   pageSize?: number;
   onPageChange?: (p: number) => void;
   onSort?: (field: string, order: "asc" | "desc") => void;
   tableName?: string;
-  downloadParams?: { startDate?: string; endDate?: string } | any;
+  downloadParams?: { startDate?: string; endDate?: string } | Record<string, unknown>;
   onDownload?: (format: "csv" | "json" | "pdf") => void;
 }
 
@@ -216,7 +221,7 @@ const DownloadOptions = styled.div`
 
 /* ----------------- Component ----------------- */
 
-const SimaTable = ({
+function SimaTable<T = RowData>({
   columns,
   data,
   page: controlledPage,
@@ -225,7 +230,7 @@ const SimaTable = ({
   onSort,
   tableName = "data",
   onDownload,
-}: SimaTableProps) => {
+}: SimaTableProps<T>) {
   // pagination internal
   const [internalPage, setInternalPage] = useState(0);
 
@@ -247,9 +252,9 @@ const SimaTable = ({
   const sortedData = useMemo(() => {
     if (!sortConfig) return data;
     const { field, order } = sortConfig;
-    return [...data].sort((a: any, b: any) => {
-      const av = a?.[field];
-      const bv = b?.[field];
+    return [...data].sort((a: T, b: T) => {
+      const av = (a as Record<string, unknown>)?.[field];
+      const bv = (b as Record<string, unknown>)?.[field];
       if (av === bv) return 0;
       if (av == null) return order === "asc" ? -1 : 1;
       if (bv == null) return order === "asc" ? 1 : -1;
@@ -331,8 +336,11 @@ const SimaTable = ({
         label: columns.find((c) => c.key === k)?.label ?? k,
       })),
       data: data.map((row) => {
-        const o: any = {};
-        visibleKeys.forEach((k) => (o[k] = row?.[k] ?? null));
+        const o: Record<string, unknown> = {};
+        visibleKeys.forEach((k) => {
+          const value = (row as Record<string, unknown>)?.[k];
+          o[k] = value ?? null;
+        });
         return o;
       }),
     };
@@ -479,19 +487,35 @@ const SimaTable = ({
           </tr>
         </thead>
         <tbody>
-          {(pages[page] ?? []).map((row, rowIndex) => (
-            <tr key={(row && (row.id || row.idsima || `row-${rowIndex}`)) ?? rowIndex}>
-              {columns
-                .filter((c) => visibleColumns.includes(c.key))
-                .map((col) => (
-                  <td key={col.key}>
-                    {col.render
-                      ? col.render((row as any)[col.key], row)
-                      : String((row as any)[col.key] ?? "-")}
-                  </td>
-                ))}
-            </tr>
-          ))}
+          {(pages[page] ?? []).map((row, rowIndex) => {
+            const rowObj = row as Record<string, unknown>;
+            const rowKey =
+              row &&
+              (typeof rowObj.id === "string" || typeof rowObj.id === "number"
+                ? rowObj.id
+                : typeof rowObj.idsima === "string" || typeof rowObj.idsima === "number"
+                  ? rowObj.idsima
+                  : `row-${rowIndex}`);
+            return (
+              <tr key={rowKey ?? rowIndex}>
+                {columns
+                  .filter((c) => visibleColumns.includes(c.key))
+                  .map((col) => {
+                    const rowValue = (row as Record<string, unknown>)?.[col.key];
+                    return (
+                      <td key={col.key}>
+                        {col.render
+                          ? col.render(
+                              rowValue as string | number | boolean | null | undefined,
+                              row,
+                            )
+                          : String(rowValue ?? "-")}
+                      </td>
+                    );
+                  })}
+              </tr>
+            );
+          })}
         </tbody>
       </Table>
 
@@ -511,6 +535,6 @@ const SimaTable = ({
       </PaginationControls>
     </TableWrapper>
   );
-};
+}
 
 export default SimaTable;

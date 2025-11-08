@@ -6,7 +6,7 @@ export interface DownloadParams {
   startDate?: string;
   endDate?: string;
   columns?: string[];
-  filters?: Record<string, any>;
+  filters?: Record<string, string | number | boolean | null | undefined>;
 }
 
 export const furnasApi = {
