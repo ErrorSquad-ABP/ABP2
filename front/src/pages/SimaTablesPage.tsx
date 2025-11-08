@@ -19,7 +19,8 @@ import MapBrazil from "../components/MapBrazil";
  * e filtra localmente por idestacao e intervalo de datas. Também salva dados brutos para tabela.
  */
 
-const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
+const API_BASE =
+  import.meta.env.VITE_API_URL || import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
 
 /* ---------------- helpers & constants ---------------- */
 
