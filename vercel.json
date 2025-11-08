@@ -3,7 +3,6 @@
   "outputDirectory": "front/dist",
   "devCommand": "cd front && npm run dev",
   "installCommand": "cd front && npm install",
-  "framework": "vite",
-  "rootDirectory": "front"
+  "framework": "vite"
 }
 
