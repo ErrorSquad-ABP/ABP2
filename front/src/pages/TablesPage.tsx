@@ -15,7 +15,7 @@ import axios from "axios";
  * - Filtra linhas por reservatório usando idreservatorio direto ou via idcampanha -> campanhas.
  */
 
-const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
+const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
 
 interface Campanha {
   idcampanha: number;
