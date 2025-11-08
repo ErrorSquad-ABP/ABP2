@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: abp2-backend
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # PORT é definido automaticamente pelo Render (não precisa configurar)
+      # Configure as variáveis abaixo no dashboard do Render (Environment Variables):
+      # DB_SIMA_HOST, DB_SIMA_USER, DB_SIMA_PASSWORD, DB_SIMA_NAME, DB_SIMA_PORT
+      # DB_BALCAR_HOST, DB_BALCAR_USER, DB_BALCAR_PASSWORD, DB_BALCAR_NAME, DB_BALCAR_PORT
+      # DB_FURNAS_HOST, DB_FURNAS_USER, DB_FURNAS_PASSWORD, DB_FURNAS_NAME, DB_FURNAS_PORT
+      # CORS_ORIGIN (após deploy do frontend na Vercel)
+      # PAGE_SIZE, LOG_LEVEL
+
