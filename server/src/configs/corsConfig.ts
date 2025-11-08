@@ -19,14 +19,17 @@ export const corsOptions: CorsOptions = {
     // Verifica se a origin está na lista de permitidas
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
-    } else {
-      // Permite também domínios da Vercel (*.vercel.app)
-      if (origin.endsWith(".vercel.app")) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
+      return;
     }
+
+    // Permite também domínios da Vercel (*.vercel.app)
+    if (origin.endsWith(".vercel.app")) {
+      callback(null, true);
+      return;
+    }
+
+    // Se chegou aqui, não está permitido
+    callback(new Error("Not allowed by CORS"));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],

@@ -5,7 +5,6 @@ import { Pool } from "pg";
 
 const sslConfig = {
   rejectUnauthorized: false,
-  sslmode: "require",
 };
 
 export const furnasPool = new Pool({
