@@ -54,7 +54,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
 
 export const downloadCSV = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { startDate, endDate, stations, columns } = req.query;
+    const { startDate, endDate, stations, columns: _columns } = req.query;
 
     let query = `
       SELECT 
