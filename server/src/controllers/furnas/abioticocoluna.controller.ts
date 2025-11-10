@@ -4,15 +4,67 @@ import { logger } from "../../configs/logger";
 
 const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
 
+// Interface para critérios de ordenação
+interface SortCriteria {
+  field: string;
+  direction: "ASC" | "DESC";
+}
+
+// Função para construir cláusula ORDER BY
+const buildOrderByClause = (sortBy?: string, sortOrder?: string): SortCriteria[] => {
+  if (!sortBy) return [];
+
+  const fields = sortBy.split(",");
+  const orders = sortOrder ? sortOrder.split(",") : [];
+
+  return fields.map((field, index) => ({
+    field: field.trim(),
+    direction: (orders[index] || "ASC").toUpperCase() as "ASC" | "DESC",
+  }));
+};
+
+// Função para aplicar ordenação à query
+const applySortToQuery = (baseQuery: string, sortCriteria: SortCriteria[]): string => {
+  if (sortCriteria.length === 0) {
+    return baseQuery;
+  }
+
+  const orderByClauses = sortCriteria.map((criteria) => {
+    // Mapear campos para os nomes corretos da tabela
+    const fieldMap: { [key: string]: string } = {
+      datamedida: "a.datamedida",
+      horamedida: "a.horamedida",
+      profundidade: "a.profundidade",
+      dic: "a.dic",
+      nt: "a.nt",
+      pt: "a.pt",
+      delta13c: "a.delta13c",
+      delta15n: "a.delta15n",
+      nrocampanha: "b.nrocampanha",
+      sitio_nome: "c.nome",
+    };
+
+    const field = fieldMap[criteria.field] || `a.${criteria.field}`;
+    return `${field} ${criteria.direction}`;
+  });
+
+  return `${baseQuery} ORDER BY ${orderByClauses.join(", ")}`;
+};
+
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || PAGE_SIZE;
     const offset = (page - 1) * limit;
 
-    // consulta com joins
-    const result = await furnasPool.query(
-      `
+    // Parâmetros de ordenação múltipla
+    const sortBy = req.query.sortBy as string;
+    const sortOrder = req.query.sortOrder as string;
+
+    const sortCriteria = buildOrderByClause(sortBy, sortOrder);
+
+    // Query base sem ORDER BY fixo
+    let baseQuery = `
       SELECT 
         a.idabioticocoluna,
         a.datamedida,
@@ -34,17 +86,22 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
         ON a.idcampanha = b.idcampanha
       LEFT JOIN tbsitio AS c
         ON a.idsitio = c.idsitio
-      ORDER BY a.datamedida DESC, a.horamedida DESC
-      LIMIT $1 OFFSET $2
-      `,
-      [limit, offset],
-    );
+    `;
 
-    // consulta total de registros
+    // Aplicar ordenação dinâmica
+    const sortedQuery = applySortToQuery(baseQuery, sortCriteria);
+
+    // Query final com paginação
+    const finalQuery = `${sortedQuery} LIMIT $1 OFFSET $2`;
+
+    // Executar consulta
+    const result = await furnasPool.query(finalQuery, [limit, offset]);
+
+    // Consulta total de registros
     const countResult = await furnasPool.query("SELECT COUNT(*) FROM tbabioticocoluna");
     const total = Number(countResult.rows[0].count);
 
-    // dados formatados
+    // Dados formatados
     const data = result.rows.map((row: any) => ({
       idabioticocoluna: row.idabioticocoluna,
       campanha: row.idcampanha
@@ -77,6 +134,8 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
       limit,
       total,
       totalPages: Math.ceil(total / limit),
+      sortBy,
+      sortOrder,
       data,
     });
   } catch (error: any) {
@@ -94,8 +153,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
 
 export const downloadCSV = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { startDate, endDate, columns: _columns, filters: _filters } = req.query;
-
+    const { startDate, endDate, sortBy, sortOrder } = req.query;
     // Construir query base
     let query = `
       SELECT 
@@ -134,8 +192,14 @@ export const downloadCSV = async (req: Request, res: Response): Promise<void> =>
       params.push(endDate);
     }
 
-    // Ordenação
-    query += " ORDER BY a.datamedida DESC, a.horamedida DESC";
+    // Aplicar ordenação se fornecida
+    const sortCriteria = buildOrderByClause(sortBy as string, sortOrder as string);
+    if (sortCriteria.length > 0) {
+      query = applySortToQuery(query, sortCriteria);
+    } else {
+      // Ordenação padrão
+      query += " ORDER BY a.datamedida DESC, a.horamedida DESC";
+    }
 
     const result = await furnasPool.query(query, params);
 
@@ -170,7 +234,7 @@ export const downloadCSV = async (req: Request, res: Response): Promise<void> =>
 
 export const downloadJSON = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, sortBy, sortOrder } = req.query;
 
     let query = `
       SELECT 
@@ -208,7 +272,14 @@ export const downloadJSON = async (req: Request, res: Response): Promise<void> =
       params.push(endDate);
     }
 
-    query += " ORDER BY a.datamedida DESC, a.horamedida DESC";
+    // Aplicar ordenação se fornecida
+    const sortCriteria = buildOrderByClause(sortBy as string, sortOrder as string);
+    if (sortCriteria.length > 0) {
+      query = applySortToQuery(query, sortCriteria);
+    } else {
+      // Ordenação padrão
+      query += " ORDER BY a.datamedida DESC, a.horamedida DESC";
+    }
 
     const result = await furnasPool.query(query, params);
 
@@ -224,6 +295,8 @@ export const downloadJSON = async (req: Request, res: Response): Promise<void> =
         exportedAt: new Date().toISOString(),
         totalRecords: result.rows.length,
         table: "tbabioticocoluna",
+        sortBy,
+        sortOrder,
       },
     });
   } catch (error: any) {
@@ -241,8 +314,7 @@ export const downloadJSON = async (req: Request, res: Response): Promise<void> =
 
 export const downloadPDF = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Implementação básica de PDF - você pode usar bibliotecas como pdfkit ou puppeteer
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, sortBy, sortOrder } = req.query;
 
     let query = `
       SELECT 
@@ -278,7 +350,16 @@ export const downloadPDF = async (req: Request, res: Response): Promise<void> =>
       params.push(endDate);
     }
 
-    query += " ORDER BY a.datamedida DESC, a.horamedida DESC LIMIT 1000"; // Limitar para PDF
+    // Aplicar ordenação se fornecida
+    const sortCriteria = buildOrderByClause(sortBy as string, sortOrder as string);
+    if (sortCriteria.length > 0) {
+      query = applySortToQuery(query, sortCriteria);
+    } else {
+      // Ordenação padrão
+      query += " ORDER BY a.datamedida DESC, a.horamedida DESC";
+    }
+
+    query += " LIMIT 1000"; // Limitar para PDF
 
     const result = await furnasPool.query(query, params);
 
@@ -287,6 +368,7 @@ export const downloadPDF = async (req: Request, res: Response): Promise<void> =>
       RELATÓRIO - Dados Abióticos Coluna
       Data de exportação: ${new Date().toLocaleString("pt-BR")}
       Período: ${startDate || "Início"} à ${endDate || "Fim"}
+      Ordenação: ${sortBy || "Padrão (data descendente)"}
       Total de registros: ${result.rows.length}
       
       ${result.rows
