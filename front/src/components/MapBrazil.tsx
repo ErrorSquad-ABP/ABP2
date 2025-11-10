@@ -9,9 +9,11 @@ export default function MapBrasil() {
 
   // Carrega os reservatórios
   useEffect(() => {
-    fetch("http://localhost:3001/furnas/reservatorio/all")
+    const API_BASE =
+      import.meta.env.VITE_API_URL || import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
+    fetch(`${API_BASE}/furnas/reservatorio/all`)
       .then((res) => res.json())
-      .then((data) => setReservatorios(data.data));
+      .then((data) => setReservatorios(data.data || data));
   }, []);
 
   const handleStateClick = (sigla) => {

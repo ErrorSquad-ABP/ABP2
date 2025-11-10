@@ -114,7 +114,6 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
 export const downloadCSV = async (req: Request, res: Response): Promise<void> => {
   try {
     const { startDate, endDate, stations, sortBy, sortOrder } = req.query;
-
     let query = `
       SELECT 
         idsima,

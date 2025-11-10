@@ -1,15 +1,12 @@
 import { CorsOptions } from "cors";
 
-const allowedOrigins = [process.env.CORS_ORIGIN || "http://localhost:3002"];
-
+// CORS totalmente permissivo - permite todas as origens
 export const corsOptions: CorsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET"], // Apenas SELECTs
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: true, // Permite todas as origens
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
+  allowedHeaders: "*", // Permite todos os headers
+  exposedHeaders: "*", // Expõe todos os headers
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 };
