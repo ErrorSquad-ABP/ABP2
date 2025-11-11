@@ -1,42 +1,18 @@
 import { useEffect, useState } from "react";
-import MapSvg from "./MapSvg.jsx";
-import brStatesJson from "./../../public/br_states.json"; // JSON do Brasil
-import * as turf from "@turf/turf";
-
-export default function MapBrasil() {
-  const [reservatorios, setReservatorios] = useState([]);
-  const brStates = brStatesJson.features;
-
-  // Carrega os reservatórios
+import MapSvg from "./MapSvg";
+ 
+export default function MapWorld() {
+  const [countries, setCountries] = useState([]);
+ 
   useEffect(() => {
-    const API_BASE =
-      import.meta.env.VITE_API_URL || import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
-    fetch(`${API_BASE}/furnas/reservatorio/all`)
+    fetch("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")
       .then((res) => res.json())
-      .then((data) => setReservatorios(data.data || data));
+      .then((data) => setCountries(data.features));
   }, []);
-
-  const handleStateClick = (sigla) => {
-    console.log("ID recebido:", sigla);
-    const state = brStates.find((s) => s.id === sigla);
-    if (!state) return;
-
-    const polygon = turf.multiPolygon(state.geometry.coordinates);
-
-    const reservatoriosNoEstado = reservatorios.filter((r) => {
-      if (!r.lat || !r.lng) return false;
-      const point = turf.point([r.lng, r.lat]);
-      return turf.booleanPointInPolygon(point, polygon);
-    });
-
-    console.log(`Reservatórios em ${state.properties.Estado}:`, reservatoriosNoEstado);
+ 
+  const handleCountryClick = (id) => {
+    console.log("País clicado:", id);
   };
-
-  // Passa os reservatórios para o MapSvg
-  return (
-    <MapSvg
-      onClickState={handleStateClick}
-      reservatorios={reservatorios.filter((r) => r.lat && r.lng)}
-    />
-  );
+ 
+  return <MapSvg countries={countries} onClickCountry={handleCountryClick} />;
 }
