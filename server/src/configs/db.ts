@@ -3,17 +3,12 @@ dotenv.config();
 
 import { Pool } from "pg";
 
-const sslConfig = {
-  rejectUnauthorized: false,
-};
-
 export const furnasPool = new Pool({
   host: process.env.DB_FURNAS_HOST,
   user: process.env.DB_FURNAS_USER,
   password: String(process.env.DB_FURNAS_PASSWORD),
   database: process.env.DB_FURNAS_NAME,
   port: Number(process.env.DB_FURNAS_PORT),
-  ssl: sslConfig,
 });
 
 export const simaPool = new Pool({
@@ -22,7 +17,6 @@ export const simaPool = new Pool({
   password: String(process.env.DB_SIMA_PASSWORD),
   database: process.env.DB_SIMA_NAME,
   port: Number(process.env.DB_SIMA_PORT),
-  ssl: sslConfig,
 });
 
 export const balcarPool = new Pool({
@@ -31,5 +25,4 @@ export const balcarPool = new Pool({
   password: String(process.env.DB_BALCAR_PASSWORD),
   database: process.env.DB_BALCAR_NAME,
   port: Number(process.env.DB_BALCAR_PORT),
-  ssl: sslConfig,
 });

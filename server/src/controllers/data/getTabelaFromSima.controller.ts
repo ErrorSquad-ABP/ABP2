@@ -23,16 +23,9 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
       data: resultData,
     });
   } catch (error: any) {
-    logger.error("Erro ao consultar tabela SIMA", {
+    logger.error("Erro ao consultar tbfluxoinpe", {
       message: error.message,
       stack: error.stack,
-      tabela: req.params.tabela,
-    });
-
-    res.status(500).json({
-      success: false,
-      error: "Erro ao realizar a operação.",
-      message: error.message,
     });
   }
 };

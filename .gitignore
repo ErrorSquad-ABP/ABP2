@@ -3,7 +3,3 @@
 /**/logs/
 rotas.txt
 .env
-**/.env
-server/.env
-front/.env
-scripts/
