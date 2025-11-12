@@ -12,9 +12,6 @@ import { getFurnasInfo } from "../../controllers/furnas/index.controller";
 
 const router = express.Router();
 
-// Rota raiz para /furnas
-router.get("/", getFurnasInfo);
-
 router.use("/abioticocoluna", abioticocoluna);
 router.use("/abioticosuperficie", abioticosuperficie);
 router.use("/campanha", campanha);

@@ -3,6 +3,16 @@ import { JSX, useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { ChevronUp } from "lucide-react";
+import icon1 from "../assets/icons/icon1.png";
+import icon2 from "../assets/icons/icon2.png";
+import icon3 from "../assets/icons/icon3.png";
+import icon4 from "../assets/icons/icon4.png";
+import icon5 from "../assets/icons/icon5.png";
+import icon6 from "../assets/icons/icon6.png";
+import icon7 from "../assets/icons/icon7.png";
+import icon8 from "../assets/icons/icon8.png";
+import icon9 from "../assets/icons/icon9.png";
+import icon10 from "../assets/icons/icon10.png";
 
 type Category = {
   id: string;
@@ -17,70 +27,70 @@ const CATEGORIES: Category[] = [
     id: "sima",
     title: "SIMA — Monitoramento",
     description: "Dados automaticamente coletados pelo SIMA (séries temporais).",
-    icon: "📡",
+    icon: icon1,
     href: "/tables/sima",
   },
   {
     id: "abioticos",
     title: "Abióticos",
     description: "Parâmetros físico-químicos da coluna d'água e superfície.",
-    icon: "🌊",
+    icon: icon2,
     href: "/tables/abioticos",
   },
   {
     id: "bioticos",
     title: "Bióticos",
     description: "Parâmetros biológicos amostrados em campanhas.",
-    icon: "🪸",
+    icon: icon3,
     href: "/tables/bioticos",
   },
   {
     id: "aguasedimento",
     title: "Água & Sedimento",
     description: "Medições e análises de água e sedimento.",
-    icon: "🧪",
+    icon: icon4,
     href: "/tables/agua-sedimento",
   },
   {
     id: "fluxos",
     title: "Fluxos & Gases",
     description: "Medições de fluxos, bolhas e concentrações gasosas.",
-    icon: "💨",
+    icon: icon5,
     href: "/tables/fluxos-gases",
   },
   {
     id: "campomedidas",
     title: "Campo Medidas",
     description: "Medições realizadas em campo (equipamentos, anotações).",
-    icon: "📋",
+    icon: icon6,
     href: "/tables/campo-medidas",
   },
   {
     id: "fisicochimicos",
     title: "Parâmetros Físico-Químicos",
     description: "Variáveis físico-químicas da água (pH, condutividade, etc.).",
-    icon: "⚗️",
+    icon: icon7,
     href: "/tables/fisico-quimicos",
   },
   {
     id: "biologicos",
     title: "Parâmetros Biológicos",
     description: "Parâmetros biológicos e de comunidades aquáticas.",
-    icon: "🧬",
+    icon: icon8,
     href: "/tables/parametros-biologicos",
   },
   {
     id: "loccamp",
     title: "Localizações & Campanhas",
     description: "Sítios, campanhas e reservatórios (metadados).",
-    icon: "📍",
+    icon: icon9,
     href: "/tables/localizacoes-campanhas",
   },
   {
     id: "equip",
     title: "Equipamentos",
     description: "Cadastro e histórico de equipamentos e sensores (SIMA).",
-    icon: "🔧",
+    icon: icon10,
     href: "/tables/equipamentos",
   },
 ];
@@ -114,7 +124,9 @@ export default function HomePage(): JSX.Element {
         <TopSpot>
           <SimaCardLink to={sima.href} aria-label="Abrir dados SIMA">
             <SimaCard tabIndex={0} aria-label="Abrir dados SIMA">
-              <SimaIcon aria-hidden>{sima.icon}</SimaIcon>
+              <SimaIconWrapper>
+                <img src={icon1} alt="Ícone do SIMA" />
+              </SimaIconWrapper>
               <SimaCardTitle>{sima.title}</SimaCardTitle>
               <SimaCardDesc>{sima.description}</SimaCardDesc>
               <SimaCardCTA>Abrir →</SimaCardCTA>
@@ -126,7 +138,13 @@ export default function HomePage(): JSX.Element {
           {otherCategories.map((c) => (
             <CardLink key={c.id} to={c.href} aria-label={`Abrir categoria ${c.title}`}>
               <Card tabIndex={0}>
-                <Icon aria-hidden>{c.icon}</Icon>
+                <Icon aria-hidden>
+                  <img
+                    src={c.icon}
+                    alt={c.title}
+                    style={{ width: "48px", height: "48px", objectFit: "contain" }}
+                  />
+                </Icon>
                 <CardTitle>{c.title}</CardTitle>
                 <CardDesc>{c.description}</CardDesc>
                 <CardCTA>Abrir →</CardCTA>
@@ -268,7 +286,6 @@ const Card = styled.article`
 `;
 
 const Icon = styled.div`
-  font-size: 40px;
   width: 64px;
   height: 64px;
   border-radius: 12px;
@@ -277,6 +294,12 @@ const Icon = styled.div`
   align-items: center;
   justify-content: center;
   box-shadow: inset 0 -6px 18px rgba(37, 99, 235, 0.06);
+
+  img {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+  }
 `;
 
 const CardTitle = styled.h3`
@@ -303,6 +326,42 @@ const CardCTA = styled.div`
 `;
 
 /* Sima card specifically: centered content and constrained width */
+
+const SimaIconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: 20%;
+  width: 90px;
+  height: 90px;
+  transition:
+    transform 0.25s ease,
+    filter 0.25s ease;
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 20%;
+    box-shadow:
+      0 8px 18px rgba(0, 0, 0, 0.25),
+      inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  &:hover img {
+    transform: scale(1.08);
+    box-shadow:
+      0 12px 26px rgba(0, 0, 0, 0.4),
+      inset 0 3px 6px rgba(255, 255, 255, 0.25);
+  }
+
+  &:active img {
+    transform: scale(0.95);
+  }
+`;
 const SimaCardLink = styled(Link)`
   text-decoration: none;
   color: inherit;
@@ -342,29 +401,50 @@ const SimaCard = styled.article`
 `;
 
 const SimaIcon = styled.div`
-  font-size: 48px;
-  width: 72px;
-  height: 72px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.12);
+  width: 84px;
+  height: 84px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 -6px 10px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 8px 16px rgba(255, 255, 255, 0.15),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  animation: float 3s ease-in-out infinite;
+  overflow: hidden;
+
+  img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
 `;
 
 const SimaCardTitle = styled.h3`
   margin: 0;
-  font-size: 18px;
-  color: #ffffff;
+  font-size: 20px;
   font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
 `;
 
 const SimaCardDesc = styled.p`
   margin: 0;
-  font-size: 14px;
-  color: #ffffff;
-  line-height: 1.3;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.4;
   max-width: 88%;
 `;
 

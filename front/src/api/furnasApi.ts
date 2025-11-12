@@ -1,16 +1,12 @@
 import axios from "axios";
 
-const API_BASE =
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_SERVER_URL ||
-  `http://localhost:${import.meta.env.VITE_SERVER_PORT || 3001}`;
-const API_BASE_URL = `${API_BASE}/furnas`;
+const API_BASE_URL = `http://localhost:${import.meta.env.VITE_SERVER_PORT || 3001}/api/furnas`;
 
 export interface DownloadParams {
   startDate?: string;
   endDate?: string;
   columns?: string[];
-  filters?: Record<string, string | number | boolean | null | undefined>;
+  filters?: Record<string, any>;
 }
 
 export const furnasApi = {
