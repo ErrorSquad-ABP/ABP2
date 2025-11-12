@@ -7,6 +7,8 @@ import reservatorio from "./reservatorio.routes";
 import sitio from "./sitio.routes";
 import data from "./data.routes";
 import dataUnion from "./dataUnion.routes";
+import exportRoutes from "./export.routes"; // ← Nova importação
+import { getFurnasInfo } from "../../controllers/furnas/index.controller";
 
 const router = express.Router();
 
@@ -18,5 +20,6 @@ router.use("/reservatorio", reservatorio);
 router.use("/sitio", sitio);
 router.use("/tables", data);
 router.use("/data", dataUnion);
+router.use("/export", exportRoutes); // ← Nova rota de exportação
 
 export default router;
