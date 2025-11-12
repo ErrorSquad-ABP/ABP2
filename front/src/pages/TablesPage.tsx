@@ -15,7 +15,8 @@ import axios from "axios";
  * - Filtra linhas por reservatório usando idreservatorio direto ou via idcampanha -> campanhas.
  */
 
-const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
+const API_BASE =
+  import.meta.env.VITE_API_URL || import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
 
 interface Campanha {
   idcampanha: number;
@@ -545,6 +546,7 @@ export default function TablesPage(): JSX.Element {
       setStartDate("");
       setEndDate("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedReservatorios]);
 
   useEffect(() => {
@@ -730,7 +732,9 @@ export default function TablesPage(): JSX.Element {
           if (r.includes("sima")) return "sima";
         }
       }
-    } catch {}
+    } catch {
+      // Ignore errors in provider detection
+    }
 
     try {
       if (metadata && Array.isArray(metadata)) {
@@ -759,14 +763,18 @@ export default function TablesPage(): JSX.Element {
           if (r.includes("sima")) return "sima";
         }
       }
-    } catch {}
+    } catch {
+      // Ignore errors in provider detection
+    }
 
     try {
       const n = key.toLowerCase();
       if (n.startsWith("tb") && n.includes("sima")) return "sima";
       if (n.startsWith("tb") && n.includes("balcar")) return "balcar";
       if (n.startsWith("tb")) return "furnas";
-    } catch {}
+    } catch {
+      // Ignore errors in provider detection
+    }
 
     return null;
   }

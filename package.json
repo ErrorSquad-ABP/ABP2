@@ -1,4 +1,11 @@
 {
+  "name": "abp2-monorepo",
+  "private": true,
+  "scripts": {
+    "install": "cd server && npm install",
+    "build": "cd server && npm run build",
+    "start": "cd server && npm start"
+  },
   "devDependencies": {
     "@types/node": "^24.6.2"
   },

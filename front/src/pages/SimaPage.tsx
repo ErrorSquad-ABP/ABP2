@@ -44,7 +44,7 @@ function SimaPage() {
     <PageContainer>
       <Title>Lista de Registros - SIMA</Title>
 
-      <SimaTable
+      <SimaTable<Sima>
         data={data}
         page={page}
         pageSize={10}
