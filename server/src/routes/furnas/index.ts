@@ -8,7 +8,6 @@ import sitio from "./sitio.routes";
 import data from "./data.routes";
 import dataUnion from "./dataUnion.routes";
 import exportRoutes from "./export.routes"; // ← Nova importação
-import { getFurnasInfo } from "../../controllers/furnas/index.controller";
 
 const router = express.Router();
 
