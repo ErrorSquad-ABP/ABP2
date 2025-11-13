@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
- 
+
 interface CountryFeature {
   id?: string;
   properties?: {
@@ -9,30 +9,30 @@ interface CountryFeature {
   };
   geometry?: unknown;
 }
- 
+
 export default function MapSvg({ countries, onClickCountry }) {
   const svgRef = useRef(null);
- 
+
   useEffect(() => {
     if (!countries || countries.length === 0) return;
- 
+
     const width = window.innerWidth;
     const height = window.innerHeight;
- 
+
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
- 
+
     const g = svg.append("g");
- 
+
     // Projeção do mundo
     const projection = d3
       .geoMercator()
       .scale(300)
       .center([0, 20])
       .translate([width / 2, height / 1.8]);
- 
+
     const path = d3.geoPath().projection(projection);
- 
+
     // Desenha os países
     g.selectAll("path")
       .data(countries)
@@ -51,10 +51,10 @@ export default function MapSvg({ countries, onClickCountry }) {
       .on("click", (_event, d: CountryFeature) => {
         onClickCountry(d.id || d.properties?.name || "unknown");
       });
- 
+
     // Calcula os limites do mapa
     const [[x0, y0], [x1, y1]] = path.bounds({ type: "FeatureCollection", features: countries });
- 
+
     // Limites de pan
     const zoom = d3
       .zoom()
@@ -66,12 +66,12 @@ export default function MapSvg({ countries, onClickCountry }) {
       .on("zoom", (event) => {
         g.attr("transform", event.transform);
       });
- 
+
     svg.call(zoom);
   }, [countries, onClickCountry]);
- 
+
   return (
-<svg
+    <svg
       ref={svgRef}
       style={{
         width: "100%",
