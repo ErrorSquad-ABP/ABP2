@@ -1,0 +1,41 @@
+BD093 - Padronização dos Endpoints /tables/{provider}/{table}
+
+Descrição:
+Padronizar o uso de endpoints no formato /tables/{provider}/{table} garantindo
+que o backend processe corretamente o parâmetro ?colunas= e aceite chamadas com
+ou sem idreservatorio. Também assegurar consistência no formato das respostas.
+
+Regras:
+- Todos os endpoints devem seguir o padrão:
+    /tables/{provider}/{table}
+
+- provider: nome do banco (furnas, balcar, sima...)
+- table: nome exato da tabela existente no banco correspondente
+
+Query params aceitos:
+  - colunas=<csv> → exemplo: colunas=datamedida,profundidade
+  - idreservatorio → opcional
+  - limit, page → opcionais e padrão do backend
+
+Backend deve:
+  - Validar provider
+  - Validar tabela usando information_schema
+  - Validar colunas antes de montar o SELECT
+  - Aplicar filtro idreservatorio se fornecido
+  - Garantir segurança contra SQL injection
+  - Retornar sempre estrutura consistente:
+
+  {
+      "success": true,
+      "data": [...]
+  }
+
+Exemplos de chamadas:
+GET /tables/furnas/tbabioticocoluna?colunas=datamedida,profundidade
+GET /tables/balcar/tbmedicoes?idreservatorio=10&colunas=valor,datamedida
+
+Notas:
+- Reduz erros de chamadas incorretas no front-end
+- Facilita documentação e integração
+
+
