@@ -20,10 +20,10 @@ export const getData = async (req: Request, res: Response) => {
       provider === "furnas"
         ? furnasPool
         : provider === "balcar"
-        ? balcarPool
-        : provider === "sima"
-        ? simaPool
-        : null;
+          ? balcarPool
+          : provider === "sima"
+            ? simaPool
+            : null;
 
     if (!pool) {
       return res.status(400).json({ success: false, error: "Provider inválido." });
