@@ -4,6 +4,7 @@ import router from "./routes";
 import { errorHandler } from "./middlewares/errorHandler";
 import cors from "cors";
 import { corsOptions } from "./configs/corsConfig";
+import testReservatorioRoutes from "./routes/test-reservatorio.routes";
 
 // Carrega as variáveis de ambiente definidas no arquivo .env
 dotenv.config();
@@ -33,6 +34,8 @@ app.use((_req: Request, res: Response) => {
     error: "Rota não encontrada",
   });
 });
+
+app.use("/api/test-reservatorio", testReservatorioRoutes);
 
 // middleware de erro sempre por último
 app.use(errorHandler);
