@@ -14,9 +14,12 @@ import MapBrazil from "../components/MapBrazil";
  * 3) escolher período (datas filtradas por estação)
  * 4) escolher colunas (id/data desabilitadas) -> Gerar gráfico / Gerar tabela
  *
- * Alteração principal: handleGenerateChart agora solicita diretamente:
- *  /tables/sima/{tbsima|tbsimaoffline}?all=true&colunas=idestacao,dataHora,<colunas selecionadas>
- * e filtra localmente por idestacao e intervalo de datas. Também salva dados brutos para tabela.
+ * Alterações:
+ * - centralizei fetch em fetchSimaRows(...) para que tabela e gráfico usem exatamente a mesma query/rows.
+ * - quando gerar gráfico, agrego por dia com aggregateRowsByDay.
+ * - quando gerar tabela, salvo os brutos em dataForTablePreview para export/pagination.
+ * - popup nos pontos exibe valores com 2 casas decimais e, se houver várias estações, mostra cada estação separada com seu valor.
+ * - adicionada paginação ao popup (POPUP_PAGE_SIZE).
  */
 
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
@@ -50,7 +53,6 @@ function lightenHex(hex: string, amount = 0.04): string {
   try {
     if (!hex || typeof hex !== "string") return String(hex);
     let h = hex.replace("#", "").trim();
-    // suporta formato curto (#abc)
     if (h.length === 3) {
       h = h
         .split("")
@@ -273,7 +275,8 @@ const ChartMain = styled.div`
   min-height: 420px;
 `;
 
-const Tooltip = styled.div<{ left: number; top: number; color: string }>`
+/* Tooltip styled — note: we'll override transform dynamically to show above/below */
+const Tooltip = styled.div<{ left: number; top: number; color?: string }>`
   position: absolute;
   left: ${(p) => p.left}px;
   top: ${(p) => p.top}px;
@@ -283,6 +286,27 @@ const Tooltip = styled.div<{ left: number; top: number; color: string }>`
   padding: 8px 10px;
   box-shadow: 0 6px 20px rgba(2, 6, 23, 0.12);
   font-size: 13px;
+  min-width: 160px;
+  max-width: 340px;
+  max-height: 320px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const TooltipStationList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow: hidden;
+`;
+
+const TooltipFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const Legend = styled.div`
@@ -492,7 +516,10 @@ export default function SimaTablesPage(): JSX.Element {
     instituicao?: string;
     reservatorio?: string;
     color?: string;
-  }>({ visible: false, left: 0, top: 0 });
+    value?: number | string;
+    stations?: string[]; // array of "StationName: 23.45"
+    page?: number;
+  }>({ visible: false, left: 0, top: 0, page: 0 });
 
   const [view, setView] = useState<"chart" | "map" | "table">("chart");
   const [loading, setLoading] = useState(false);
@@ -506,6 +533,9 @@ export default function SimaTablesPage(): JSX.Element {
   const [page, setPage] = useState(0);
 
   const MapBrazilAny = MapBrazil as any;
+
+  // popup page size (quantas estações por "página" do popup)
+  const POPUP_PAGE_SIZE = 4;
 
   /* ---------------- Funções de Download ---------------- */
 
@@ -930,16 +960,35 @@ export default function SimaTablesPage(): JSX.Element {
           const arr = rec[c] ?? [];
           obj[c] = arr.length
             ? Number((arr.reduce((s, v) => s + v, 0) / arr.length).toFixed(6))
-            : NaN;
+            : Number.NaN;
         }
         return obj;
       });
     return out;
   }
 
+  /* ---------------- centralized fetch helper ---------------- */
+  async function fetchSimaRows(cols: string[]) {
+    // retorna todas as rows para as colunas pedidas (sem filtrar por estação/data)
+    const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
+    const endpoint =
+      table === "tbsima"
+        ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=${colsParam}`
+        : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=${colsParam}`;
+
+    const resp = await fetch(endpoint);
+    if (!resp.ok) {
+      throw new Error(`fetch failed: ${resp.status} ${resp.statusText}`);
+    }
+    const json = await resp.json();
+    const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+    return rows || [];
+  }
+
   /* ---------------- handleGenerate: fetch full dataset for chosen columns, filter by station/date, aggregate ---------------- */
 
   async function handleGenerateChart() {
+    // agora usa fetchSimaRows para garantir mesmo conjunto de dados que a tabela
     console.log("[generate] start", {
       table,
       selectedColumns,
@@ -969,22 +1018,9 @@ export default function SimaTablesPage(): JSX.Element {
     try {
       // Build cols param including idestacao and dataHora (server expects these names)
       const cols = ["idestacao", "dataHora", ...selectedColumns];
-      const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
 
-      // choose endpoint based on table
-      const endpoint =
-        table === "tbsima"
-          ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=${colsParam}`
-          : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=${colsParam}`;
-
-      console.debug("[generate] fetching endpoint:", endpoint);
-      const resp = await fetch(endpoint);
-      if (!resp.ok) {
-        throw new Error(`fetch failed: ${resp.status} ${resp.statusText}`);
-      }
-
-      const json = await resp.json();
-      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+      console.debug("[generate] fetching (via helper) cols:", cols);
+      const rows = await fetchSimaRows(cols);
       console.debug("[generate] fetched rows:", rows?.length ?? 0);
 
       // filter by selectedStations and date range
@@ -1002,7 +1038,7 @@ export default function SimaTablesPage(): JSX.Element {
 
       console.debug("[generate] filtered rows:", filtered.length);
 
-      // sempre salvar os brutos (para tabela)
+      // sempre salvar os brutos (para tabela/export)
       setDataForTablePreview(filtered);
       setShowTable(true);
 
@@ -1021,7 +1057,7 @@ export default function SimaTablesPage(): JSX.Element {
         return;
       }
 
-      // aggregate by day across filtered rows
+      // aggregate by day across filtered rows (para gráfico)
       const aggregated = aggregateRowsByDay(filtered, selectedColumns);
       setChartData(aggregated);
       setView("chart");
@@ -1040,6 +1076,7 @@ export default function SimaTablesPage(): JSX.Element {
   /* ---------------- handleGenerateGraph: gera tabela (dados brutos) ---------------- */
 
   async function handleGenerateGraph() {
+    // agora usa fetchSimaRows para garantir mesmo conjunto de dados que o gráfico
     console.debug("[generate-table] start", {
       table,
       selectedColumns,
@@ -1067,20 +1104,8 @@ export default function SimaTablesPage(): JSX.Element {
 
     try {
       const cols = ["idestacao", "dataHora", ...selectedColumns];
-      const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
-
-      const endpoint =
-        table === "tbsima"
-          ? `${API_BASE}/tables/sima/tbsima?all=true&colunas=${colsParam}`
-          : `${API_BASE}/tables/sima/tbsimaoffline?all=true&colunas=${colsParam}`;
-
-      const resp = await fetch(endpoint);
-      if (!resp.ok) {
-        throw new Error(`fetch failed: ${resp.status} ${resp.statusText}`);
-      }
-
-      const json = await resp.json();
-      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
+      console.debug("[generate-table] fetching (via helper) cols:", cols);
+      const rows = await fetchSimaRows(cols);
       console.log("[generate-table] fetched rows:", rows?.length ?? 0);
 
       const stationSet = new Set(selectedStations.map((s) => String(s).trim()));
@@ -1097,9 +1122,13 @@ export default function SimaTablesPage(): JSX.Element {
 
       console.debug("[generate-table] filtered rows:", filtered.length);
 
+      // dados brutos para tabela (export/pagination)
       setDataForTablePreview(filtered);
-      // também setar chartData como os brutos se quiser usar a mesma fonte
-      setChartData(filtered);
+
+      // também preparar chartData (agregado) caso o usuário mude para view=chart
+      const aggregated = aggregateRowsByDay(filtered, selectedColumns);
+      setChartData(aggregated);
+
       setView("table");
       setShowTable(true);
       setTimeout(
@@ -1471,9 +1500,12 @@ export default function SimaTablesPage(): JSX.Element {
               <ChartWrapper>
                 <ChartMain
                   ref={chartMainRef}
-                  onMouseLeave={() => setTooltip({ visible: false, left: 0, top: 0 })}
+                  onMouseLeave={() => setTooltip({ visible: false, left: 0, top: 0, page: 0 })}
                 >
-                  {chartData && chartData.length && selectedColumns.length ? (
+                  {Array.isArray(chartData) &&
+                  chartData.length > 0 &&
+                  typeof chartData[0]?.day === "string" &&
+                  selectedColumns.length ? (
                     <>
                       <MultiSeriesSVG rows={chartData} columns={selectedColumns} />
                       <Legend aria-hidden>
@@ -1591,7 +1623,17 @@ export default function SimaTablesPage(): JSX.Element {
 
                 <div style={{ marginTop: 8 }}>
                   <Button onClick={() => setPage((p) => Math.max(0, p - 1))}>{"<"}</Button>
-                  <Button onClick={() => setPage((p) => p + 1)}>{">"}</Button>
+                  <Button
+                    onClick={() =>
+                      setPage((p) =>
+                        dataForTablePreview && dataForTablePreview.length
+                          ? Math.min(p + 1, Math.floor((dataForTablePreview.length - 1) / 10))
+                          : p + 1,
+                      )
+                    }
+                  >
+                    {">"}
+                  </Button>
                   {loading ? (
                     <span style={{ marginLeft: 12 }}>
                       <Spinner />
@@ -1697,25 +1739,45 @@ export default function SimaTablesPage(): JSX.Element {
   /* ---------------- inner component: MultiSeriesSVG ---------------- */
 
   function MultiSeriesSVG({ rows, columns }: { rows: any[]; columns: string[] }) {
-    if (!rows || !rows.length || !columns || !columns.length)
+    // proteção extra: precisa ser array e ter pelo menos 1 entry com 'day'
+    if (!Array.isArray(rows) || rows.length === 0 || !columns || columns.length === 0) {
       return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
+    }
 
-    // rows expected as [{ day: 'YYYY-MM-DD', col1: val, col2: val, ... }, ...]
-    const labels = rows.map((r) => r.day).filter(Boolean);
-    const uniqueLabels = Array.from(new Set(labels)).sort(
+    // small helper para formatar números com 2 casas
+    const formatNum = (v: any) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n.toFixed(2) : "—";
+    };
+
+    // normalize days and build a map day -> row (pick first occurrence)
+    const dayMap = new Map<string, any>();
+    for (const r of rows) {
+      const dayVal = r?.day ?? null;
+      if (!dayVal) continue;
+      const dayStr = String(dayVal).slice(0, 10);
+      if (!dayMap.has(dayStr)) dayMap.set(dayStr, r);
+    }
+
+    const uniqueLabels = Array.from(dayMap.keys()).sort(
       (a, b) => new Date(a).getTime() - new Date(b).getTime(),
     );
+
+    if (uniqueLabels.length === 0) {
+      return <div style={{ padding: 16 }}>Sem dados para exibir.</div>;
+    }
 
     const height = 480;
     const viewBoxWidth = Math.max(1000, uniqueLabels.length * 40);
     const count = Math.max(1, uniqueLabels.length);
     const xFor = (i: number) => (i / (count - 1 || 1)) * (viewBoxWidth - 100) + 50;
 
+    // Precompute series values efficiently (no rows.find inside loops)
     const seriesValues = columns.map((col) =>
       uniqueLabels.map((lab) => {
-        const found = rows.find((r) => r.day === lab);
-        if (!found) return NaN;
-        const v = found[col];
+        const r = dayMap.get(lab);
+        if (!r) return NaN;
+        const v = r[col] ?? r[col.toLowerCase?.()] ?? r[col.toUpperCase?.()];
         const n = Number(v);
         return Number.isFinite(n) ? n : NaN;
       }),
@@ -1727,12 +1789,46 @@ export default function SimaTablesPage(): JSX.Element {
     const range = max - min || 1;
     const yFor = (v: number) => ((max - v) / range) * (height - 80) + 40;
 
-    const uniqueInsts = Array.from(new Set(rows.map((r) => r.instituicao || "—")));
+    // institution colors (try to take from rows if present)
+    const uniqueInsts = Array.from(new Set(rows.map((r) => r?.instituicao ?? "—")));
     const instColorMap: Record<string, string> = {};
     uniqueInsts.forEach(
       (inst, idx) =>
         (instColorMap[inst] = INSTITUTION_FILL_COLORS[idx % INSTITUTION_FILL_COLORS.length]),
     );
+
+    // Build a map day -> array of { stationName, values: { col: number|string } }
+    // using dataForTablePreview (raw rows) so we can show per-station values in tooltip
+    const stationsDataByDay: Map<
+      string,
+      Array<{ stationName: string; stationId?: string; values: Record<string, number | string> }>
+    > = new Map();
+
+    if (Array.isArray(dataForTablePreview)) {
+      for (const r of dataForTablePreview) {
+        const dateVal =
+          r.dataHora ?? r.datahora ?? r.datamedida ?? r.inicio ?? r.fim ?? r.data ?? null;
+        if (!dateVal) continue;
+        const d = new Date(dateVal);
+        if (isNaN(d.getTime())) continue;
+        const day = isoDate(d);
+        const sid = String(r.idestacao ?? r.id ?? r.estacao ?? r.station ?? "").trim();
+        const stationName =
+          sid && stationsList.find((s) => String(s.id).trim() === sid)?.name
+            ? stationsList.find((s) => String(s.id).trim() === sid)!.name
+            : sid || String(r.instituicao ?? r.reservatorio ?? sid ?? "—");
+
+        const values: Record<string, number | string> = {};
+        for (const col of columns) {
+          const raw = r[col] ?? r[col.toLowerCase?.()] ?? r[col.toUpperCase?.()];
+          const n = Number(raw);
+          values[col] = Number.isFinite(n) ? Number(n) : "—";
+        }
+
+        if (!stationsDataByDay.has(day)) stationsDataByDay.set(day, []);
+        stationsDataByDay.get(day)!.push({ stationName, stationId: sid || undefined, values });
+      }
+    }
 
     return (
       <div style={{ width: "100%", position: "relative" }}>
@@ -1775,7 +1871,23 @@ export default function SimaTablesPage(): JSX.Element {
                 />
                 {points.map((pt, i) => {
                   const [xStr, yStr] = pt.split(",");
-                  const repRow = rows.find((r) => r.day === uniqueLabels[i]) || {};
+                  const dayLabel = uniqueLabels[i];
+                  const repRow = dayMap.get(dayLabel) || {};
+                  const valueAtPoint = seriesValues[sIdx][i];
+                  // fetch per-station entries for this day (if exist)
+                  const stationsForDay = stationsDataByDay.get(dayLabel) ?? [];
+
+                  // build array of "StationName: value" for this column
+                  const stationLines =
+                    stationsForDay.length > 0
+                      ? stationsForDay.map((st) => {
+                          const rawVal = st.values[columns[sIdx]];
+                          return `${st.stationName}: ${
+                            rawVal === "—" ? "—" : Number(rawVal).toFixed(2)
+                          }`;
+                        })
+                      : [];
+
                   return (
                     <circle
                       key={i}
@@ -1788,7 +1900,10 @@ export default function SimaTablesPage(): JSX.Element {
                       style={{ cursor: "pointer" }}
                       onMouseEnter={(ev) => {
                         const rect = (chartMainRef.current &&
-                          chartMainRef.current.getBoundingClientRect()) || { left: 0, top: 0 };
+                          chartMainRef.current.getBoundingClientRect()) || {
+                          left: 0,
+                          top: 0,
+                        };
                         setTooltip({
                           visible: true,
                           left: ev.clientX - rect.left,
@@ -1796,18 +1911,33 @@ export default function SimaTablesPage(): JSX.Element {
                           instituicao: repRow.instituicao,
                           reservatorio: repRow.reservatorio,
                           color: instColorMap[repRow.instituicao || "—"],
+                          value: Number.isFinite(valueAtPoint)
+                            ? Number(valueAtPoint).toFixed(2)
+                            : "—",
+                          stations: stationLines.length ? stationLines : undefined,
+                          page: 0,
                         });
                       }}
                       onMouseMove={(ev) => {
                         const rect = (chartMainRef.current &&
-                          chartMainRef.current.getBoundingClientRect()) || { left: 0, top: 0 };
+                          chartMainRef.current.getBoundingClientRect()) || {
+                          left: 0,
+                          top: 0,
+                        };
                         setTooltip((t) => ({
                           ...t,
                           left: ev.clientX - rect.left,
                           top: ev.clientY - rect.top,
                         }));
                       }}
-                      onMouseLeave={() => setTooltip({ visible: false, left: 0, top: 0 })}
+                      onMouseLeave={() =>
+                        setTooltip({
+                          visible: false,
+                          left: 0,
+                          top: 0,
+                          page: 0,
+                        })
+                      }
                     />
                   );
                 })}
@@ -1829,21 +1959,115 @@ export default function SimaTablesPage(): JSX.Element {
           ))}
 
           <text x="14" y={34} fontSize="13" fill="#5b6b7a">
-            {allNumbers.length ? Math.max(...allNumbers) : 1}
+            {allNumbers.length ? formatNum(Math.max(...allNumbers)) : formatNum(1)}
           </text>
           <text x="14" y={height - 22} fontSize="13" fill="#5b6b7a">
-            {allNumbers.length ? Math.min(...allNumbers) : 0}
+            {allNumbers.length ? formatNum(Math.min(...allNumbers)) : formatNum(0)}
           </text>
         </svg>
 
-        {tooltip.visible && tooltip.instituicao && (
-          <Tooltip left={tooltip.left} top={tooltip.top} color={tooltip.color || "#ccc"}>
-            <div style={{ fontWeight: 800 }}>{tooltip.instituicao}</div>
-            <div style={{ fontSize: 12, color: "#475569" }}>
-              Reservatório: <strong>{tooltip.reservatorio || "—"}</strong>
-            </div>
-          </Tooltip>
-        )}
+        {tooltip.visible &&
+          (() => {
+            // compute page & slicing
+            const stations = tooltip.stations ?? [];
+            const pageNum = tooltip.page ?? 0;
+            const totalPages = Math.max(1, Math.ceil(stations.length / POPUP_PAGE_SIZE));
+            const start = pageNum * POPUP_PAGE_SIZE;
+            const paged = stations.slice(start, start + POPUP_PAGE_SIZE);
+
+            // decide above/below display to avoid overlapping topbar (if tooltip.top is small show below)
+            const showBelow = tooltip.top < 120;
+
+            return (
+              <Tooltip
+                left={tooltip.left}
+                top={tooltip.top}
+                color={tooltip.color}
+                style={{
+                  transform: showBelow ? "translate(-8px, 8px)" : undefined,
+                }}
+              >
+                <div style={{ fontWeight: 800 }}>
+                  {tooltip.value !== undefined ? `Dado: ${String(tooltip.value)}` : "Dado: —"}
+                </div>
+
+                <TooltipStationList>
+                  {paged.length ? (
+                    paged.map((s, idx) => (
+                      <div key={idx} style={{ fontSize: 13, color: "#475569" }}>
+                        {s}
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ fontSize: 13, color: "#475569" }}>Estação(s): —</div>
+                  )}
+                </TooltipStationList>
+
+                <TooltipFooter>
+                  <div style={{ fontSize: 12, color: "#64748b" }}>
+                    {tooltip.instituicao ? (
+                      <>
+                        Instituição: <strong>{tooltip.instituicao}</strong>
+                      </>
+                    ) : null}
+                  </div>
+
+                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <div style={{ fontSize: 12, color: "#64748b" }}>
+                      {stations.length
+                        ? `${start + 1}-${Math.min(start + POPUP_PAGE_SIZE, stations.length)} / ${stations.length}`
+                        : ""}
+                    </div>
+
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button
+                        aria-label="Anterior"
+                        onClick={() =>
+                          setTooltip((t) => {
+                            const p = t.page ?? 0;
+                            const np = Math.max(0, p - 1);
+                            return { ...t, page: np };
+                          })
+                        }
+                        disabled={(tooltip.page ?? 0) <= 0}
+                        style={{
+                          padding: "6px 8px",
+                          borderRadius: 6,
+                          border: "1px solid #e6eefb",
+                          background: (tooltip.page ?? 0) <= 0 ? "#f3f4f6" : "#fff",
+                          cursor: (tooltip.page ?? 0) <= 0 ? "not-allowed" : "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        «
+                      </button>
+                      <button
+                        aria-label="Próximo"
+                        onClick={() =>
+                          setTooltip((t) => {
+                            const p = t.page ?? 0;
+                            const np = Math.min(totalPages - 1, p + 1);
+                            return { ...t, page: np };
+                          })
+                        }
+                        disabled={(tooltip.page ?? 0) >= totalPages - 1}
+                        style={{
+                          padding: "6px 8px",
+                          borderRadius: 6,
+                          border: "1px solid #e6eefb",
+                          background: (tooltip.page ?? 0) >= totalPages - 1 ? "#f3f4f6" : "#fff",
+                          cursor: (tooltip.page ?? 0) >= totalPages - 1 ? "not-allowed" : "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        »
+                      </button>
+                    </div>
+                  </div>
+                </TooltipFooter>
+              </Tooltip>
+            );
+          })()}
       </div>
     );
   }
