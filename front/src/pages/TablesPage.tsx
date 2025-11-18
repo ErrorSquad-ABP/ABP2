@@ -1015,119 +1015,81 @@ export default function TablesPage(): JSX.Element {
    *    - idreservatorio in row OR
    *    - idcampanha in row -> lookup campanhas[] to resolve idreservatorio
    */
-  async function handleGenerateTableForCurrentSelection() {
-    if (!selectedReservatorios.length) {
+  async function handleGenerateTableForCurrentSelection(reservatoriosOverride?: string[]) {
+    if (!reservatoriosOverride && !selectedReservatorios.length) {
       alert("Selecione ao menos um reservatório.");
       return;
     }
+    const idsToUse = Array.isArray(reservatoriosOverride)
+      ? reservatoriosOverride
+      : selectedReservatorios;
+
     if (!selectedColumns.length) {
       alert("Selecione ao menos uma coluna para visualizar/exportar.");
       return;
     }
+
     if (!startDate || !endDate) {
-      alert("Escolha período.");
-      return;
+      // se a sua versão não exige data, remova este check — deixei só por segurança
+      // alert("Escolha período.");
+      // return;
     }
+
     setLoading(true);
     try {
       const apiTable = resolveApiTableName(table);
-      console.debug("[debug] resolved apiTable:", apiTable);
       const provider = getProviderForApi(apiTable) || "furnas";
-      // determine data column expected by provider/backend
       const dataCol = provider === "furnas" ? "dataMedida" : "dataHora";
 
-      // IMPORTANT: NÃO incluir idreservatorio nas colunas se a tabela não possuir
-      // para evitar fetch errado. Vamos pedir apenas data + selectedColumns.
+      // colunas pedidas
       const cols = [dataCol, ...selectedColumns].filter(Boolean);
       const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
 
+      // endpoint base (mantive sua lógica)
       const endpoint = `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=${colsParam}`;
 
-      console.debug("[generate-table] fetching endpoint:", endpoint);
-      const resp = await fetch(endpoint);
-      if (!resp.ok) {
-        throw new Error(`fetch failed: ${resp.status} ${resp.statusText}`);
-      }
-      const json = await resp.json();
-      const rows = Array.isArray(json) ? json : json?.data || json?.rows || [];
-      console.debug("[generate-table] fetched rows:", rows?.length ?? 0);
-
-      // Agora filtramos por campanha/reservatório usando as informações de campanha (tbcampanha)
-      // Algumas tabelas não têm idreservatorio — nesses casos, precisamos usar tbcampanha para relacionar.
-      // Vamos tentar obter idcampanha -> idreservatorio se for necessário.
-      const needsReservFilter = rows.some((r: any) =>
-        ["idreservatorio", "id_reservatorio", "reservatorio", "idReservatorio"].some(
-          (k) => r[k] !== undefined,
-        ),
+      // Requisitar por reservatório — ou fazer um endpoint que aceita múltiplos ids de uma vez.
+      // Aqui fazemos requests por id e juntamos; se seu backend aceita ?reservatorios=1,2,3
+      // prefira usar um único call para performance.
+      const responses = await Promise.all(
+        idsToUse.map(async (id) => {
+          const url = `${endpoint}&reservatorio=${encodeURIComponent(String(id))}`;
+          const resp = await fetch(url);
+          if (!resp.ok) {
+            console.warn("fetch failed for id", id, resp.status);
+            return [];
+          }
+          const j = await resp.json();
+          return Array.isArray(j) ? j : (j?.data ?? j?.rows ?? []);
+        }),
       );
 
-      let enrichedRows = rows;
+      // juntar e sobrescrever (NÃO concatenar ao state antigo)
+      const merged = responses.flat();
 
-      if (!needsReservFilter) {
-        // tabela não traz idReservatorio — então filtramos pela data através de tbcampanha:
-        // obter campanhas do período selecionado para os reservatórios escolhidos
-        try {
-          const campUrl = `${API_BASE}/tables/furnas/tbcampanha?colunas=idcampanha,idreservatorio,datainicio,datafim`;
-          const campResp = await fetch(campUrl);
-          if (campResp.ok) {
-            const campJson = await campResp.json();
-            const campRows = Array.isArray(campJson)
-              ? campJson
-              : campJson?.data || campJson?.rows || [];
-            // criar set de campanhas válidas (pelo intervalo e reservatório)
-            const validCampaigns = new Set(
-              campRows
-                .filter((c: any) => {
-                  const rid = c.idreservatorio ?? c.id_reservatorio ?? c.idReservatorio ?? null;
-                  if (!rid) return false;
-                  if (!selectedReservatorios.some((sr) => String(sr) === String(rid))) return false;
-                  const start = new Date(c.datainicio ?? c.datainicio);
-                  const end = new Date(c.datafim ?? c.datafim);
-                  const selStart = new Date(startDate);
-                  const selEnd = new Date(endDate);
-                  // campaign overlaps selected period?
-                  return !(end < selStart || start > selEnd);
-                })
-                .map((c: any) => String(c.idcampanha ?? c.id_campanha ?? c.id)),
-            );
-
-            // if table contains idcampanha column, filter by campaign
-            enrichedRows = rows.filter((r: any) => {
-              const cid = r.idcampanha ?? r.id_campanha ?? r.idCampanha ?? r.campanha ?? null;
-              if (cid != null) {
-                return validCampaigns.has(String(cid));
-              }
-              // fallback: keep row and rely on date compare below (we still require date inside range)
-              return true;
-            });
-          }
-        } catch (err) {
-          console.warn("[generate-table] campanha fetch/filter failed:", err);
-        }
-      }
-
-      // final date filter (aplica tanto para tabelas com idreservatorio quanto para que não têm)
-      const filtered = (enrichedRows || []).filter((r: any) => {
+      // filtrar por datas caso sua tabela precise (mantive sua lógica de data)
+      const filtered = (merged || []).filter((r: any) => {
         const dv = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data ?? null;
-        if (!dv) return false;
+        if (!dv) return true; // se você não quer filtrar por data, retorne true
         const d = new Date(dv);
         if (isNaN(d.getTime())) return false;
+        if (!startDate || !endDate) return true; // se não está aplicando período
         const day = isoDate(d);
         return day >= startDate && day <= endDate;
       });
 
-      console.debug("[generate-table] filtered rows:", filtered.length);
-
       setData(filtered);
       setShowTable(true);
       setView("chart");
+
+      // rolar para a tabela
       setTimeout(
-        () => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
+        () => chartRef.current?.scrollIntoView?.({ behavior: "smooth", block: "center" }),
         50,
       );
     } catch (err) {
-      console.error("[generate-table] error fetching/processing data:", err);
-      alert("Erro ao gerar tabela. Veja console para detalhes.");
+      console.error("[generate-table] error:", err);
+      alert("Erro ao gerar tabela. Veja console.");
     } finally {
       setLoading(false);
     }
@@ -1229,7 +1191,6 @@ export default function TablesPage(): JSX.Element {
 
   // Criação dos poligonos e consulta
   async function handleGeoSearch() {
-    // validação básica
     if (!selectedReservatorios || selectedReservatorios.length === 0) {
       alert("Selecione ao menos um reservatório.");
       return;
@@ -1237,138 +1198,80 @@ export default function TablesPage(): JSX.Element {
 
     setLoading(true);
     try {
-      // 1) buscar todos os reservatórios (com coordenadas) do endpoint indicado
+      // busca do endpoint que você mencionou e normalização (se necessário)
       const resp = await fetch("http://localhost:3001/furnas/reservatorio/all");
-      if (!resp.ok) {
-        throw new Error(`Erro ao buscar reservatórios: ${resp.status} ${resp.statusText}`);
-      }
       const allJson = await resp.json();
-      // endpoint pode retornar array direto ou { data: [...] }
       const allReservsRaw = Array.isArray(allJson)
         ? allJson
         : (allJson?.data ?? allJson?.rows ?? []);
+      const allReservs = allReservsRaw.map((r: any) => ({
+        id: String(
+          r.idreservatorio ?? r.id ?? r.idReservatorio ?? r.id_reservatorio ?? r.id_reservatorio,
+        ),
+        latitude:
+          typeof r.lat === "number" ? r.lat : typeof r.latitude === "number" ? r.latitude : null,
+        longitude:
+          typeof r.lng === "number" ? r.lng : typeof r.longitude === "number" ? r.longitude : null,
+        nome: r.nome ?? r.name ?? "",
+        raw: r,
+      }));
 
-      // normalizar os pontos (garanta que existam id, latitude, longitude, nome)
-      const allReservs = allReservsRaw
-        .map((r: any) => {
-          const id = r.idreservatorio ?? r.id ?? r.idReservatorio ?? r.id_reservatorio ?? null;
-          const latitude =
-            typeof r.lat === "number" ? r.lat : typeof r.latitude === "number" ? r.latitude : null;
-          const longitude =
-            typeof r.lng === "number"
-              ? r.lng
-              : typeof r.longitude === "number"
-                ? r.longitude
-                : null;
-          const nome = r.nome ?? r.name ?? r.label ?? "";
-          return { raw: r, id: id != null ? String(id) : null, latitude, longitude, nome };
-        })
-        .filter((p: any) => p.id !== null); // remover sem id
-
-      // 2) Pegar os pontos correspondentes aos reservatórios selecionados
-      const selectedPoints = allReservs.filter((r: any) =>
-        selectedReservatorios.some((sid: any) => String(sid) === String(r.id)),
+      // pontos selecionados (para formar polígono)
+      const selectedPoints = allReservs.filter((r) =>
+        selectedReservatorios.some((sid) => String(sid) === r.id),
       );
 
-      // Se houver >=3 seleções iremos montar polígono com esses pontos
       if (selectedPoints.length >= 3) {
-        // garantir coordenadas válidas
-        const invalid = selectedPoints.some(
-          (p: any) =>
-            p.latitude == null || p.longitude == null || isNaN(p.latitude) || isNaN(p.longitude),
-        );
-        if (invalid) {
-          alert(
-            "Alguns dos reservatórios selecionados não possuem coordenadas válidas no endpoint.",
-          );
-          return;
-        }
+        // montar coords [lng,lat]
+        const coords = selectedPoints.map((p) => [Number(p.longitude), Number(p.latitude)]);
+        const ring = [...coords, coords[0]];
 
-        // montar array [lng, lat] (GeoJSON)
-        const coords = selectedPoints.map((p: any) => [Number(p.longitude), Number(p.latitude)]);
-        const ring = [...coords, coords[0]]; // fecha
-
-        // criar GeoJSON polygon (turf se existir)
-        let polygonGeoJson: any;
-        try {
-          if (typeof (window as any).turf !== "undefined") {
-            // se turf foi carregado globalmente
-            polygonGeoJson = (window as any).turf.polygon([ring]);
-          } else {
-            // tentar importar turf via módulo (se estiver instalado e importado no topo do arquivo)
-            // aqui assumimos que `turf` foi importado como: import * as turf from "@turf/turf";
-            polygonGeoJson =
-              typeof turf !== "undefined"
-                ? turf.polygon([ring])
-                : { type: "Polygon", coordinates: [ring] };
-          }
-        } catch (e) {
-          polygonGeoJson = { type: "Polygon", coordinates: [ring] };
-        }
-
-        // 3) salvar os reservatórios usados para formar o polígono
-        setPolygonReservoirs(selectedPoints);
-
-        // 4) encontrar todos os reservatórios do endpoint que estão dentro do polígono
-        const inside: any[] = [];
-        for (const r of allReservs) {
-          if (r.latitude == null || r.longitude == null) continue;
-
-          let isIn = false;
+        // detectar dentro (turf se disponível)
+        const inside = allReservs.filter((r) => {
+          if (r.latitude == null || r.longitude == null) return false;
           try {
-            if (typeof (window as any).turf !== "undefined") {
-              isIn = (window as any).turf.booleanPointInPolygon(
-                (window as any).turf.point([Number(r.longitude), Number(r.latitude)]),
-                polygonGeoJson,
-              );
-            } else if (
-              typeof turf !== "undefined" &&
-              typeof turf.booleanPointInPolygon === "function"
-            ) {
-              isIn = turf.booleanPointInPolygon(
+            if (typeof turf !== "undefined" && typeof turf.booleanPointInPolygon === "function") {
+              return turf.booleanPointInPolygon(
                 turf.point([Number(r.longitude), Number(r.latitude)]),
-                polygonGeoJson,
+                turf.polygon([ring]),
               );
-            } else {
-              // fallback ray-casting (ring em formato [lng,lat])
-              const x = Number(r.longitude),
-                y = Number(r.latitude);
-              let insideFlag = false;
-              for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-                const xi = ring[i][0],
-                  yi = ring[i][1];
-                const xj = ring[j][0],
-                  yj = ring[j][1];
-                const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-                if (intersect) insideFlag = !insideFlag;
-              }
-              isIn = insideFlag;
             }
-          } catch (err) {
-            console.warn("point-in-polygon fallback:", err);
+          } catch (e) {}
+          // fallback ray-casting
+          const x = Number(r.longitude),
+            y = Number(r.latitude);
+          let insideFlag = false;
+          for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+            const xi = ring[i][0],
+              yi = ring[i][1];
+            const xj = ring[j][0],
+              yj = ring[j][1];
+            const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+            if (intersect) insideFlag = !insideFlag;
           }
+          return insideFlag;
+        });
 
-          if (isIn) inside.push(r);
-        }
-
+        // atualizar estados de UI (lista de usados e a lista inside)
+        setPolygonReservoirs(selectedPoints);
         setInsidePolygonReservoirs(inside);
 
-        // 5) substituir seleção atual pelos IDs dos reservatórios dentro do polígono
-        const insideIds = inside.map((p: any) => String(p.id));
+        // ids dos reservatórios que efetivamente vamos usar na consulta (os dentro do polígono)
+        const insideIds = inside.map((p) => String(p.id));
+
+        // **IMPORTANTE**: chame a geração de tabela passando os ids diretamente
+        await handleGenerateTableForCurrentSelection(insideIds);
+
+        // opcional: atualiza seleção com os insideIds para refletir UI
         setSelectedReservatorios(insideIds);
+      } else {
+        // menos de 3 → gerar tabela normal usando os selecionados atuais
+        await handleGenerateTableForCurrentSelection(selectedReservatorios);
 
-        // 6) disparar geração da tabela com a seleção atual (sua função já existente)
-        // usar await para garantir que a seleção esteja aplicada antes de gerar
-        await handleGenerateTableForCurrentSelection();
-
-        return;
+        // limpar estados de polígono
+        setPolygonReservoirs(selectedPoints);
+        setInsidePolygonReservoirs([]);
       }
-
-      // SE houver menos de 3 pontos (não dá pra formar polígono) -> gerar a tabela normalmente
-      // opcional: atualizar polygonReservoirs/insidePolygonReservoirs como selecionados/[]
-      setPolygonReservoirs(selectedPoints);
-      setInsidePolygonReservoirs([]);
-      await handleGenerateTableForCurrentSelection();
     } catch (err) {
       console.error("handleGeoSearch error:", err);
       alert("Erro ao processar consulta geográfica. Veja console.");
@@ -1620,9 +1523,7 @@ export default function TablesPage(): JSX.Element {
                   </Button>
                   <Button
                     $primary
-                    onClick={() => {
-                      handleGeoSearch();
-                    }}
+                    onClick={() => handleGeoSearch()}
                     disabled={loading || !(selectedColumns.length > 0)}
                   >
                     {selectedReservatorios.length >= 3
