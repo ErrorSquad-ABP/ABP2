@@ -6,6 +6,7 @@ import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
 import SimaTable from "../components/SimaTable";
 import axios from "axios";
+import * as turf from "@turf/turf";
 
 /**
  * TablesPage
@@ -524,6 +525,8 @@ export default function TablesPage(): JSX.Element {
   // pagination state for SimaTable
   const [page, setPage] = useState<number>(1);
   const [pageSize] = useState<number>(10);
+  const [polygonReservoirs, setPolygonReservoirs] = useState<any[]>([]);
+  const [insidePolygonReservoirs, setInsidePolygonReservoirs] = useState<any[]>([]);
 
   function handlePageChange(newPage: number) {
     // atualiza a página sem forçar scroll pesado
@@ -1224,6 +1227,156 @@ export default function TablesPage(): JSX.Element {
     }
   }
 
+  // Criação dos poligonos e consulta
+  async function handleGeoSearch() {
+    // validação básica
+    if (!selectedReservatorios || selectedReservatorios.length === 0) {
+      alert("Selecione ao menos um reservatório.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // 1) buscar todos os reservatórios (com coordenadas) do endpoint indicado
+      const resp = await fetch("http://localhost:3001/furnas/reservatorio/all");
+      if (!resp.ok) {
+        throw new Error(`Erro ao buscar reservatórios: ${resp.status} ${resp.statusText}`);
+      }
+      const allJson = await resp.json();
+      // endpoint pode retornar array direto ou { data: [...] }
+      const allReservsRaw = Array.isArray(allJson)
+        ? allJson
+        : (allJson?.data ?? allJson?.rows ?? []);
+
+      // normalizar os pontos (garanta que existam id, latitude, longitude, nome)
+      const allReservs = allReservsRaw
+        .map((r: any) => {
+          const id = r.idreservatorio ?? r.id ?? r.idReservatorio ?? r.id_reservatorio ?? null;
+          const latitude =
+            typeof r.lat === "number" ? r.lat : typeof r.latitude === "number" ? r.latitude : null;
+          const longitude =
+            typeof r.lng === "number"
+              ? r.lng
+              : typeof r.longitude === "number"
+                ? r.longitude
+                : null;
+          const nome = r.nome ?? r.name ?? r.label ?? "";
+          return { raw: r, id: id != null ? String(id) : null, latitude, longitude, nome };
+        })
+        .filter((p: any) => p.id !== null); // remover sem id
+
+      // 2) Pegar os pontos correspondentes aos reservatórios selecionados
+      const selectedPoints = allReservs.filter((r: any) =>
+        selectedReservatorios.some((sid: any) => String(sid) === String(r.id)),
+      );
+
+      // Se houver >=3 seleções iremos montar polígono com esses pontos
+      if (selectedPoints.length >= 3) {
+        // garantir coordenadas válidas
+        const invalid = selectedPoints.some(
+          (p: any) =>
+            p.latitude == null || p.longitude == null || isNaN(p.latitude) || isNaN(p.longitude),
+        );
+        if (invalid) {
+          alert(
+            "Alguns dos reservatórios selecionados não possuem coordenadas válidas no endpoint.",
+          );
+          return;
+        }
+
+        // montar array [lng, lat] (GeoJSON)
+        const coords = selectedPoints.map((p: any) => [Number(p.longitude), Number(p.latitude)]);
+        const ring = [...coords, coords[0]]; // fecha
+
+        // criar GeoJSON polygon (turf se existir)
+        let polygonGeoJson: any;
+        try {
+          if (typeof (window as any).turf !== "undefined") {
+            // se turf foi carregado globalmente
+            polygonGeoJson = (window as any).turf.polygon([ring]);
+          } else {
+            // tentar importar turf via módulo (se estiver instalado e importado no topo do arquivo)
+            // aqui assumimos que `turf` foi importado como: import * as turf from "@turf/turf";
+            polygonGeoJson =
+              typeof turf !== "undefined"
+                ? turf.polygon([ring])
+                : { type: "Polygon", coordinates: [ring] };
+          }
+        } catch (e) {
+          polygonGeoJson = { type: "Polygon", coordinates: [ring] };
+        }
+
+        // 3) salvar os reservatórios usados para formar o polígono
+        setPolygonReservoirs(selectedPoints);
+
+        // 4) encontrar todos os reservatórios do endpoint que estão dentro do polígono
+        const inside: any[] = [];
+        for (const r of allReservs) {
+          if (r.latitude == null || r.longitude == null) continue;
+
+          let isIn = false;
+          try {
+            if (typeof (window as any).turf !== "undefined") {
+              isIn = (window as any).turf.booleanPointInPolygon(
+                (window as any).turf.point([Number(r.longitude), Number(r.latitude)]),
+                polygonGeoJson,
+              );
+            } else if (
+              typeof turf !== "undefined" &&
+              typeof turf.booleanPointInPolygon === "function"
+            ) {
+              isIn = turf.booleanPointInPolygon(
+                turf.point([Number(r.longitude), Number(r.latitude)]),
+                polygonGeoJson,
+              );
+            } else {
+              // fallback ray-casting (ring em formato [lng,lat])
+              const x = Number(r.longitude),
+                y = Number(r.latitude);
+              let insideFlag = false;
+              for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+                const xi = ring[i][0],
+                  yi = ring[i][1];
+                const xj = ring[j][0],
+                  yj = ring[j][1];
+                const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+                if (intersect) insideFlag = !insideFlag;
+              }
+              isIn = insideFlag;
+            }
+          } catch (err) {
+            console.warn("point-in-polygon fallback:", err);
+          }
+
+          if (isIn) inside.push(r);
+        }
+
+        setInsidePolygonReservoirs(inside);
+
+        // 5) substituir seleção atual pelos IDs dos reservatórios dentro do polígono
+        const insideIds = inside.map((p: any) => String(p.id));
+        setSelectedReservatorios(insideIds);
+
+        // 6) disparar geração da tabela com a seleção atual (sua função já existente)
+        // usar await para garantir que a seleção esteja aplicada antes de gerar
+        await handleGenerateTableForCurrentSelection();
+
+        return;
+      }
+
+      // SE houver menos de 3 pontos (não dá pra formar polígono) -> gerar a tabela normalmente
+      // opcional: atualizar polygonReservoirs/insidePolygonReservoirs como selecionados/[]
+      setPolygonReservoirs(selectedPoints);
+      setInsidePolygonReservoirs([]);
+      await handleGenerateTableForCurrentSelection();
+    } catch (err) {
+      console.error("handleGeoSearch error:", err);
+      alert("Erro ao processar consulta geográfica. Veja console.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   /* ---------------- UI render ---------------- */
   return (
     <Page>
@@ -1303,7 +1456,12 @@ export default function TablesPage(): JSX.Element {
                       return (
                         <div
                           key={String(id)}
-                          style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            marginBottom: 6,
+                          }}
                         >
                           <input
                             type="checkbox"
@@ -1460,20 +1618,31 @@ export default function TablesPage(): JSX.Element {
                   >
                     {loading ? "Gerando..." : "Gerar Tabela"}
                   </Button>
+                  <Button
+                    $primary
+                    onClick={() => {
+                      handleGeoSearch();
+                    }}
+                    disabled={loading || !(selectedColumns.length > 0)}
+                  >
+                    {selectedReservatorios.length >= 3
+                      ? "Consulta geográfica (polígono)"
+                      : "Gerar Tabela"}
+                  </Button>
                 </div>
               </>
             )}
-          </Controls>
 
-          {stage < 4 && (
-            <ColumnsBox aria-label="Lista de colunas">
-              <div style={{ fontWeight: 700 }}>Colunas disponíveis</div>
-              <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                As colunas relacionadas à tabela selecionada aparecerão aqui após confirmar o
-                período.
-              </div>
-            </ColumnsBox>
-          )}
+            {stage < 4 && (
+              <ColumnsBox aria-label="Lista de colunas">
+                <div style={{ fontWeight: 700 }}>Colunas disponíveis</div>
+                <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
+                  As colunas relacionadas à tabela selecionada aparecerão aqui após confirmar o
+                  período.
+                </div>
+              </ColumnsBox>
+            )}
+          </Controls>
         </LeftColumn>
 
         <RightPanel>
@@ -1587,6 +1756,61 @@ export default function TablesPage(): JSX.Element {
                             onPageChange={(newPage: number) => handlePageChange(newPage)}
                           />
                         </SimaTableWrapper>
+                        {(polygonReservoirs.length > 0 || insidePolygonReservoirs.length > 0) && (
+                          <div
+                            style={{
+                              marginTop: 20,
+                              padding: 16,
+                              background: "#f8fafc",
+                              borderRadius: 10,
+                              border: "1px solid #e2e8f0",
+                            }}
+                          >
+                            <h3
+                              style={{
+                                margin: 0,
+                                marginBottom: 10,
+                                fontSize: 16,
+                                fontWeight: 700,
+                                color: "#0f172a",
+                              }}
+                            >
+                              Reservatórios usados na consulta geográfica
+                            </h3>
+
+                            {polygonReservoirs.length > 0 && (
+                              <div style={{ marginBottom: 12 }}>
+                                <div style={{ fontWeight: 600, marginBottom: 6, color: "#1e293b" }}>
+                                  Reservatórios selecionados para formar o polígono:
+                                </div>
+                                <ul style={{ margin: 0, paddingLeft: 18, color: "#334155" }}>
+                                  {polygonReservoirs.map((r) => (
+                                    <li key={`poly-${r.id}`}>
+                                      <strong>{r.nome || `Reservatório ${r.id}`}</strong>
+                                      {` — id: ${r.id} — (${Number(r.latitude).toFixed(6)}, ${Number(r.longitude).toFixed(6)})`}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {insidePolygonReservoirs.length > 0 && (
+                              <div>
+                                <div style={{ fontWeight: 600, marginBottom: 6, color: "#1e293b" }}>
+                                  Reservatórios dentro do polígono:
+                                </div>
+                                <ul style={{ margin: 0, paddingLeft: 18, color: "#334155" }}>
+                                  {insidePolygonReservoirs.map((r) => (
+                                    <li key={`inside-${r.id}`}>
+                                      <strong>{r.nome || `Reservatório ${r.id}`}</strong>
+                                      {` — id: ${r.id} — (${Number(r.latitude).toFixed(6)}, ${Number(r.longitude).toFixed(6)})`}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div style={{ padding: 16, color: "#64748b" }}>
