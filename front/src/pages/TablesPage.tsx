@@ -876,11 +876,7 @@ export default function TablesPage(): JSX.Element {
           "idReservatorio",
           "reservatorio",
         ]);
-        // if no campaigns loaded, assume enabled; otherwise require match
-        if (!rid && campanhas && campanhas.length) {
-          // if no rid and campaigns exist, skip
-          continue;
-        }
+        // NOTE: removed skip logic that made some reservoirs unselectable.
         if (rid && !selectedSet.has(String(rid)) && reservs.length !== rows.length) continue;
 
         const dtRaw = getField(r, ["datainicio", "dataMedida", "dataHora", "data", "datahora"]);
@@ -1301,23 +1297,11 @@ export default function TablesPage(): JSX.Element {
                         setSelectAllReservatorios(v);
 
                         if (v) {
-                          // selecionar apenas os reservatórios que estão habilitados (possuem campanha)
-                          const enabled = reservatorios
-                            .filter((r: any) => {
-                              const id = r.idreservatorio ?? r.id ?? r.idReservatorio;
-                              if (!campanhas || campanhas.length === 0) return true;
-                              const hasCamp = campanhas.some((c: any) => {
-                                const cid =
-                                  c.idreservatorio ??
-                                  c.id_reservatorio ??
-                                  c.idReservatorio ??
-                                  c.reservatorio;
-                                return String(cid) === String(id);
-                              });
-                              return hasCamp;
-                            })
-                            .map((r: any) => r.idreservatorio ?? r.id ?? r.idReservatorio);
-                          setSelectedReservatorios(enabled);
+                          // selecionar todos os reservatórios disponíveis (removida lógica de "habilitados")
+                          const allIds = reservatorios.map(
+                            (r: any) => r.idreservatorio ?? r.id ?? r.idReservatorio,
+                          );
+                          setSelectedReservatorios(allIds);
                         } else {
                           setSelectedReservatorios([]);
                         }
@@ -1342,20 +1326,6 @@ export default function TablesPage(): JSX.Element {
                       const id = r.idreservatorio ?? r.id ?? r.idReservatorio;
                       const checked = selectedReservatorios.some((s) => String(s) === String(id));
 
-                      const hasCampaign =
-                        campanhas && campanhas.length
-                          ? campanhas.some((c: any) => {
-                              const cid =
-                                c.idreservatorio ??
-                                c.id_reservatorio ??
-                                c.idReservatorio ??
-                                c.reservatorio;
-                              return String(cid) === String(id);
-                            })
-                          : true;
-
-                      const disabled = !hasCampaign;
-
                       return (
                         <div
                           key={String(id)}
@@ -1369,7 +1339,6 @@ export default function TablesPage(): JSX.Element {
                           <input
                             type="checkbox"
                             checked={checked}
-                            disabled={disabled}
                             onChange={(e) => {
                               setSelectAllReservatorios(false);
                               toggleReservatorio(id, e.target.checked);
@@ -1377,14 +1346,6 @@ export default function TablesPage(): JSX.Element {
                           />
                           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                             <div>{r.nome ?? r.name ?? `Reservatório ${id}`}</div>
-                            {disabled ? (
-                              <small
-                                style={{ color: "#94a3b8", marginLeft: 6 }}
-                                title="Sem campanhas disponíveis"
-                              >
-                                (sem campanhas)
-                              </small>
-                            ) : null}
                           </div>
                         </div>
                       );

@@ -1,3 +1,5 @@
+import * as turf from "@turf/turf";
+
 export interface Coordenada {
   x: number;
   y: number;
@@ -192,5 +194,99 @@ export class Poligono {
     }
 
     return new Poligono(data.vertices);
+  }
+
+  // ------------------- Novos métodos solicitados -------------------
+
+  private toTurfPolygon(): any {
+    if (!this._vertices || this._vertices.length < 3) return null;
+    const ring: [number, number][] = this._vertices.map((v) => [v.x, v.y]);
+    const first = ring[0];
+    const last = ring[ring.length - 1];
+    if (first[0] !== last[0] || first[1] !== last[1]) ring.push([first[0], first[1]]);
+    return turf.polygon([ring]);
+  }
+
+  private static fromTurfFeatureToVertices(feature: any): Coordenada[] | null {
+    if (!feature || !feature.geometry) return null;
+    const geom = feature.geometry;
+    if (geom.type === "Polygon") {
+      const coords: number[][] = geom.coordinates[0];
+      const last = coords[coords.length - 1];
+      const first = coords[0];
+      const trimmed = coords.slice(
+        0,
+        coords.length - (last[0] === first[0] && last[1] === first[1] ? 1 : 0),
+      );
+      return trimmed.map((c) => ({ x: c[0], y: c[1] }));
+    } else if (geom.type === "MultiPolygon") {
+      if (!Array.isArray(geom.coordinates) || geom.coordinates.length === 0) return null;
+      const coords: number[][] = geom.coordinates[0][0];
+      const last = coords[coords.length - 1];
+      const first = coords[0];
+      const trimmed = coords.slice(
+        0,
+        coords.length - (last[0] === first[0] && last[1] === first[1] ? 1 : 0),
+      );
+      return trimmed.map((c) => ({ x: c[0], y: c[1] }));
+    }
+    return null;
+  }
+
+  public calcularIntersecao(outro: Poligono): Poligono | null {
+    try {
+      const a = this.toTurfPolygon();
+      const b = outro.toTurfPolygon();
+      if (!a || !b) return null;
+
+      const inter = turf.intersect(a, b);
+      if (!inter) return null;
+
+      const verts = Poligono.fromTurfFeatureToVertices(inter);
+      if (!verts || verts.length < 3) return null;
+
+      try {
+        return new Poligono(verts);
+      } catch {
+        return null;
+      }
+    } catch (err) {
+      console.error("calcularIntersecao error:", err);
+      return null;
+    }
+  }
+
+  public calcularAreaSobreposta(outro: Poligono): number {
+    try {
+      const a = this.toTurfPolygon();
+      const b = outro.toTurfPolygon();
+      if (!a || !b) return 0;
+
+      const inter = turf.intersect(a, b);
+      if (!inter) return 0;
+
+      const area = turf.area(inter);
+      return typeof area === "number" ? area : 0;
+    } catch (err) {
+      console.error("calcularAreaSobreposta error:", err);
+      return 0;
+    }
+  }
+
+  public verificarIntersecao(outro: Poligono): boolean {
+    try {
+      const a = this.toTurfPolygon();
+      const b = outro.toTurfPolygon();
+      if (!a || !b) return false;
+
+      const inter = turf.intersect(a, b);
+      if (!inter) return false;
+
+      const area = turf.area(inter);
+      return typeof area === "number" && area > 0;
+    } catch (err) {
+      console.error("verificarIntersecao error:", err);
+      return false;
+    }
   }
 }

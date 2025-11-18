@@ -1,3 +1,5 @@
+import * as turf from "@turf/turf";
+
 export interface Coordenada {
   x: number;
   y: number;
@@ -183,5 +185,136 @@ export class Poligono {
     }
 
     return dentro;
+  }
+
+  // ------------------- Novos métodos solicitados -------------------
+
+  /**
+   * Converte este polígono para um Feature<Polygon> do GeoJSON usado pelo Turf.
+   * Observação: turf espera [lng, lat] — aqui tratamos x como lng e y como lat (coordenadas genéricas).
+   */
+  private toTurfPolygon(): any {
+    if (!this._vertices || this._vertices.length < 3) return null;
+    const ring: [number, number][] = this._vertices.map((v) => [v.x, v.y]);
+    // fecha o anel se necessário
+    const first = ring[0];
+    const last = ring[ring.length - 1];
+    if (first[0] !== last[0] || first[1] !== last[1]) {
+      ring.push([first[0], first[1]]);
+    }
+    return turf.polygon([ring]);
+  }
+
+  /**
+   * Converte uma Feature<Polygon> ou Feature<MultiPolygon> do Turf para um array de vértices.
+   * Se for MultiPolygon, pega o primeiro polígono e o primeiro anel.
+   * Retorna null se a geometria não for polygon/multipolygon.
+   */
+  private static fromTurfFeatureToVertices(feature: any): Coordenada[] | null {
+    if (!feature || !feature.geometry) return null;
+    const geom = feature.geometry;
+    if (geom.type === "Polygon") {
+      const coords: number[][] = geom.coordinates[0]; // anel exterior
+      // remove último ponto se igual ao primeiro (mantemos sem duplicar)
+      const last = coords[coords.length - 1];
+      const first = coords[0];
+      const trimmed = coords.slice(
+        0,
+        coords.length - (last[0] === first[0] && last[1] === first[1] ? 1 : 0),
+      );
+      return trimmed.map((c) => ({ x: c[0], y: c[1] }));
+    } else if (geom.type === "MultiPolygon") {
+      if (!Array.isArray(geom.coordinates) || geom.coordinates.length === 0) return null;
+      const coords: number[][] = geom.coordinates[0][0]; // primeiro polígono, anel exterior
+      const last = coords[coords.length - 1];
+      const first = coords[0];
+      const trimmed = coords.slice(
+        0,
+        coords.length - (last[0] === first[0] && last[1] === first[1] ? 1 : 0),
+      );
+      return trimmed.map((c) => ({ x: c[0], y: c[1] }));
+    }
+    return null;
+  }
+
+  /**
+   * calcularIntersecao(outroPoligono)
+   * retorna um novo Poligono representando a interseção geométrica entre este polígono e outro,
+   * ou null se não houver interseção (ou a interseção for uma geometria não-poligonal).
+   */
+  public calcularIntersecao(outro: Poligono): Poligono | null {
+    try {
+      const a = this.toTurfPolygon();
+      const b = outro.toTurfPolygon();
+      if (!a || !b) return null;
+
+      const inter = turf.intersect(a, b);
+      if (!inter) return null;
+
+      const verts = Poligono.fromTurfFeatureToVertices(inter);
+      if (!verts || verts.length < 3) return null;
+
+      // Pode lançar se os vértices resultantes formarem polígono inválido
+      try {
+        return new Poligono(verts);
+      } catch {
+        // fallback: retornar null se não for possível construir Poligono válido
+        return null;
+      }
+    } catch (err) {
+      console.error("calcularIntersecao error:", err);
+      return null;
+    }
+  }
+
+  /**
+   * calcularAreaSobreposta(outroPoligono)
+   * retorna a área de sobreposição (número). Se não houver interseção, retorna 0.
+   */
+  public calcularAreaSobreposta(outro: Poligono): number {
+    try {
+      const a = this.toTurfPolygon();
+      const b = outro.toTurfPolygon();
+      if (!a || !b) return 0;
+
+      const inter = turf.intersect(a, b);
+      if (!inter) return 0;
+
+      const area = turf.area(inter); // retorna em unidades da coordenada (consistência com input)
+      return typeof area === "number" ? area : 0;
+    } catch (err) {
+      console.error("calcularAreaSobreposta error:", err);
+      return 0;
+    }
+  }
+
+  /**
+   * verificarIntersecao(outroPoligono)
+   * retorna boolean indicando se há interseção com área positiva.
+   */
+  public verificarIntersecao(outro: Poligono): boolean {
+    try {
+      const a = this.toTurfPolygon();
+      const b = outro.toTurfPolygon();
+      if (!a || !b) return false;
+
+      const inter = turf.intersect(a, b);
+      if (!inter) return false;
+
+      const area = turf.area(inter);
+      return typeof area === "number" && area > 0;
+    } catch (err) {
+      console.error("verificarIntersecao error:", err);
+      return false;
+    }
+  }
+
+  // Método público para criar Poligono a partir de JSON (mantive compatibilidade)
+  public static fromJSON(data: any): Poligono {
+    if (!data.vertices || !Array.isArray(data.vertices)) {
+      throw new Error("Dados inválidos para criar polígono");
+    }
+
+    return new Poligono(data.vertices);
   }
 }

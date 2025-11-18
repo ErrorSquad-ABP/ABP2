@@ -400,8 +400,6 @@ const SimaCard = styled.article`
   }
 `;
 
-
-
 const SimaCardTitle = styled.h3`
   margin: 0;
   font-size: 20px;
