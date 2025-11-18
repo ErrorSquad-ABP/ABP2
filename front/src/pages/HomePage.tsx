@@ -400,37 +400,7 @@ const SimaCard = styled.article`
   }
 `;
 
-const SimaIcon = styled.div`
-  width: 84px;
-  height: 84px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow:
-    0 8px 16px rgba(255, 255, 255, 0.15),
-    inset 0 -8px 16px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
-  animation: float 3s ease-in-out infinite;
-  overflow: hidden;
 
-  img {
-    width: 56px;
-    height: 56px;
-    object-fit: contain;
-    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
-  }
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-6px);
-    }
-  }
-`;
 
 const SimaCardTitle = styled.h3`
   margin: 0;
