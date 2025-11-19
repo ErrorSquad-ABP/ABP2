@@ -547,6 +547,11 @@ export default function TablesPage(): JSX.Element {
   const [pageSize] = useState<number>(10);
   const [polygonReservoirs, setPolygonReservoirs] = useState<any[]>([]);
   const [insidePolygonReservoirs, setInsidePolygonReservoirs] = useState<any[]>([]);
+  const [polygonsList, setPolygonsList] = useState([]);
+  // Lista de polígonos salvos
+  const [savedPolygons, setSavedPolygons] = useState<
+    { id: string; points: { lat: number; lon: number }[] }[]
+  >([]);
 
   function handlePageChange(newPage: number) {
     setPage(newPage);
@@ -1249,6 +1254,37 @@ export default function TablesPage(): JSX.Element {
     }
   }
 
+  function handleSavePolygon() {
+    // garante que exista um polígono temporário (mesmo comportamento do handleGeoSearch)
+    if (!polygonReservoirs || polygonReservoirs.length < 3) {
+      alert("É necessário ter pelo menos 3 reservatórios para formar um polígono antes de salvar.");
+      return;
+    }
+
+    const newPoly = {
+      id:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : String(Date.now()),
+      points: polygonReservoirs.map((p) => ({
+        lat: Number(p.latitude),
+        lon: Number(p.longitude),
+      })),
+    };
+
+    setSavedPolygons((prev) => [...prev, newPoly]);
+
+    // LIMPA seleção e polígono temporário para permitir novas seleções
+    setSelectedReservatorios([]);
+    setSelectAllReservatorios(false);
+    setPolygonReservoirs([]);
+    setInsidePolygonReservoirs([]);
+  }
+
+  function handleDeletePolygon(id) {
+    setSavedPolygons((prev) => prev.filter((p) => p.id !== id));
+  }
+
   /* ================= Map color & legend logic ================= */
 
   // Determine which reservoirs are currently the ones to show in the map legend (priority: polygonReservoirs, else selectedReservatorios)
@@ -1782,16 +1818,20 @@ export default function TablesPage(): JSX.Element {
                           showStateNames={false}
                           points={mapPoints}
                           selectedPoints={mapSelectedPoints}
-                          polygons={
-                            polygonReservoirs && polygonReservoirs.length
+                          polygons={[
+                            // polígono temporário (quando existir)
+                            ...(polygonReservoirs && polygonReservoirs.length
                               ? [
-                                  polygonReservoirs.map((p: any) => ({
+                                  polygonReservoirs.map((p) => ({
                                     lat: Number(p.latitude),
                                     lon: Number(p.longitude),
                                   })),
                                 ]
-                              : []
-                          }
+                              : []),
+
+                            // poligonos salvos
+                            ...savedPolygons.map((poly) => poly.points),
+                          ]}
                           showPoints={true}
                         />
                       </div>
@@ -1827,6 +1867,74 @@ export default function TablesPage(): JSX.Element {
                     )}
                   </div>
                 </MapPlaceholder>
+                {/* Botão para salvar o polígono atual */}
+                <div
+                  style={{
+                    marginTop: 12,
+                    display: "flex",
+                    gap: 8,
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Button
+                    $primary
+                    onClick={handleSavePolygon}
+                    disabled={!polygonReservoirs || polygonReservoirs.length < 3}
+                  >
+                    Adicionar polígono
+                  </Button>
+
+                  <div style={{ color: "#64748b", fontSize: 13 }}>
+                    {polygonReservoirs && polygonReservoirs.length
+                      ? `${polygonReservoirs.length} pontos no polígono temporário`
+                      : "Nenhum polígono temporário"}
+                  </div>
+                </div>
+
+                {/* Lista de polígonos salvos */}
+                <div style={{ marginTop: 16 }}>
+                  <h4 style={{ margin: 0, marginBottom: 8 }}>Polígonos adicionados</h4>
+
+                  {savedPolygons.length === 0 ? (
+                    <div style={{ color: "#94a3b8" }}>Nenhum polígono criado.</div>
+                  ) : (
+                    savedPolygons.map((poly, idx) => (
+                      <div
+                        key={poly.id}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          padding: 10,
+                          marginBottom: 8,
+                          background: "#f8fafc",
+                          borderRadius: 8,
+                          border: "1px solid #e2e8f0",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 700 }}>Polígono #{idx + 1}</div>
+                          <div style={{ fontSize: 13, color: "#475569" }}>
+                            {poly.points.length} pontos
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <Button
+                            onClick={() => {
+                              // opcional: centralizar no polígono ao clicar (se quiser, posso adicionar)
+                              // por agora apenas remove
+                              handleDeletePolygon(poly.id);
+                            }}
+                          >
+                            Remover
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </>
             )}
           </Panel>
