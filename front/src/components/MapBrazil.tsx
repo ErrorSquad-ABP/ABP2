@@ -5,8 +5,8 @@ import MapSvg from "./MapSvg";
  * MapBrazil
  *
  * Props (optionais):
- * - points: Array<{ id, lat, lon, label }>
- * - selectedPoints: Array<{ id, lat, lon, label }>
+ * - points: Array<{ id, lat, lon, label, color }>
+ * - selectedPoints: Array<{ id, lat, lon, label, color }>
  * - polygons: Array<Array<{ lat, lon }>>  // cada item é um anel: [ {lat,lon}, ... ]
  * - height: number (px) or undefined -> MapSvg usa 100vh por padrão
  * - showPoints: boolean
@@ -14,8 +14,6 @@ import MapSvg from "./MapSvg";
  * - showStateNames: boolean
  * - onClickPoint: (point) => void
  * - onClickCountry: (id) => void
- *
- * Caso nenhum "points" seja fornecido, o componente apenas desenha o mapa mundi (como antes).
  */
 export default function MapBrazil({
   points = [],
@@ -28,13 +26,17 @@ export default function MapBrazil({
   onClickPoint,
   onClickCountry,
 }) {
-  const [countries, setCountries] = useState([]);
+  const [countries, setCountries] = useState<any[]>([]);
 
   useEffect(() => {
-    // mantém o comportamento anterior (world geojson), perfis offline podem trocar URL/local
+    // mantém o comportamento anterior (world geojson)
+    // (se der 404, substitua pela sua cópia local do geojson)
     fetch("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")
       .then((res) => res.json())
-      .then((data) => setCountries(data.features))
+      .then((data) => {
+        if (data && data.features) setCountries(data.features);
+        else setCountries([]);
+      })
       .catch((err) => {
         console.error("Erro carregando geojson:", err);
         setCountries([]);

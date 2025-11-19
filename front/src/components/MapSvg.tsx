@@ -7,8 +7,8 @@ import * as d3 from "d3";
  * Props:
  * - countries: GeoJSON features array
  * - onClickCountry: (idOrName) => void
- * - points: Array<{ id, lat, lon, label }>
- * - selectedPoints: Array<{ id, lat, lon, label }>
+ * - points: Array<{ id, lat, lon, label, color }>
+ * - selectedPoints: Array<{ id, lat, lon, label, color }>
  * - polygons: Array<Array<{ lat, lon }>>  // anéis (cada anel é array de points)
  * - height: number (px) optional
  * - showPoints: boolean
@@ -28,12 +28,14 @@ export default function MapSvg({
   showStateNames = false,
   onClickPoint,
 }) {
-  const svgRef = useRef(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
-    if (!countries || countries.length === 0) {
-      // still render points/polygons even if countries empty — but prefer country base
-    }
+    // debug logs (remova se quiser)
+    console.log("[MapSvg] countries:", countries?.length);
+    console.log("[MapSvg] points:", points?.length, points?.slice?.(0, 5));
+    console.log("[MapSvg] selectedPoints:", selectedPoints?.length, selectedPoints?.slice?.(0, 5));
+    console.log("[MapSvg] polygons:", polygons?.length);
 
     // compute dims
     const width = Math.max(800, window.innerWidth);
@@ -42,7 +44,7 @@ export default function MapSvg({
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
-    // layers: map -> polygons -> points -> labels
+    // group wrapper
     const g = svg.append("g").attr("class", "map-group");
 
     // projection and path
@@ -54,7 +56,7 @@ export default function MapSvg({
 
     const path = d3.geoPath().projection(projection);
 
-    // countries layer
+    // countries layer (no hover color change)
     const countriesG = g.append("g").attr("class", "countries-layer");
     if (countries && countries.length) {
       countriesG
@@ -67,173 +69,191 @@ export default function MapSvg({
         .attr("fill", "#1E3A5F")
         .attr("stroke", "#89A1C9")
         .attr("stroke-width", 0.5)
-        .on("mouseenter", function () {
-          d3.select(this).attr("fill", "#FF4C4C");
-        })
-        .on("mouseleave", function () {
-          d3.select(this).attr("fill", "#1E3A5F");
-        })
-        .on("click", (_event, d) => {
+        .on("click", (_event, d: any) => {
           if (typeof onClickCountry === "function") {
-            onClickCountry(d.id || (d.properties && d.properties.name) || "unknown");
+            onClickCountry(
+              d.id ?? (d.properties && (d.properties.name || d.properties.admin)) ?? "unknown",
+            );
           }
         });
     }
 
     // polygons layer (draw after countries so they appear on top)
+    /* --- Substitua a seção "polygons layer" existente por este bloco --- */
+
+    // polygons layer (draw after countries so they appear on top)
     const polygonsG = g.append("g").attr("class", "polygons-layer");
     if (showPolygons && Array.isArray(polygons) && polygons.length) {
-      // each polygon: array of {lat, lon}
-      polygonsG
-        .selectAll("path.poly")
-        .data(polygons)
-        .enter()
-        .append("path")
-        .attr("class", "poly")
-        .attr("d", (polyPts) => {
-          // build GeoJSON polygon from lat/lon points (d3 expects [lon, lat])
-          const coords = polyPts.map((p) => [Number(p.lon), Number(p.lat)]);
-          // close ring if necessary
-          if (
-            coords.length &&
-            (coords[0][0] !== coords[coords.length - 1][0] ||
-              coords[0][1] !== coords[coords.length - 1][1])
-          ) {
-            coords.push(coords[0]);
-          }
-          try {
-            return path({ type: "Polygon", coordinates: [coords] });
-          } catch (e) {
-            // fallback: build simple line
-            const line = d3
-              .line()
-              .x((d) => d[0])
-              .y((d) => d[1]);
-            const pts = coords.map((c) => projection(c));
-            return line(pts) + "Z";
-          }
-        })
-        .attr("fill", "rgba(11,95,255,0.12)")
-        .attr("stroke", "#0b5fff")
-        .attr("stroke-width", 2)
-        .attr("pointer-events", "none"); // polygons are visual only (no pointer)
-    }
-
-    // points layer
-    const pointsG = g.append("g").attr("class", "points-layer");
-    if (showPoints && Array.isArray(points) && points.length) {
-      // normalize points with valid coords and projection
-      const normalized = points
-        .map((p) => {
-          if (p == null) return null;
-          const lon = Number(p.lon ?? p.longitude ?? p.lng ?? p.long);
-          const lat = Number(p.lat ?? p.latitude);
-          if (Number.isFinite(lon) && Number.isFinite(lat)) {
-            const projected = projection([lon, lat]);
-            if (!projected) return null;
-            return {
-              ...p,
-              lon,
-              lat,
-              screenX: projected[0],
-              screenY: projected[1],
-            };
-          }
-          return null;
+      // Cria polígonos seguros: projeta os pontos e constrói path SVG (evita problemas de winding/holes)
+      const safeProjectedPolys = polygons
+        .map((polyPts) => {
+          const projPts = (polyPts || [])
+            .map((p: any) => {
+              const lon = Number(p.lon ?? p.longitude ?? p.lng ?? p.long);
+              const lat = Number(p.lat ?? p.latitude);
+              if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+              const projected = projection([lon, lat]);
+              if (!projected || !Number.isFinite(projected[0]) || !Number.isFinite(projected[1]))
+                return null;
+              return projected; // [x, y]
+            })
+            .filter(Boolean);
+          // need at least 3 distinct points to form a polygon
+          if (!projPts || projPts.length < 3) return null;
+          return projPts;
         })
         .filter(Boolean);
 
-      // draw all points
+      // line generator in screen coords
+      const line = d3
+        .line()
+        .x((d: any) => d[0])
+        .y((d: any) => d[1])
+        .curve(d3.curveLinear);
+
+      polygonsG
+        .selectAll("path.poly")
+        .data(safeProjectedPolys)
+        .enter()
+        .append("path")
+        .attr("class", "poly")
+        .attr("d", (pts: any) => {
+          // pts is array of [x,y] in screen coordinates
+          // construímos um caminho fechado: M x y L x y ... Z
+          try {
+            const pathStr = line(pts as any);
+            return pathStr ? pathStr + "Z" : "";
+          } catch (e) {
+            return "";
+          }
+        })
+        // fill only inside the polygon: yellow translucent + yellow stroke
+        .attr("fill", "rgba(255,212,64,0.35)")
+        .attr("stroke", "#FFD400")
+        .attr("stroke-width", 2)
+        .attr("stroke-linejoin", "round")
+        .attr("fill-rule", "nonzero")
+        .attr("pointer-events", "none");
+    }
+
+    // determine which set of points to render:
+    // - if selectedPoints provided (length >0) use them (only show selected)
+    // - else (no selection) use `points`
+    const pointsToRender =
+      Array.isArray(selectedPoints) && selectedPoints.length ? selectedPoints : points;
+
+    // points layer (single small dots)
+    const pointsG = g.append("g").attr("class", "points-layer");
+    if (showPoints && Array.isArray(pointsToRender) && pointsToRender.length) {
+      const normalized = pointsToRender
+        .map((p: any) => {
+          if (!p) return null;
+          const lon = Number(p.lon ?? p.longitude ?? p.lng ?? p.long);
+          const lat = Number(p.lat ?? p.latitude);
+          if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+          const projected = projection([lon, lat]);
+          if (!projected || !Number.isFinite(projected[0]) || !Number.isFinite(projected[1]))
+            return null;
+          // pick color: prefer provided color, else undefined (caller should pass)
+          const color = p.color ?? p.fill ?? null;
+          return {
+            ...p,
+            lon,
+            lat,
+            screenX: projected[0],
+            screenY: projected[1],
+            color,
+          };
+        })
+        .filter(Boolean);
+
+      // debug
+      // console.log("normalized points to draw:", normalized);
+
       pointsG
         .selectAll("circle.point")
-        .data(normalized, (d) => d.id ?? `${d.lon}_${d.lat}`)
+        .data(normalized, (d: any) => d.id ?? `${d.lon}_${d.lat}`)
         .enter()
         .append("circle")
         .attr("class", "point")
-        .attr("cx", (d) => d.screenX)
-        .attr("cy", (d) => d.screenY)
-        .attr("r", 4)
-        .attr("fill", "#fff")
-        .attr("stroke", "#0b5fff")
+        .attr("cx", (d: any) => d.screenX)
+        .attr("cy", (d: any) => d.screenY)
+        .attr("r", 5)
+        .attr("fill", (d: any) => d.color ?? "#ffffff")
+        .attr("stroke", (d: any) => {
+          // if color given, create a darker stroke (simple approach: use same color)
+          return d.color ?? "#0b5fff";
+        })
         .attr("stroke-width", 1.5)
         .attr("opacity", 0.95)
-        .on("mouseenter", function (_event, d) {
-          d3.select(this).attr("r", 6).attr("fill", "#0b5fff").attr("stroke", "#fff");
+        .on("mouseenter", function (_event, d: any) {
+          // enlarge on hover but preserve color
+          d3.select(this).attr("r", 7);
         })
-        .on("mouseleave", function (_event, d) {
-          d3.select(this).attr("r", 4).attr("fill", "#fff").attr("stroke", "#0b5fff");
+        .on("mouseleave", function (_event, d: any) {
+          d3.select(this).attr("r", 5);
         })
-        .on("click", function (_event, d) {
-          d3.event && d3.event.stopPropagation && d3.event.stopPropagation();
+        .on("click", function (_event, d: any) {
+          // stop propagation to avoid country click etc.
+          _event.stopPropagation && _event.stopPropagation();
           if (typeof onClickPoint === "function") onClickPoint(d);
         });
     }
 
-    // selectedPoints layer: draw on top with different style
+    // selectedPoints layer: draw a highlighted ring + inner dot (on top)
     const selG = g.append("g").attr("class", "selected-points-layer");
     if (showPoints && Array.isArray(selectedPoints) && selectedPoints.length) {
       const normalizedSel = selectedPoints
-        .map((p) => {
+        .map((p: any) => {
           if (!p) return null;
           const lon = Number(p.lon ?? p.longitude ?? p.lng ?? p.long);
           const lat = Number(p.lat ?? p.latitude);
-          if (Number.isFinite(lon) && Number.isFinite(lat)) {
-            const projected = projection([lon, lat]);
-            if (!projected) return null;
-            return {
-              ...p,
-              lon,
-              lat,
-              screenX: projected[0],
-              screenY: projected[1],
-            };
-          }
-          return null;
+          if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+          const projected = projection([lon, lat]);
+          if (!projected || !Number.isFinite(projected[0]) || !Number.isFinite(projected[1]))
+            return null;
+          const color = p.color ?? p.fill ?? "#0b5fff";
+          return {
+            ...p,
+            lon,
+            lat,
+            screenX: projected[0],
+            screenY: projected[1],
+            color,
+          };
         })
         .filter(Boolean);
 
       selG
         .selectAll("g.selected-point")
-        .data(normalizedSel, (d) => d.id ?? `${d.lon}_${d.lat}`)
+        .data(normalizedSel, (d: any) => d.id ?? `${d.lon}_${d.lat}`)
         .enter()
         .append("g")
         .attr("class", "selected-point")
-        .attr("transform", (d) => `translate(${d.screenX},${d.screenY})`)
-        .each(function (d) {
+        .attr("transform", (d: any) => `translate(${d.screenX},${d.screenY})`)
+        .each(function (d: any) {
           const container = d3.select(this);
-          // highlight circle
+          // outer translucent halo
           container
             .append("circle")
-            .attr("r", 8)
+            .attr("r", 10)
             .attr("cx", 0)
             .attr("cy", 0)
-            .attr("fill", "#0b5fff")
+            .attr("fill", d.color ?? "#0b5fff")
             .attr("opacity", 0.18)
             .attr("stroke", "none");
+
           // inner dot
           container
             .append("circle")
-            .attr("r", 4)
+            .attr("r", 5)
             .attr("cx", 0)
             .attr("cy", 0)
-            .attr("fill", "#0b5fff")
-            .attr("stroke", "#fff")
+            .attr("fill", d.color ?? "#0b5fff")
+            .attr("stroke", "#ffffff")
             .attr("stroke-width", 1.2);
 
-          // optional label (small)
-          if (d.label) {
-            container
-              .append("text")
-              .text(d.label)
-              .attr("x", 10)
-              .attr("y", -10)
-              .attr("font-size", 11)
-              .attr("fill", "#fff")
-              .attr("stroke", "rgba(0,0,0,0.25)")
-              .attr("paint-order", "stroke")
-              .style("pointer-events", "none");
-          }
-
+          // no label on map per requirement (labels handled externally if needed)
           container.on("click", () => {
             if (typeof onClickPoint === "function") onClickPoint(d);
           });
@@ -249,15 +269,18 @@ export default function MapSvg({
         .enter()
         .append("text")
         .attr("class", "country-label")
-        .attr("transform", function (d) {
+        .attr("transform", function (d: any) {
           try {
             const centroid = path.centroid(d);
+            if (!centroid || !Number.isFinite(centroid[0]) || !Number.isFinite(centroid[1])) {
+              return `translate(-9999,-9999)`;
+            }
             return `translate(${centroid[0]},${centroid[1]})`;
           } catch (e) {
             return `translate(-9999,-9999)`;
           }
         })
-        .text((d) => (d.properties && d.properties.name ? d.properties.name : ""))
+        .text((d: any) => (d.properties && d.properties.name ? d.properties.name : ""))
         .attr("font-size", 10)
         .attr("fill", "#e6f0ff")
         .style("pointer-events", "none");
@@ -279,13 +302,13 @@ export default function MapSvg({
         [Math.min(0, width - (x1 - x0)), Math.min(0, h - (y1 - y0))],
         [Math.max(width, x1 - x0), Math.max(h, y1 - y0)],
       ])
-      .on("zoom", (event) => {
+      .on("zoom", (event: any) => {
         g.attr("transform", event.transform);
       });
 
-    svg.call(zoom);
+    svg.call(zoom as any);
 
-    // ensure svg sizing
+    // ensure svg sizing: width as percent, height either px or vh
     svg.attr("width", "100%").attr("height", height ? `${height}px` : "100vh");
 
     // cleanup on unmount/re-render
