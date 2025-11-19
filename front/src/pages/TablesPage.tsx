@@ -14,6 +14,12 @@ import * as turf from "@turf/turf";
  * - Visual estilo azul/branco (sem libs, apenas styled-components).
  * - Corrige fetch final (não pede idreservatorio nas colunas).
  * - Filtra linhas por reservatório usando idreservatorio direto ou via idcampanha -> campanhas.
+ * - Alterações solicitadas:
+ *   - Não mostrar nomes dos países no mapa
+ *   - Não mostrar nomes/labels sobre os reservatórios no mapa (somente bolinhas)
+ *   - Cada reservatório com cor única
+ *   - Legenda abaixo do mapa relacionando cor <-> reservatório
+ *   - Mostrar apenas reservatórios selecionados no mapa
  */
 
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
@@ -36,7 +42,7 @@ type TableMetadata = {
   description?: string;
   colunas?: Array<object>;
   responsible?: string;
-  source?: string; // <-- adicionar esta linha
+  source?: string;
 };
 
 function isoDate(date: Date) {
@@ -45,16 +51,11 @@ function isoDate(date: Date) {
 
 /* ================= small helpers to normalize fields ================= */
 
-/**
- * getField(obj, candidates) - retorna o primeiro campo definido dentre candidates.
- * candidates: array de strings com possíveis nomes do campo (ex: ["dataMedida","dataHora","datainicio"])
- */
 function getField(obj: any, candidates: string[] = []) {
   if (!obj || typeof obj !== "object") return undefined;
   for (const c of candidates) {
     if (c in obj && obj[c] != null) return obj[c];
     const lower = c.toLowerCase();
-    // tentar chaves em diferentes formatos (snake_case / camelCase)
     for (const k of Object.keys(obj)) {
       if (k.toLowerCase() === lower) return obj[k];
     }
@@ -64,14 +65,13 @@ function getField(obj: any, candidates: string[] = []) {
 
 /* ================= Styled (azul / branco) ================= */
 
-/* ---------------- Theme & shared colors ---------------- */
-
 const PRIMARY_BLUE = "#0b5fff";
 const PRIMARY_BLUE_HOVER = "#2a7bff";
 const MUTED_BLUE = "#e8f1ff";
-const TEXT_DARK = "#0b2740";
+const TEXT_DARK = "#0b27440";
 const SURFACE = "#ffffff";
 const BORDER = "#e6eefb";
+const LEGEND_BG = "#f8fbff";
 
 const Page = styled.div`
   min-height: 100vh;
@@ -232,6 +232,17 @@ const MapPlaceholder = styled.div`
   overflow: hidden;
   min-height: 260px;
   padding: 12px;
+  display: flex;
+  flex-direction: column;
+`;
+
+const MapInner = styled.div`
+  flex: 1;
+  width: 100%;
+  /* Force the inner map to stretch and fill available area */
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
 `;
 
 const ZoomControls = styled.div`
@@ -255,19 +266,10 @@ const ZoomControls = styled.div`
     cursor: pointer;
     font-weight: 700;
   }
-
-  label {
-    color: #e6f0ff;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
 `;
 
 /* Wrapper para aplicar estilo idêntico ao cabeçalho do SimaTablesPage nas tabelas internas */
 const SimaTableWrapper = styled.div`
-  /* aplica estilo ao thead das tabelas renderizadas dentro do SimaTable */
   table thead th {
     background: linear-gradient(180deg, ${PRIMARY_BLUE} 0%, ${PRIMARY_BLUE_HOVER} 100%) !important;
     color: #fff !important;
@@ -279,20 +281,16 @@ const SimaTableWrapper = styled.div`
     padding: 10px 12px !important;
   }
 
-  /* linhas ao passar o mouse */
   table tbody tr:hover {
     background: ${MUTED_BLUE} !important;
   }
 
-  /* células do corpo, fonte e padding */
   table tbody td {
     padding: 10px 12px !important;
     color: ${TEXT_DARK} !important;
     font-size: 14px !important;
   }
 
-  /* ---------- esconder toolbars / ações internas do SimaTable (os botões acima da tabela) ---------- */
-  /* regras genéricas que cobrem a maioria dos componentes/table libs */
   [role="toolbar"],
   .sima-table-toolbar,
   .table-toolbar,
@@ -310,14 +308,12 @@ const SimaTableWrapper = styled.div`
     overflow: hidden !important;
   }
 
-  /* Caso haja botões soltos dentro do wrapper (por ex. ícones com emojis) — oculta linhas directas acima da tabela */
   > div > .toolbar,
   > .toolbar {
     display: none !important;
   }
 `;
 
-/* Table preview and table element similar to SimaTablesPage */
 const TablePreview = styled.div`
   margin-top: 12px;
   border-radius: 10px;
@@ -360,7 +356,7 @@ const TableElement = styled.table`
 
 const DownloadButtonsWrapper = styled.div`
   display: flex;
-  justify-content: space-between; /* separa os lados */
+  justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 20px;
@@ -410,7 +406,6 @@ const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
   }
 `;
 
-/* Replaces previous Button style to match SimaTablesPage visuals */
 const Button = styled.button<{ $primary?: boolean }>`
   padding: 10px 14px;
   border-radius: 10px;
@@ -464,6 +459,40 @@ function isIdOrDateColumn(name?: string) {
   return false;
 }
 
+/* ================= Legend styled ================= */
+const LegendBox = styled.div`
+  margin-top: 12px;
+  padding: 10px;
+  background: ${LEGEND_BG};
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+`;
+
+const LegendItem = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 6px 16px rgba(6, 58, 128, 0.04);
+  font-size: 13px;
+  color: ${TEXT_DARK};
+`;
+
+const Swatch = styled.span<{ color: string }>`
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  background: ${(p) => p.color};
+  border: 1px solid rgba(0, 0, 0, 0.06);
+`;
+
 /* ================= Component ================= */
 
 export default function TablesPage(): JSX.Element {
@@ -477,7 +506,7 @@ export default function TablesPage(): JSX.Element {
     isoDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 90)),
   );
   const [endDate, setEndDate] = useState<string>(() => isoDate(new Date()));
-  const [table, setTable] = useState<string>(""); // stores API table name (ex: tbabioticocoluna)
+  const [table, setTable] = useState<string>("");
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [responsible, setResponsible] = useState<string>();
   const [metadata, setMetadata] = useState<TableMetadata[] | null>(null);
@@ -489,7 +518,6 @@ export default function TablesPage(): JSX.Element {
     any
   > | null>(null);
 
-  // tablesOptions: array of { api: 'tb...', label: 'Abióticos coluna' }
   const [tablesOptions, setTablesOptions] = useState<Array<{ api: string; label: string }>>([]);
 
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
@@ -499,47 +527,33 @@ export default function TablesPage(): JSX.Element {
   const [selectedReservatorios, setSelectedReservatorios] = useState<(string | number)[]>([]);
   const [selectAllReservatorios, setSelectAllReservatorios] = useState<boolean>(false);
 
-  // tabela preview state (dados da tabela e controle de exibição)
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [showTable, setShowTable] = useState<boolean>(false);
 
-  // novo: controle de exibição do preview de tabela (botão Visualizar Tabela)
   const [showTableView] = useState<boolean>(false);
 
-  // available dates derived from tbcampanha filtered by selectedReservatorios
   const [availableDates, setAvailableDates] = useState<string[]>([]);
 
-  // zoom & labels
   const [zoom, setZoom] = useState<number>(1);
-  const [showStateNames, setShowStateNames] = useState<boolean>(true);
   const [pan, setPan] = useState({ x: 0, y: 0 });
 
-  // local columnsForTable state (for stage 4)
   const [columnsForTable, setColumnsForTable] = useState<any[]>([]);
 
-  // view toggle between "chart" (table preview) and "map"
   const [view, setView] = useState<"chart" | "map">("chart");
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
-  // pagination state for SimaTable
   const [page, setPage] = useState<number>(1);
   const [pageSize] = useState<number>(10);
   const [polygonReservoirs, setPolygonReservoirs] = useState<any[]>([]);
   const [insidePolygonReservoirs, setInsidePolygonReservoirs] = useState<any[]>([]);
 
   function handlePageChange(newPage: number) {
-    // atualiza a página sem forçar scroll pesado
     setPage(newPage);
-    // Se quiser um scroll leve opcional (não centraliza), descomente a linha abaixo:
-    // setTimeout(() => chartRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
   }
-
-  /* ================= helper download wrappers (added) ================= */
 
   /* ================= metadata load ================= */
 
-  // selectedReservatorios -> update available dates (when changed)
   useEffect(() => {
     if (selectedReservatorios.length > 0) {
       fetchAvailableDatesForSelectedReservatorios(selectedReservatorios);
@@ -634,7 +648,6 @@ export default function TablesPage(): JSX.Element {
         const results = await Promise.all(fetches);
         const combined = results.flat();
 
-        // unify and unique by idcampanha (or datainicio/datafim)
         const unique: Campanha[] = [];
         for (const c of combined) {
           const exists = unique.some((u) => u.idcampanha === c.idcampanha);
@@ -654,7 +667,7 @@ export default function TablesPage(): JSX.Element {
   useEffect(() => {
     const fetchReservatorios = async () => {
       try {
-        const url = `${API_BASE}/tables/furnas/tbreservatorio?colunas=nome,idreservatorio`;
+        const url = `${API_BASE}/tables/furnas/tbreservatorio?colunas=nome,idreservatorio,lat,lng`;
         const res = await fetch(url);
         if (!res.ok) {
           const res2 = await fetch(`${API_BASE}/furnas/reservatorio/all`);
@@ -679,26 +692,19 @@ export default function TablesPage(): JSX.Element {
   }, []);
 
   /* ---------------- helper: resolveApiTableName (defensive) ---------------- */
-  // normalize -> garante formato de "db table name" (ex: tbabioticocoluna)
-  // Substitui a função antiga por esta (corrige tbabioticoscoluna -> tbabioticocoluna)
   function resolveApiTableName(tableName: string) {
     if (!tableName) return "";
 
-    // base normalize (remove acentos, espaços, lower)
     let t = String(tableName)
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // remove acentos
-      .replace(/\s+/g, "") // remove espaços
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "")
       .toLowerCase();
 
-    // garantir prefixo 'tb' (se o usuário passou label sem 'tb')
     if (!t.startsWith("tb")) t = "tb" + t;
 
-    // Mapa de correções pontuais (adicionar aqui outros casos conhecidos)
     const FIXES: Record<string, string> = {
-      // correção que você reportou: remove o 's' extra
       tbabioticoscoluna: "tbabioticocoluna",
-      // variações sem 'tb' também cobertas por prefixo acima
       abioticoscoluna: "tbabioticocoluna",
       abiotico_coluna: "tbabioticocoluna",
       "abiotico-coluna": "tbabioticocoluna",
@@ -706,19 +712,13 @@ export default function TablesPage(): JSX.Element {
 
     if (FIXES[t]) return FIXES[t];
 
-    // heurística extra: se houver "...scoluna" (plural antes de 'coluna') normaliza para singular
     t = t.replace(/scoluna$/, "coluna");
-
-    // correções genéricas: se houver 'abioticos' -> 'abiotico' antes de 'coluna'
     t = t.replace(/abioticoscoluna$/, "abioticocoluna");
-
-    // última garantia: remover caracteres inválidos
     t = t.replace(/[^a-z0-9_]/g, "");
 
     return t;
   }
 
-  // provider detection (kept but small improvements)
   function getProviderForApi(apiName?: string): string | null {
     if (!apiName) return null;
     const key = String(apiName);
@@ -784,7 +784,6 @@ export default function TablesPage(): JSX.Element {
     }
   }
 
-  // Função para buscar datas disponíveis de acordo com os reservatórios selecionados
   async function fetchAvailableDatesForTableAndReservatorios(
     selectedReservatorios: (string | number)[],
     tableApiName: string,
@@ -796,7 +795,6 @@ export default function TablesPage(): JSX.Element {
       return;
     }
 
-    // tbcampanha é quem guarda as datas, sempre usar provider "furnas"
     const endpoint = `${API_BASE}/tables/furnas/tbcampanha`;
 
     let rows: any[] = [];
@@ -813,7 +811,6 @@ export default function TablesPage(): JSX.Element {
       return;
     }
 
-    // Filtra apenas as datas dos reservatórios selecionados
     const selectedSet = new Set(selectedReservatorios.map(String));
     const foundDates = new Set<string>();
 
@@ -859,7 +856,7 @@ export default function TablesPage(): JSX.Element {
       return;
     }
 
-    const endpoint = `${API_BASE}/tables/furnas/tbcampanha`; // ✅ garante /furnas/
+    const endpoint = `${API_BASE}/tables/furnas/tbcampanha`;
     try {
       const resp = await fetch(endpoint);
       if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
@@ -876,9 +873,7 @@ export default function TablesPage(): JSX.Element {
           "idReservatorio",
           "reservatorio",
         ]);
-        // if no campaigns loaded, assume enabled; otherwise require match
         if (!rid && campanhas && campanhas.length) {
-          // if no rid and campaigns exist, skip
           continue;
         }
         if (rid && !selectedSet.has(String(rid)) && reservs.length !== rows.length) continue;
@@ -953,17 +948,13 @@ export default function TablesPage(): JSX.Element {
     if (!tableName) return;
 
     const apiTable = resolveApiTableName(tableName);
-    // garante provider (por padrão 'furnas' se heurística falhar)
     const provider = getProviderForApi(apiTable) || "furnas";
 
-    // tentativas de endpoint, do mais específico ao fallback
     const tryUrls: string[] = [
       `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}`,
       `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida,idreservatorio`,
       `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=dataMedida`,
-      // fallback sem /tables/ (alguns endpoints do backend usam outra rota)
       `${API_BASE}/${provider}/${encodeURIComponent(apiTable)}`,
-      // generic fallback (sem provider) — mantido por segurança
       `${API_BASE}/tables/${encodeURIComponent(apiTable)}`,
       `${API_BASE}/${encodeURIComponent(apiTable)}`,
     ];
@@ -1009,11 +1000,6 @@ export default function TablesPage(): JSX.Element {
 
   /**
    * handleGenerateTableForCurrentSelection
-   * - Builds colsParam WITHOUT idreservatorio
-   * - Fetches rows from provider-aware endpoint
-   * - Filters rows by selectedReservatorios using:
-   *    - idreservatorio in row OR
-   *    - idcampanha in row -> lookup campanhas[] to resolve idreservatorio
    */
   async function handleGenerateTableForCurrentSelection(reservatoriosOverride?: string[]) {
     if (!reservatoriosOverride && !selectedReservatorios.length) {
@@ -1029,28 +1015,17 @@ export default function TablesPage(): JSX.Element {
       return;
     }
 
-    if (!startDate || !endDate) {
-      // se a sua versão não exige data, remova este check — deixei só por segurança
-      // alert("Escolha período.");
-      // return;
-    }
-
     setLoading(true);
     try {
       const apiTable = resolveApiTableName(table);
       const provider = getProviderForApi(apiTable) || "furnas";
       const dataCol = provider === "furnas" ? "dataMedida" : "dataHora";
 
-      // colunas pedidas
       const cols = [dataCol, ...selectedColumns].filter(Boolean);
       const colsParam = cols.map((c) => encodeURIComponent(c)).join(",");
 
-      // endpoint base (mantive sua lógica)
       const endpoint = `${API_BASE}/tables/${provider}/${encodeURIComponent(apiTable)}?colunas=${colsParam}`;
 
-      // Requisitar por reservatório — ou fazer um endpoint que aceita múltiplos ids de uma vez.
-      // Aqui fazemos requests por id e juntamos; se seu backend aceita ?reservatorios=1,2,3
-      // prefira usar um único call para performance.
       const responses = await Promise.all(
         idsToUse.map(async (id) => {
           const url = `${endpoint}&reservatorio=${encodeURIComponent(String(id))}`;
@@ -1064,16 +1039,14 @@ export default function TablesPage(): JSX.Element {
         }),
       );
 
-      // juntar e sobrescrever (NÃO concatenar ao state antigo)
       const merged = responses.flat();
 
-      // filtrar por datas caso sua tabela precise (mantive sua lógica de data)
       const filtered = (merged || []).filter((r: any) => {
         const dv = r.dataMedida ?? r.datamedida ?? r.dataHora ?? r.datahora ?? r.data ?? null;
-        if (!dv) return true; // se você não quer filtrar por data, retorne true
+        if (!dv) return true;
         const d = new Date(dv);
         if (isNaN(d.getTime())) return false;
-        if (!startDate || !endDate) return true; // se não está aplicando período
+        if (!startDate || !endDate) return true;
         const day = isoDate(d);
         return day >= startDate && day <= endDate;
       });
@@ -1082,7 +1055,6 @@ export default function TablesPage(): JSX.Element {
       setShowTable(true);
       setView("chart");
 
-      // rolar para a tabela
       setTimeout(
         () => chartRef.current?.scrollIntoView?.({ behavior: "smooth", block: "center" }),
         50,
@@ -1198,7 +1170,6 @@ export default function TablesPage(): JSX.Element {
 
     setLoading(true);
     try {
-      // busca do endpoint que você mencionou e normalização (se necessário)
       const resp = await fetch("http://localhost:3001/furnas/reservatorio/all");
       if (!resp.ok) {
         throw new Error(`Erro ao buscar reservatórios: ${resp.status} ${resp.statusText}`);
@@ -1219,17 +1190,14 @@ export default function TablesPage(): JSX.Element {
         raw: r,
       }));
 
-      // pontos selecionados (para formar polígono)
       const selectedPoints = allReservs.filter((r) =>
         selectedReservatorios.some((sid) => String(sid) === r.id),
       );
 
       if (selectedPoints.length >= 3) {
-        // montar coords [lng,lat]
         const coords = selectedPoints.map((p) => [Number(p.longitude), Number(p.latitude)]);
         const ring = [...coords, coords[0]];
 
-        // detectar dentro (turf se disponível)
         const inside = allReservs.filter((r) => {
           if (r.latitude == null || r.longitude == null) return false;
           try {
@@ -1240,7 +1208,6 @@ export default function TablesPage(): JSX.Element {
               );
             }
           } catch (e) {}
-          // fallback ray-casting
           const x = Number(r.longitude),
             y = Number(r.latitude);
           let insideFlag = false;
@@ -1255,31 +1222,23 @@ export default function TablesPage(): JSX.Element {
           return insideFlag;
         });
 
-        // atualizar estados de UI (lista de usados e a lista inside)
         setPolygonReservoirs(selectedPoints);
         setInsidePolygonReservoirs(inside);
 
-        // ids dos reservatórios que efetivamente vamos usar na consulta (os dentro do polígono)
         const insideIds = inside.map((p) => String(p.id));
 
-        // **IMPORTANTE**: chame a geração de tabela passando os ids diretamente
         await handleGenerateTableForCurrentSelection(insideIds);
 
-        // opcional: atualiza seleção com os insideIds para refletir UI
         setSelectedReservatorios(insideIds);
 
-        // agora redireciona para a view do mapa para mostrar pontos e polígono
         setView("map");
         return;
       } else {
-        // menos de 3 → gerar a tabela normal usando os selecionados atuais
         await handleGenerateTableForCurrentSelection(selectedReservatorios);
 
-        // limpar estados de polígono
         setPolygonReservoirs(selectedPoints);
         setInsidePolygonReservoirs([]);
 
-        // redireciona para o mapa para mostrar os pontos selecionados (sem polígono fechado)
         setView("map");
       }
     } catch (err) {
@@ -1289,6 +1248,63 @@ export default function TablesPage(): JSX.Element {
       setLoading(false);
     }
   }
+
+  /* ================= Map color & legend logic ================= */
+
+  // Determine which reservoirs are currently the ones to show in the map legend (priority: polygonReservoirs, else selectedReservatorios)
+  const displayedReservoirs = useMemo(() => {
+    if (polygonReservoirs && polygonReservoirs.length) return polygonReservoirs;
+    if (selectedReservatorios && selectedReservatorios.length) {
+      // map ids to latLonPoints entries
+      return latLonPoints.filter((p) =>
+        selectedReservatorios.some((sid) => String(sid) === String(p.id)),
+      );
+    }
+    return [];
+  }, [polygonReservoirs, selectedReservatorios, latLonPoints]);
+
+  // create deterministic unique colors for each displayed reservoir (based on order)
+  const colorMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    const ids = displayedReservoirs.map((d) => String(d.id));
+    for (let i = 0; i < ids.length; i++) {
+      const hue = Math.round((i * 137.508) % 360);
+      map[ids[i]] = `hsl(${hue} 75% 50%)`;
+    }
+    return map;
+  }, [displayedReservoirs]);
+
+  // Provide points for MapBrazil: only include selected/displayed reservoirs
+  // Provide points for MapBrazil: only include selected/displayed reservoirs (defensive numeric parsing)
+  const mapPoints = useMemo(() => {
+    return displayedReservoirs
+      .map((p: any) => {
+        const lat = Number(p.latitude);
+        const lon = Number(p.longitude);
+        return {
+          id: p.id,
+          lat,
+          lon,
+          nome: p.nome ?? `Reservatório ${p.id}`,
+        };
+      })
+      .filter((p: any) => Number.isFinite(p.lat) && Number.isFinite(p.lon))
+      .map((p: any) => {
+        const idStr = String(p.id);
+        const color = colorMap[idStr] ?? "#ffffff";
+        return {
+          id: p.id,
+          lat: p.lat,
+          lon: p.lon,
+          color,
+        };
+      });
+  }, [displayedReservoirs, colorMap]);
+
+  // Selected points for highlighting (same as mapPoints here, but kept separate if MapBrazil expects them)
+  const mapSelectedPoints = useMemo(() => {
+    return mapPoints.map((p) => ({ ...p })); // já são filtrados/numéricos
+  }, [mapPoints]);
 
   /* ---------------- UI render ---------------- */
   return (
@@ -1311,8 +1327,9 @@ export default function TablesPage(): JSX.Element {
                         setSelectAllReservatorios(v);
 
                         if (v) {
-                          // selecionar todos os reservatórios (sem filtro por campanha)
-                          const allIds = reservatorios.map((r: any) => r.idreservatorio ?? r.id ?? r.idReservatorio);
+                          const allIds = reservatorios.map(
+                            (r: any) => r.idreservatorio ?? r.id ?? r.idReservatorio,
+                          );
                           setSelectedReservatorios(allIds);
                         } else {
                           setSelectedReservatorios([]);
@@ -1334,7 +1351,6 @@ export default function TablesPage(): JSX.Element {
                   }}
                 >
                   {reservatorios.length ? (
-                    // todos os reservatórios agora são selecionáveis (sem disabled)
                     reservatorios.map((r: any) => {
                       const id = r.idreservatorio ?? r.id ?? r.idReservatorio;
                       const checked = selectedReservatorios.some((s) => String(s) === String(id));
@@ -1706,19 +1722,13 @@ export default function TablesPage(): JSX.Element {
                   }}
                 >
                   <div style={{ fontWeight: 800, color: "#0b2740" }}>Mapa — pontos de coleta</div>
-                  <div style={{ color: "#475569", fontSize: 13 }}>{latLonPoints.length} pontos</div>
+                  <div style={{ color: "#475569", fontSize: 13 }}>
+                    {displayedReservoirs.length} pontos
+                  </div>
                 </div>
 
                 <MapPlaceholder>
                   <ZoomControls>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={showStateNames}
-                        onChange={(e) => setShowStateNames(e.target.checked)}
-                      />
-                      <span>Mostrar nomes</span>
-                    </label>
                     <div>
                       <button
                         aria-label="Zoom Out"
@@ -1754,70 +1764,67 @@ export default function TablesPage(): JSX.Element {
                       alignItems: "center",
                     }}
                   >
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        maxWidth: 1100,
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
-                        cursor: "grab",
-                        transformOrigin: "center top",
-                      }}
-                    >
-                      <MapBrazilAny
-                        height={760}
-                        showPolygons={true}
-                        showStateNames={showStateNames}
-                        // pontos gerais (todos os reservatórios com coords)
-                        points={latLonPoints
-                          .filter(
-                            (p) =>
-                              typeof p.latitude === "number" && typeof p.longitude === "number",
-                          )
-                          .map((p) => ({
-                            id: p.id,
-                            lat: Number(p.latitude),
-                            lon: Number(p.longitude),
-                            label: p.nome || `Reservatório ${p.id}`,
-                          }))}
-                        // pontos selecionados (destacados) — usar polygonReservoirs se definido, senão usar selectedReservatorios
-                        selectedPoints={
-                          (polygonReservoirs && polygonReservoirs.length
-                            ? polygonReservoirs.map((p: any) => ({
-                                id: p.id,
-                                lat: Number(p.latitude),
-                                lon: Number(p.longitude),
-                                label: p.nome || `Reservatório ${p.id}`,
-                              }))
-                            : selectedReservatorios && selectedReservatorios.length
-                            ? latLonPoints
-                                .filter((p) => selectedReservatorios.some((sid) => String(sid) === String(p.id)))
-                                .map((p) => ({
-                                  id: p.id,
-                                  lat: Number(p.latitude),
-                                  lon: Number(p.longitude),
-                                  label: p.nome || `Reservatório ${p.id}`,
-                                }))
-                            : []
-                          )
-                        }
-                        // polígonos: se polygonReservoirs existir, passar como um anel (mapa espera Array<Array<{lat,lon}>>)
-                        polygons={
-                          polygonReservoirs && polygonReservoirs.length
-                            ? [
-                                polygonReservoirs.map((p: any) => ({
-                                  lat: Number(p.latitude),
-                                  lon: Number(p.longitude),
-                                })),
-                              ]
-                            : []
-                        }
-                        showPoints={true}
-                      />
-                    </div>
+                    <MapInner>
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+                          transformOrigin: "center top",
+                        }}
+                      >
+                        <MapBrazilAny
+                          height={760} // passar número (px) — evita "100%px" inválido no SVG
+                          showPolygons={true}
+                          showStateNames={false}
+                          points={mapPoints}
+                          selectedPoints={mapSelectedPoints}
+                          polygons={
+                            polygonReservoirs && polygonReservoirs.length
+                              ? [
+                                  polygonReservoirs.map((p: any) => ({
+                                    lat: Number(p.latitude),
+                                    lon: Number(p.longitude),
+                                  })),
+                                ]
+                              : []
+                          }
+                          showPoints={true}
+                        />
+                      </div>
+                    </MapInner>
+                  </div>
+
+                  {/* legenda abaixo do mapa */}
+                  <div style={{ padding: 12 }}>
+                    {displayedReservoirs && displayedReservoirs.length ? (
+                      <LegendBox>
+                        {displayedReservoirs.map((r: any) => {
+                          const idStr = String(r.id);
+                          const color = colorMap[idStr] ?? "#999";
+                          return (
+                            <LegendItem key={`legend-${idStr}`}>
+                              <Swatch color={color} />
+                              <div style={{ display: "flex", flexDirection: "column" }}>
+                                <div style={{ fontWeight: 700, fontSize: 13 }}>
+                                  {r.nome || `Reservatório ${idStr}`}
+                                </div>
+                                <div
+                                  style={{ fontSize: 12, color: "#64748b" }}
+                                >{`id: ${idStr}`}</div>
+                              </div>
+                            </LegendItem>
+                          );
+                        })}
+                      </LegendBox>
+                    ) : (
+                      <div style={{ color: "#e6f0ff", marginTop: 8 }}>
+                        Nenhuma seleção para legenda.
+                      </div>
+                    )}
                   </div>
                 </MapPlaceholder>
               </>
