@@ -876,7 +876,11 @@ export default function TablesPage(): JSX.Element {
           "idReservatorio",
           "reservatorio",
         ]);
-        // NOTE: removed skip logic that made some reservoirs unselectable.
+        // if no campaigns loaded, assume enabled; otherwise require match
+        if (!rid && campanhas && campanhas.length) {
+          // if no rid and campaigns exist, skip
+          continue;
+        }
         if (rid && !selectedSet.has(String(rid)) && reservs.length !== rows.length) continue;
 
         const dtRaw = getField(r, ["datainicio", "dataMedida", "dataHora", "data", "datahora"]);
@@ -1196,6 +1200,9 @@ export default function TablesPage(): JSX.Element {
     try {
       // busca do endpoint que você mencionou e normalização (se necessário)
       const resp = await fetch("http://localhost:3001/furnas/reservatorio/all");
+      if (!resp.ok) {
+        throw new Error(`Erro ao buscar reservatórios: ${resp.status} ${resp.statusText}`);
+      }
       const allJson = await resp.json();
       const allReservsRaw = Array.isArray(allJson)
         ? allJson
@@ -1260,13 +1267,20 @@ export default function TablesPage(): JSX.Element {
 
         // opcional: atualiza seleção com os insideIds para refletir UI
         setSelectedReservatorios(insideIds);
+
+        // agora redireciona para a view do mapa para mostrar pontos e polígono
+        setView("map");
+        return;
       } else {
-        // menos de 3 → gerar tabela normal usando os selecionados atuais
+        // menos de 3 → gerar a tabela normal usando os selecionados atuais
         await handleGenerateTableForCurrentSelection(selectedReservatorios);
 
         // limpar estados de polígono
         setPolygonReservoirs(selectedPoints);
         setInsidePolygonReservoirs([]);
+
+        // redireciona para o mapa para mostrar os pontos selecionados (sem polígono fechado)
+        setView("map");
       }
     } catch (err) {
       console.error("handleGeoSearch error:", err);
@@ -1297,10 +1311,8 @@ export default function TablesPage(): JSX.Element {
                         setSelectAllReservatorios(v);
 
                         if (v) {
-                          // selecionar todos os reservatórios disponíveis (removida lógica de "habilitados")
-                          const allIds = reservatorios.map(
-                            (r: any) => r.idreservatorio ?? r.id ?? r.idReservatorio,
-                          );
+                          // selecionar todos os reservatórios (sem filtro por campanha)
+                          const allIds = reservatorios.map((r: any) => r.idreservatorio ?? r.id ?? r.idReservatorio);
                           setSelectedReservatorios(allIds);
                         } else {
                           setSelectedReservatorios([]);
@@ -1322,6 +1334,7 @@ export default function TablesPage(): JSX.Element {
                   }}
                 >
                   {reservatorios.length ? (
+                    // todos os reservatórios agora são selecionáveis (sem disabled)
                     reservatorios.map((r: any) => {
                       const id = r.idreservatorio ?? r.id ?? r.idReservatorio;
                       const checked = selectedReservatorios.some((s) => String(s) === String(id));
@@ -1758,6 +1771,7 @@ export default function TablesPage(): JSX.Element {
                         height={760}
                         showPolygons={true}
                         showStateNames={showStateNames}
+                        // pontos gerais (todos os reservatórios com coords)
                         points={latLonPoints
                           .filter(
                             (p) =>
@@ -1769,6 +1783,38 @@ export default function TablesPage(): JSX.Element {
                             lon: Number(p.longitude),
                             label: p.nome || `Reservatório ${p.id}`,
                           }))}
+                        // pontos selecionados (destacados) — usar polygonReservoirs se definido, senão usar selectedReservatorios
+                        selectedPoints={
+                          (polygonReservoirs && polygonReservoirs.length
+                            ? polygonReservoirs.map((p: any) => ({
+                                id: p.id,
+                                lat: Number(p.latitude),
+                                lon: Number(p.longitude),
+                                label: p.nome || `Reservatório ${p.id}`,
+                              }))
+                            : selectedReservatorios && selectedReservatorios.length
+                            ? latLonPoints
+                                .filter((p) => selectedReservatorios.some((sid) => String(sid) === String(p.id)))
+                                .map((p) => ({
+                                  id: p.id,
+                                  lat: Number(p.latitude),
+                                  lon: Number(p.longitude),
+                                  label: p.nome || `Reservatório ${p.id}`,
+                                }))
+                            : []
+                          )
+                        }
+                        // polígonos: se polygonReservoirs existir, passar como um anel (mapa espera Array<Array<{lat,lon}>>)
+                        polygons={
+                          polygonReservoirs && polygonReservoirs.length
+                            ? [
+                                polygonReservoirs.map((p: any) => ({
+                                  lat: Number(p.latitude),
+                                  lon: Number(p.longitude),
+                                })),
+                              ]
+                            : []
+                        }
                         showPoints={true}
                       />
                     </div>
