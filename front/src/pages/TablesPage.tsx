@@ -20,6 +20,7 @@ import * as turf from "@turf/turf";
  *   - Cada reservatório com cor única
  *   - Legenda abaixo do mapa relacionando cor <-> reservatório
  *   - Mostrar apenas reservatórios selecionados no mapa
+ *   - Seleção de quais polígonos exibir no mapa + Mostrar todos / Ocultar todos
  */
 
 const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:3001";
@@ -523,7 +524,7 @@ export default function TablesPage(): JSX.Element {
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [reservatorios, setReservatorios] = useState<any[]>([]);
 
-  // novo: selected reservatorios (etapa 1)
+  // selected reservatorios (etapa 1)
   const [selectedReservatorios, setSelectedReservatorios] = useState<(string | number)[]>([]);
   const [selectAllReservatorios, setSelectAllReservatorios] = useState<boolean>(false);
 
@@ -545,20 +546,20 @@ export default function TablesPage(): JSX.Element {
   const chartMainRef = useRef<HTMLDivElement | null>(null);
   const [page, setPage] = useState<number>(1);
   const [pageSize] = useState<number>(10);
+
+  // polygon related
   const [polygonReservoirs, setPolygonReservoirs] = useState<any[]>([]);
   const [insidePolygonReservoirs, setInsidePolygonReservoirs] = useState<any[]>([]);
-  const [insidePolygonReservatorios, setInsidePolygonReservatorios] = useState({});
-  const [showReservatoriosPolygons, setShowReservatoriosPolygons] = useState({});
-
-  const [polygonsList, setPolygonsList] = useState([]);
   // Lista de polígonos salvos
   const [savedPolygons, setSavedPolygons] = useState<
     { id: string; points: { lat: number; lon: number }[] }[]
   >([]);
 
-  // Novo: mapeamento polígonoId -> lista de reservatórios dentro dele
+  // visibility per saved polygon (checkboxes)
+  const [polygonVisibility, setPolygonVisibility] = useState<Record<string, boolean>>({});
+  // map of polygonId -> array of reservoirs inside it (cached)
   const [polygonReservsMap, setPolygonReservsMap] = useState<Record<string, any[]>>({});
-  // Novo: toggles para mostrar/ocultar listas de reservatórios por polígono
+  // whether the list below each polygon card is shown
   const [showPolygonReservs, setShowPolygonReservs] = useState<Record<string, boolean>>({});
 
   function handlePageChange(newPage: number) {
@@ -1174,7 +1175,51 @@ export default function TablesPage(): JSX.Element {
     }
   }
 
-  // Criação dos poligonos e consulta
+  /* ---------------- Geo / Polygon functions ---------------- */
+
+  // helper: compute reservoirs inside a polygon (polygon points are [{lat, lon}])
+  function computeReservatoriosInsidePolygon(poly: { id?: string; points: any[] } | { points: any[] }) {
+    const pts = (poly as any).points || [];
+    if (!pts || pts.length < 3) return [];
+
+    // use turf to compute point in polygon (poly as ring of [lon, lat])
+    try {
+      const ring = pts.map((p: any) => [Number(p.lon), Number(p.lat)]);
+      const polyFeature = turf.polygon([ring]);
+      const found = latLonPoints
+        .map((r) => ({
+          id: r.id,
+          nome: r.nome,
+          lat: Number(r.latitude),
+          lon: Number(r.longitude),
+        }))
+        .filter((r) => Number.isFinite(r.lat) && Number.isFinite(r.lon))
+        .filter((r) =>
+          turf.booleanPointInPolygon(turf.point([Number(r.lon), Number(r.lat)]), polyFeature),
+        );
+      return found;
+    } catch (e) {
+      // fallback manual ray-cast (if turf not available)
+      const ring = pts.map((p: any) => [Number(p.lon), Number(p.lat)]);
+      return latLonPoints.filter((r) => {
+        const x = Number(r.longitude),
+          y = Number(r.latitude);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+        let insideFlag = false;
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          const xi = ring[i][0],
+            yi = ring[i][1];
+          const xj = ring[j][0],
+            yj = ring[j][1];
+          const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+          if (intersect) insideFlag = !insideFlag;
+        }
+        return insideFlag;
+      });
+    }
+  }
+
+  // NOTE: declare allReservs outside try to avoid scoping issues (fix reported error)
   async function handleGeoSearch() {
     if (!selectedReservatorios || selectedReservatorios.length === 0) {
       alert("Selecione ao menos um reservatório.");
@@ -1182,6 +1227,10 @@ export default function TablesPage(): JSX.Element {
     }
 
     setLoading(true);
+
+    // we'll fill allReservs below
+    let allReservs: any[] = [];
+
     try {
       const resp = await fetch("http://localhost:3001/furnas/reservatorio/all");
       if (!resp.ok) {
@@ -1191,7 +1240,7 @@ export default function TablesPage(): JSX.Element {
       const allReservsRaw = Array.isArray(allJson)
         ? allJson
         : (allJson?.data ?? allJson?.rows ?? []);
-      const allReservs = allReservsRaw.map((r: any) => ({
+      allReservs = allReservsRaw.map((r: any) => ({
         id: String(
           r.idreservatorio ?? r.id ?? r.idReservatorio ?? r.id_reservatorio ?? r.id_reservatorio,
         ),
@@ -1235,7 +1284,10 @@ export default function TablesPage(): JSX.Element {
           return insideFlag;
         });
 
+        // polygonReservoirs = pontos usados para formar o polígono
         setPolygonReservoirs(selectedPoints);
+
+        // set inside list
         setInsidePolygonReservoirs(inside);
 
         const insideIds = inside.map((p) => String(p.id));
@@ -1244,12 +1296,16 @@ export default function TablesPage(): JSX.Element {
 
         setSelectedReservatorios(insideIds);
 
+        // do not automatically save as saved polygon here — user decides to "Adicionar polígono"
         setView("map");
         return;
       } else {
+        // if less than 3, just generate table for selectedReservatorios (no polygon)
         await handleGenerateTableForCurrentSelection(selectedReservatorios);
 
         setPolygonReservoirs(selectedPoints);
+
+        // clear inside list because no real polygon created
         setInsidePolygonReservoirs([]);
 
         setView("map");
@@ -1271,8 +1327,8 @@ export default function TablesPage(): JSX.Element {
 
     const newPoly = {
       id:
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
+        typeof crypto !== "undefined" && (crypto as any).randomUUID
+          ? (crypto as any).randomUUID()
           : String(Date.now()),
       points: polygonReservoirs.map((p) => ({
         lat: Number(p.latitude),
@@ -1280,88 +1336,44 @@ export default function TablesPage(): JSX.Element {
       })),
     };
 
-    setSavedPolygons((prev) => [...prev, newPoly]);
+    // adiciona o polígono salvo e marca como visível por padrão
+    setSavedPolygons((prev) => {
+      const next = [...prev, newPoly];
+      // set default visibility true for new poly
+      setPolygonVisibility((pv) => ({ ...pv, [newPoly.id]: true }));
+      return next;
+    });
 
-    // compute which reservoirs are inside this new polygon and store in map
-    try {
-      const ring = newPoly.points.map((pt) => [pt.lon, pt.lat]);
-      // ensure closed ring
-      if (ring.length && !(ring[0][0] === ring[ring.length - 1][0] && ring[0][1] === ring[ring.length - 1][1])) {
-        ring.push([ring[0][0], ring[0][1]]);
-      }
-      const found = (reservatorios || [])
-        .map((r: any) => ({
-          id: String(r.idreservatorio ?? r.id ?? r.idReservatorio ?? r.id_reservatorio ?? r.id_reservatorio),
-          lat: typeof r.lat === "number" ? r.lat : r.latitude,
-          lon: typeof r.lng === "number" ? r.lng : r.longitude,
-          nome: r.nome ?? r.name ?? "",
-          raw: r,
-        }))
-        .filter((r: any) => {
-          if (!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) return false;
-          try {
-            return turf.booleanPointInPolygon(turf.point([Number(r.lon), Number(r.lat)]), turf.polygon([ring]));
-          } catch (e) {
-            return false;
-          }
-        });
-      setPolygonReservsMap((prev) => ({ ...prev, [newPoly.id]: found }));
-    } catch (e) {
-      // ignore
-    }
-
-    // LIMPA seleção e polígono temporário para permitir novas seleções
+    // LIMPA seleção local (agora o polígono foi salvo)
+    setPolygonReservoirs([]);
+    setInsidePolygonReservoirs([]);
     setSelectedReservatorios([]);
     setSelectAllReservatorios(false);
-    setPolygonReservoirs([]);
-    setInsidePolygonReservories?.length && setInsidePolygonReservoirs([]); // ignore if not set
   }
 
-  function handleDeletePolygon(id) {
+  function handleDeletePolygon(id: string) {
     setSavedPolygons((prev) => prev.filter((p) => p.id !== id));
+    setPolygonVisibility((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
     setPolygonReservsMap((prev) => {
-      const copy = { ...prev };
-      delete copy[id];
-      return copy;
+      const next = { ...prev };
+      delete next[id];
+      return next;
     });
     setShowPolygonReservs((prev) => {
-      const copy = { ...prev };
-      delete copy[id];
-      return copy;
+      const next = { ...prev };
+      delete next[id];
+      return next;
     });
   }
 
-  // NEW: compute reservoirs inside a polygon on-demand (also used when showing)
-  function computeReservatoriosInsidePolygon(poly: { id: string; points: { lat: number; lon: number }[] }) {
-    if (!poly || !Array.isArray(poly.points) || poly.points.length < 3) return [];
-    try {
-      const ring = poly.points.map((pt) => [pt.lon, pt.lat]);
-      if (ring.length && !(ring[0][0] === ring[ring.length - 1][0] && ring[0][1] === ring[ring.length - 1][1])) {
-        ring.push([ring[0][0], ring[0][1]]);
-      }
-      const found = (reservatorios || [])
-        .map((r: any) => ({
-          id: String(r.idreservatorio ?? r.id ?? r.idReservatorio ?? r.id_reservatorio ?? r.id_reservatorio),
-          lat: typeof r.lat === "number" ? r.lat : r.latitude,
-          lon: typeof r.lng === "number" ? r.lng : r.longitude,
-          nome: r.nome ?? r.name ?? "",
-          raw: r,
-        }))
-        .filter((r: any) => {
-          if (!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) return false;
-          try {
-            return turf.booleanPointInPolygon(turf.point([Number(r.lon), Number(r.lat)]), turf.polygon([ring]));
-          } catch (e) {
-            return false;
-          }
-        });
-      return found;
-    } catch (e) {
-      return [];
-    }
-  }
+  /* ================= Map color & legend logic ================= */
 
-  // Determine which reservoirs are currently the ones to show in the map legend (priority: polygonReservoirs, else selectedReservatorios)
+  // Determine which reservoirs are currently the ones to show in the map legend
+  // priority: polygonReservoirs (recent selection), else selectedReservatorios -> latLonPoints
   const displayedReservoirs = useMemo(() => {
     if (polygonReservoirs && polygonReservoirs.length) return polygonReservoirs;
     if (selectedReservatorios && selectedReservatorios.length) {
@@ -1414,6 +1426,20 @@ export default function TablesPage(): JSX.Element {
   const mapSelectedPoints = useMemo(() => {
     return mapPoints.map((p) => ({ ...p })); // já são filtrados/numéricos
   }, [mapPoints]);
+
+  // Polygons that should be passed to MapBrazil: only those saved and visible
+  const mapPolygons = useMemo(() => {
+    return savedPolygons
+      .filter((poly) => polygonVisibility[poly.id])
+      .map((poly) => poly.points);
+  }, [savedPolygons, polygonVisibility]);
+
+  // convenience: show/hide all polygons
+  function setShowAllPolygons(show: boolean) {
+    const next: Record<string, boolean> = {};
+    for (const p of savedPolygons) next[p.id] = show;
+    setPolygonVisibility(next);
+  }
 
   /* ---------------- UI render ---------------- */
   return (
@@ -1791,17 +1817,6 @@ export default function TablesPage(): JSX.Element {
                                     </li>
                                   ))}
                                 </ul>
-
-                                {/* button to show which reservoirs are inside the TEMP polygon */}
-                                <div style={{ marginTop: 8 }}>
-                                  <Button
-                                    onClick={() => {
-                                      if (!polygonReservory) return;
-                                    }}
-                                  >
-                                    Ver reservatórios dentro (temporário)
-                                  </Button>
-                                </div>
                               </div>
                             )}
 
@@ -1902,27 +1917,14 @@ export default function TablesPage(): JSX.Element {
                           showStateNames={false}
                           points={mapPoints}
                           selectedPoints={mapSelectedPoints}
-                          polygons={[
-                            // polígono temporário (quando existir)
-                            ...(polygonReservoirs && polygonReservoirs.length
-                              ? [
-                                  polygonReservoirs.map((p) => ({
-                                    lat: Number(p.latitude),
-                                    lon: Number(p.longitude),
-                                  })),
-                                ]
-                              : []),
-
-                            // poligonos salvos
-                            ...savedPolygons.map((poly) => poly.points),
-                          ]}
+                          polygons={mapPolygons}
                           showPoints={true}
                         />
                       </div>
                     </MapInner>
                   </div>
 
-                  {/* legenda abaixo do mapa */}
+                  {/* legenda abaixo do mapa */} 
                   <div style={{ padding: 12 }}>
                     {displayedReservoirs && displayedReservoirs.length ? (
                       <LegendBox>
@@ -1936,9 +1938,7 @@ export default function TablesPage(): JSX.Element {
                                 <div style={{ fontWeight: 700, fontSize: 13 }}>
                                   {r.nome || `Reservatório ${idStr}`}
                                 </div>
-                                <div
-                                  style={{ fontSize: 12, color: "#64748b" }}
-                                >{`id: ${idStr}`}</div>
+                                <div style={{ fontSize: 12, color: "#64748b" }}>{`id: ${idStr}`}</div>
                               </div>
                             </LegendItem>
                           );
@@ -1951,7 +1951,8 @@ export default function TablesPage(): JSX.Element {
                     )}
                   </div>
                 </MapPlaceholder>
-                {/* Botão para salvar o polígono atual */}
+
+                {/* Botões para salvar polígono e mostrar/ocultar todos */}
                 <div
                   style={{
                     marginTop: 12,
@@ -1969,10 +1970,13 @@ export default function TablesPage(): JSX.Element {
                     Adicionar polígono
                   </Button>
 
+                  <Button onClick={() => setShowAllPolygons(true)}>Mostrar todos</Button>
+                  <Button onClick={() => setShowAllPolygons(false)}>Ocultar todos</Button>
+
                   <div style={{ color: "#64748b", fontSize: 13 }}>
-                    {polygonReservoirs && polygonReservoirs.length
-                      ? `${polygonReservoirs.length} pontos no polígono temporário`
-                      : "Nenhum polígono temporário"}
+                    {savedPolygons.length
+                      ? `${savedPolygons.length} polígono(s) salvo(s)`
+                      : "Nenhum polígono salvo"}
                   </div>
                 </div>
 
@@ -1986,8 +1990,8 @@ export default function TablesPage(): JSX.Element {
                     savedPolygons.map((poly, idx) => {
                       const insideList = polygonReservsMap[poly.id] ?? [];
                       const isShown = !!showPolygonReservs[poly.id];
+                      const isVisibleOnMap = !!polygonVisibility[poly.id];
                       return (
-                        // container vertical para manter a lista abaixo do cartão
                         <div
                           key={poly.id}
                           style={{
@@ -2002,7 +2006,7 @@ export default function TablesPage(): JSX.Element {
                             position: "relative",
                           }}
                         >
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                             <div>
                               <div style={{ fontWeight: 700 }}>Polígono #{idx + 1}</div>
                               <div style={{ fontSize: 13, color: "#475569" }}>
@@ -2011,6 +2015,20 @@ export default function TablesPage(): JSX.Element {
                             </div>
 
                             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                              <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <input
+                                  type="checkbox"
+                                  checked={isVisibleOnMap}
+                                  onChange={(e) =>
+                                    setPolygonVisibility((prev) => ({
+                                      ...prev,
+                                      [poly.id]: !!e.target.checked,
+                                    }))
+                                  }
+                                />
+                                <span style={{ fontSize: 13 }}>Mostrar no mapa</span>
+                              </label>
+
                               <Button
                                 onClick={() => {
                                   // toggle show list; compute if needed
@@ -2037,18 +2055,16 @@ export default function TablesPage(): JSX.Element {
                             </div>
                           </div>
 
-                          {/* expanded list area — agora inline, renderizada logo abaixo do cartão */}
+                          {/* expanded list area - shown below the card (inline) */}
                           {isShown && (
                             <div
                               style={{
                                 marginTop: 8,
-                                background: "#fff",
                                 padding: 12,
+                                background: "#fff",
                                 borderRadius: 8,
                                 boxShadow: "0 8px 30px rgba(6,58,128,0.08)",
                                 border: "1px solid #e2e8f0",
-                                maxHeight: 220,
-                                overflowY: "auto",
                               }}
                             >
                               <div style={{ fontWeight: 700, marginBottom: 8 }}>
@@ -2059,7 +2075,7 @@ export default function TablesPage(): JSX.Element {
                               ) : (
                                 <ul style={{ margin: 0, paddingLeft: 18 }}>
                                   {insideList.map((r) => (
-                                    <li key={`poly-${poly.id}-res-${r.id}`} style={{ marginBottom: 8 }}>
+                                    <li key={`poly-${poly.id}-res-${r.id}`}>
                                       <strong>{r.nome}</strong> — id: {r.id} — (
                                       {Number(r.lat).toFixed(6)}, {Number(r.lon).toFixed(6)})
                                     </li>
@@ -2074,10 +2090,10 @@ export default function TablesPage(): JSX.Element {
                   )}
                 </div>
               </>
-            )} 
+            )}
           </Panel>
         </RightPanel>
       </Container>
     </Page>
   );
-} 
+}
