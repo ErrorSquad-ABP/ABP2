@@ -27,16 +27,10 @@ export default function MapSvg({
   showPolygons = true,
   showStateNames = false,
   onClickPoint,
-}) {
+}: any) {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
-    // debug logs (remova se quiser)
-    console.log("[MapSvg] countries:", countries?.length);
-    console.log("[MapSvg] points:", points?.length, points?.slice?.(0, 5));
-    console.log("[MapSvg] selectedPoints:", selectedPoints?.length, selectedPoints?.slice?.(0, 5));
-    console.log("[MapSvg] polygons:", polygons?.length);
-
     // compute dims
     const width = Math.max(800, window.innerWidth);
     const h = height ?? window.innerHeight;
@@ -69,7 +63,7 @@ export default function MapSvg({
         .attr("fill", "#1E3A5F")
         .attr("stroke", "#89A1C9")
         .attr("stroke-width", 0.5)
-        .on("click", (_event, d: any) => {
+        .on("click", (_event: any, d: any) => {
           if (typeof onClickCountry === "function") {
             onClickCountry(
               d.id ?? (d.properties && (d.properties.name || d.properties.admin)) ?? "unknown",
@@ -79,14 +73,10 @@ export default function MapSvg({
     }
 
     // polygons layer (draw after countries so they appear on top)
-    /* --- Substitua a seção "polygons layer" existente por este bloco --- */
-
-    // polygons layer (draw after countries so they appear on top)
     const polygonsG = g.append("g").attr("class", "polygons-layer");
     if (showPolygons && Array.isArray(polygons) && polygons.length) {
-      // Cria polígonos seguros: projeta os pontos e constrói path SVG (evita problemas de winding/holes)
       const safeProjectedPolys = polygons
-        .map((polyPts) => {
+        .map((polyPts: any) => {
           const projPts = (polyPts || [])
             .map((p: any) => {
               const lon = Number(p.lon ?? p.longitude ?? p.lng ?? p.long);
@@ -98,13 +88,11 @@ export default function MapSvg({
               return projected; // [x, y]
             })
             .filter(Boolean);
-          // need at least 3 distinct points to form a polygon
           if (!projPts || projPts.length < 3) return null;
           return projPts;
         })
         .filter(Boolean);
 
-      // line generator in screen coords
       const line = d3
         .line()
         .x((d: any) => d[0])
@@ -118,8 +106,6 @@ export default function MapSvg({
         .append("path")
         .attr("class", "poly")
         .attr("d", (pts: any) => {
-          // pts is array of [x,y] in screen coordinates
-          // construímos um caminho fechado: M x y L x y ... Z
           try {
             const pathStr = line(pts as any);
             return pathStr ? pathStr + "Z" : "";
@@ -127,7 +113,6 @@ export default function MapSvg({
             return "";
           }
         })
-        // fill only inside the polygon: yellow translucent + yellow stroke
         .attr("fill", "rgba(255,212,64,0.35)")
         .attr("stroke", "#FFD400")
         .attr("stroke-width", 2)
@@ -137,8 +122,6 @@ export default function MapSvg({
     }
 
     // determine which set of points to render:
-    // - if selectedPoints provided (length >0) use them (only show selected)
-    // - else (no selection) use `points`
     const pointsToRender =
       Array.isArray(selectedPoints) && selectedPoints.length ? selectedPoints : points;
 
@@ -154,7 +137,6 @@ export default function MapSvg({
           const projected = projection([lon, lat]);
           if (!projected || !Number.isFinite(projected[0]) || !Number.isFinite(projected[1]))
             return null;
-          // pick color: prefer provided color, else undefined (caller should pass)
           const color = p.color ?? p.fill ?? null;
           return {
             ...p,
@@ -167,9 +149,6 @@ export default function MapSvg({
         })
         .filter(Boolean);
 
-      // debug
-      // console.log("normalized points to draw:", normalized);
-
       pointsG
         .selectAll("circle.point")
         .data(normalized, (d: any) => d.id ?? `${d.lon}_${d.lat}`)
@@ -181,20 +160,17 @@ export default function MapSvg({
         .attr("r", 5)
         .attr("fill", (d: any) => d.color ?? "#ffffff")
         .attr("stroke", (d: any) => {
-          // if color given, create a darker stroke (simple approach: use same color)
           return d.color ?? "#0b5fff";
         })
         .attr("stroke-width", 1.5)
         .attr("opacity", 0.95)
         .on("mouseenter", function (_event, d: any) {
-          // enlarge on hover but preserve color
           d3.select(this).attr("r", 7);
         })
         .on("mouseleave", function (_event, d: any) {
           d3.select(this).attr("r", 5);
         })
         .on("click", function (_event, d: any) {
-          // stop propagation to avoid country click etc.
           _event.stopPropagation && _event.stopPropagation();
           if (typeof onClickPoint === "function") onClickPoint(d);
         });
@@ -233,7 +209,6 @@ export default function MapSvg({
         .attr("transform", (d: any) => `translate(${d.screenX},${d.screenY})`)
         .each(function (d: any) {
           const container = d3.select(this);
-          // outer translucent halo
           container
             .append("circle")
             .attr("r", 10)
@@ -243,7 +218,6 @@ export default function MapSvg({
             .attr("opacity", 0.18)
             .attr("stroke", "none");
 
-          // inner dot
           container
             .append("circle")
             .attr("r", 5)
@@ -253,7 +227,6 @@ export default function MapSvg({
             .attr("stroke", "#ffffff")
             .attr("stroke-width", 1.2);
 
-          // no label on map per requirement (labels handled externally if needed)
           container.on("click", () => {
             if (typeof onClickPoint === "function") onClickPoint(d);
           });
