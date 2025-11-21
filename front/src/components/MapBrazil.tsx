@@ -14,6 +14,7 @@ import MapSvg from "./MapSvg";
  * - showStateNames: boolean
  * - onClickPoint: (point) => void
  * - onClickCountry: (id) => void
+ * - onMapClick: ( { lat, lon } ) => void   <- NOVA prop repassada para MapSvg
  */
 export default function MapBrazil({
   points = [],
@@ -25,6 +26,18 @@ export default function MapBrazil({
   showStateNames = false,
   onClickPoint,
   onClickCountry,
+  onMapClick, // nova prop
+}: {
+  points?: any[];
+  selectedPoints?: any[];
+  polygons?: any[];
+  height?: number;
+  showPoints?: boolean;
+  showPolygons?: boolean;
+  showStateNames?: boolean;
+  onClickPoint?: (p: any) => void;
+  onClickCountry?: (id: any) => void;
+  onMapClick?: (p: { lat: number; lon: number }) => void;
 }) {
   const [countries, setCountries] = useState<any[]>([]);
 
@@ -55,6 +68,7 @@ export default function MapBrazil({
       showPolygons={showPolygons}
       showStateNames={showStateNames}
       onClickPoint={onClickPoint}
+      onMapClick={onMapClick} // repassa a prop para MapSvg
     />
   );
 }
