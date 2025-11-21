@@ -1,3 +1,4 @@
+// MapSvg.tsx
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
@@ -36,21 +37,39 @@ export default function MapSvg({
     const h = height ?? window.innerHeight;
 
     const svg = d3.select(svgRef.current);
+
+    // --- Preserve current zoom transform (if present) so we don't "jump" when re-rendering ---
+    // We capture the transform BEFORE removing children. If unavailable, keep null (identity).
+    let previousTransform: { x: number; y: number; k: number } | null = null;
+    try {
+      const node = svgRef.current as any;
+      if (node) {
+        const t = d3.zoomTransform(node);
+        if (t && typeof t.k === "number") previousTransform = { x: t.x, y: t.y, k: t.k };
+      }
+    } catch (err) {
+      // ignore if not available
+      previousTransform = null;
+    }
+
+    // clear and recreate drawing
     svg.selectAll("*").remove();
 
     // group wrapper
     const g = svg.append("g").attr("class", "map-group");
 
     // projection and path
+    // NOTE: keep projection parameters consistent with the rest of app (MapBrazil)
     const projection = d3
       .geoMercator()
+      // These params were used originally; keep them to ensure coordinates/projection match.
       .scale(300)
       .center([0, 20])
       .translate([width / 2, h / 1.8]);
 
     const path = d3.geoPath().projection(projection);
 
-    // countries layer (no hover color change)
+    // countries layer
     const countriesG = g.append("g").attr("class", "countries-layer");
     if (countries && countries.length) {
       countriesG
@@ -63,7 +82,7 @@ export default function MapSvg({
         .attr("fill", "#1E3A5F")
         .attr("stroke", "#89A1C9")
         .attr("stroke-width", 0.5)
-        .on("click", (_event: any, d: any) => {
+        .on("click", (_event, d: any) => {
           if (typeof onClickCountry === "function") {
             onClickCountry(
               d.id ?? (d.properties && (d.properties.name || d.properties.admin)) ?? "unknown",
@@ -279,7 +298,23 @@ export default function MapSvg({
         g.attr("transform", event.transform);
       });
 
+    // attach zoom to svg
     svg.call(zoom as any);
+
+    // Reapply previous transform if we captured one earlier.
+    // We re-create a d3 transform from previousTransform (x,y,k).
+    try {
+      if (previousTransform && typeof previousTransform.k === "number") {
+        // Use d3.zoomIdentity to build transform and apply it via zoom.transform (updates internal state)
+        const t = d3.zoomIdentity
+          .translate(previousTransform.x, previousTransform.y)
+          .scale(previousTransform.k);
+        svg.call((zoom as any).transform, t);
+      }
+    } catch (err) {
+      // if reapplying fails, ignore and continue with default view
+      // console.warn("Could not reapply previous zoom transform", err);
+    }
 
     // ensure svg sizing: width as percent, height either px or vh
     svg.attr("width", "100%").attr("height", height ? `${height}px` : "100vh");
@@ -288,6 +323,7 @@ export default function MapSvg({
     return () => {
       svg.selectAll("*").remove();
     };
+    // dependencies: if these change we re-run, but note we capture and reapply transform to avoid jumps
   }, [
     countries,
     onClickCountry,
