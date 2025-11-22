@@ -1787,15 +1787,6 @@ export default function TablesPage(): JSX.Element {
                   >
                     {loading ? "Gerando..." : "Gerar Tabela"}
                   </Button>
-                  <Button
-                    $primary
-                    onClick={() => handleGeoSearch()}
-                    disabled={loading || !(selectedColumns.length > 0)}
-                  >
-                    {selectedReservatorios.length >= 3
-                      ? "Consulta geográfica (polígono)"
-                      : "Gerar Tabela"}
-                  </Button>
                 </div>
               </>
             )}

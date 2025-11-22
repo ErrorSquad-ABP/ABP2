@@ -329,7 +329,6 @@ const MapPlaceholder = styled.div`
   border-radius: 8px;
   overflow: hidden;
   min-height: 260px;
-  padding: 12px;
 `;
 
 const ZoomControls = styled.div`
@@ -1657,14 +1656,6 @@ export default function SimaTablesPage(): JSX.Element {
 
                 <MapPlaceholder>
                   <ZoomControls>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={showStateNames}
-                        onChange={(e) => setShowStateNames(e.target.checked)}
-                      />
-                      <span>Mostrar nomes</span>
-                    </label>
                     <div>
                       <button
                         aria-label="Zoom Out"
@@ -1716,7 +1707,6 @@ export default function SimaTablesPage(): JSX.Element {
                       <MapBrazilAny
                         height={760}
                         showPolygons={true}
-                        showStateNames={showStateNames}
                         points={latLonPoints.map((p) => ({
                           id: p.id,
                           lat: p.lat,
