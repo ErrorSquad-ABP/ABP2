@@ -42,6 +42,28 @@ function getField(obj: any, candidates: string[] = []) {
   return undefined;
 }
 
+// helper para clarear hex (usado se necessário)
+function lightenHex(hex: string, amount = 0.04): string {
+  try {
+    if (!hex || typeof hex !== "string") return String(hex);
+    let h = hex.replace("#", "").trim();
+    if (h.length === 3) {
+      h = h
+        .split("")
+        .map((c) => c + c)
+        .join("");
+    }
+    if (h.length !== 6) return hex;
+    const num = parseInt(h, 16);
+    const r = Math.min(255, Math.floor(((num >> 16) & 0xff) * (1 + amount)));
+    const g = Math.min(255, Math.floor(((num >> 8) & 0xff) * (1 + amount)));
+    const b = Math.min(255, Math.floor(((num >> 0) & 0xff) * (1 + amount)));
+    return `rgb(${r}, ${g}, ${b})`;
+  } catch {
+    return hex;
+  }
+}
+
 /* ================= Styled (azul / branco) ================= */
 
 const PRIMARY_BLUE = "#0b5fff";
@@ -175,8 +197,14 @@ const ControlsTopRight = styled.div`
   @media (max-width: 720px) {
     justify-content: stretch;
     flex-direction: column;
-    align-items: stretch;
   }
+`;
+
+const DownloadButtonsContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
 `;
 
 const Panel = styled.div`
@@ -305,26 +333,6 @@ const TableElement = styled.table`
   }
 `;
 
-const DownloadButtonsWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-`;
-
-const LeftSection = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const RightSection = styled.div`
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-`;
-
 const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
   padding: 8px 14px;
   border: none;
@@ -355,6 +363,14 @@ const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
     transform: none;
     box-shadow: none;
   }
+
+  /* accent bar by variant (all blue palette, subtle) */
+  ${(p) =>
+    p.variant === "csv"
+      ? `border-left: 4px solid ${PRIMARY_BLUE};`
+      : p.variant === "json"
+        ? `border-left: 4px solid ${PRIMARY_BLUE_HOVER};`
+        : `border-left: 4px solid ${lightenHex(PRIMARY_BLUE, -0.05)};`}
 `;
 
 const Button = styled.button<{ $primary?: boolean }>`
@@ -373,6 +389,7 @@ const Button = styled.button<{ $primary?: boolean }>`
     transform 0.12s ease,
     background 0.12s ease,
     box-shadow 0.12s ease;
+  border-radius: 8px;
 
   &:hover {
     transform: translateY(-2px);
@@ -384,10 +401,6 @@ const Button = styled.button<{ $primary?: boolean }>`
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
-  }
-
-  @media (max-width: 520px) {
-    width: 100%;
   }
 `;
 
@@ -1805,20 +1818,16 @@ export default function TablesPage(): JSX.Element {
 
         <RightPanel>
           <ControlsTopRight>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <DownloadButtonsWrapper>
-                <LeftSection>
+            <div style={{ display: "flex", gap: 8}}>
+            
                   <Button onClick={() => setView((v) => (v === "chart" ? "map" : "chart"))}>
                     {view === "chart" ? "Ver mapa" : "Ver tabela"}
                   </Button>
-                </LeftSection>
-
-                <RightSection>
+              <DownloadButtonsContainer>
                   <DownloadButton variant="csv">Baixar CSV</DownloadButton>
                   <DownloadButton variant="json">Baixar JSON</DownloadButton>
                   <DownloadButton variant="pdf">Baixar PDF</DownloadButton>
-                </RightSection>
-              </DownloadButtonsWrapper>
+              </DownloadButtonsContainer>
             </div>
           </ControlsTopRight>
 
