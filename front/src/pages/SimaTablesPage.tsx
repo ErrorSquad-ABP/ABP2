@@ -854,13 +854,14 @@ export default function SimaTablesPage(): JSX.Element {
       const arr = Array.from(foundDates).sort(
         (a, b) => new Date(a).getTime() - new Date(b).getTime(),
       );
-      setAvailableDates(arr);
       if (arr.length) {
+        setAvailableDates(arr);
         setStartDate((p) => (p ? p : arr[0]));
         setEndDate((p) => (p ? p : arr[arr.length - 1]));
+        return arr
       } else {
-        setStartDate("");
-        setEndDate("");
+      setAvailableDates([]);
+      return []
       }
     } catch (err) {
       console.error("[dates] error:", err);
@@ -876,7 +877,12 @@ export default function SimaTablesPage(): JSX.Element {
       return;
     }
     setLoading(true);
-    await fetchDatesForTableAndStations(table, selectedStations);
+    const dates = await fetchDatesForTableAndStations(table, selectedStations)
+    if(dates.length == 0) {
+              alert("Nenhum registro encontrado!")
+              setLoading(false)
+        return;
+            }
     setStage(3);
     setLoading(false);
   }

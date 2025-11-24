@@ -760,7 +760,7 @@ export default function TablesPage(): JSX.Element {
       setAvailableDates([]);
       setStartDate("");
       setEndDate("");
-      return;
+      return [];
     }
 
     const endpoint = `${API_BASE}/tables/furnas/tbcampanha`;
@@ -776,7 +776,7 @@ export default function TablesPage(): JSX.Element {
       setAvailableDates([]);
       setStartDate("");
       setEndDate("");
-      return;
+      return []
     }
 
     const selectedSet = new Set(selectedReservatorios.map(String));
@@ -810,9 +810,11 @@ export default function TablesPage(): JSX.Element {
     if (arr.length) {
       setStartDate(arr[0]);
       setEndDate(arr[arr.length - 1]);
+      return arr
     } else {
       setStartDate("");
       setEndDate("");
+      return []
     }
   }
 
@@ -886,7 +888,12 @@ export default function TablesPage(): JSX.Element {
     setLoading(true);
     const apiTable = resolveApiTableName(table);
     console.debug("[debug] resolved apiTable:", apiTable);
-    await fetchAvailableDatesForTableAndReservatorios(selectedReservatorios, apiTable);
+    const dates = await fetchAvailableDatesForTableAndReservatorios(selectedReservatorios, apiTable);
+    if (dates.length == 0) {
+      alert("Nenhum dado encontrado!");
+          setLoading(false);
+      return;
+    }
     setStage(3);
     setLoading(false);
   }
