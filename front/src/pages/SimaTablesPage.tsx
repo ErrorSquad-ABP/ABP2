@@ -131,6 +131,11 @@ const Container = styled.div`
   gap: 24px;
   align-items: stretch;
   min-height: 640px;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr;
+    padding: 0 18px;
+  }
 `;
 
 const LeftColumn = styled.div`
@@ -219,6 +224,11 @@ const ControlsTopRight = styled.div`
   gap: 10px;
   justify-content: flex-end;
   align-items: center;
+
+   @media (max-width: 720px) {
+    justify-content: stretch;
+    flex-direction: column;
+  }
 `;
 
 const Button = styled.button<{ $primary?: boolean }>`
@@ -437,13 +447,12 @@ function Spinner() {
 const DownloadButtonsContainer = styled.div`
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  flex-wrap: no-wrap;
   align-items: center;
 `;
 
 const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
-  padding: 8px 14px;
+   padding: 8px 14px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -474,6 +483,7 @@ const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
   }
 
   /* accent bar by variant (all blue palette, subtle) */
+
   ${(p) =>
     p.variant === "csv"
       ? `border-left: 4px solid ${PRIMARY_BLUE};`
@@ -1358,11 +1368,10 @@ export default function SimaTablesPage(): JSX.Element {
                 </div>
               </>
             )}
-          </Controls>
 
           {/* Stage 4: columns */}
           {stage >= 4 && (
-            <ColumnsBox aria-label="Lista de colunas">
+            <>
               <div style={{ fontWeight: 700 }}>4) Escolha colunas a plotar</div>
               <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>
                 (colunas de id/data estão desabilitadas para plotagem)
@@ -1417,8 +1426,10 @@ export default function SimaTablesPage(): JSX.Element {
                   {loading ? "Gerando..." : "Gerar tabela"}
                 </Button>
               </div>
-            </ColumnsBox>
+            </>
           )}
+                    </Controls>
+
         </LeftColumn>
 
         <RightPanel>
@@ -1452,21 +1463,21 @@ export default function SimaTablesPage(): JSX.Element {
                   onClick={handleDownloadCSV}
                   disabled={!dataForTablePreview || dataForTablePreview.length === 0 || loading}
                 >
-                  CSV
+                  Baixar CSV
                 </DownloadButton>
                 <DownloadButton
                   variant="json"
                   onClick={handleDownloadJSON}
                   disabled={!dataForTablePreview || dataForTablePreview.length === 0 || loading}
                 >
-                  JSON
+                  Baixar JSON
                 </DownloadButton>
                 <DownloadButton
                   variant="pdf"
                   onClick={handleDownloadPDF}
                   disabled={!dataForTablePreview || dataForTablePreview.length === 0 || loading}
                 >
-                  PDF
+                  Baixar PDF
                 </DownloadButton>
               </DownloadButtonsContainer>
             </div>
