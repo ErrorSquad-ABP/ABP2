@@ -1,3 +1,4 @@
+/* prettier-ignore-file */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // front/src/pages/SimaTablesPage.tsx
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
