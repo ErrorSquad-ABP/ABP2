@@ -526,7 +526,6 @@ export default function SimaTablesPage(): JSX.Element {
   const [, /*showTable*/ setShowTable] = useState<boolean>(false);
 
   const [zoom, setZoom] = useState<number>(1);
-  const [showStateNames, setShowStateNames] = useState<boolean>(true);
   const [pan, setPan] = useState({ x: 0, y: 0 });
 
   const [page, setPage] = useState(0);

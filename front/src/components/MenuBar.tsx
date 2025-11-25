@@ -92,7 +92,7 @@ const RightLogos = styled.div<{ $open?: boolean }>`
   }
 `;
 
-const LogoButton = styled.a`
+const LogoButton = styled(Link)`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -154,13 +154,13 @@ function MenuBar() {
         </MobileButton>
 
         <RightLogos $open={isOpen}>
-          <LogoButton href="/simas" title="SIMAS">
+          <LogoButton to="/simas" title="SIMAS">
             <img src={simasLogo} alt="SIMAS" />
           </LogoButton>
-          <LogoButton href="/furnas" title="FURNAS">
+          <LogoButton to="/furnas" title="FURNAS">
             <img src={furnasLogo} alt="FURNAS" />
           </LogoButton>
-          <LogoButton href="/balcar" title="BALCAR">
+          <LogoButton to="/balcar" title="BALCAR">
             <img src={balcarLogo} alt="BALCAR" />
           </LogoButton>
         </RightLogos>

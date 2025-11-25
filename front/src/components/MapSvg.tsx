@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // MapSvg.tsx
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
@@ -183,12 +184,16 @@ export default function MapSvg({
         })
         .attr("stroke-width", 1.5)
         .attr("opacity", 0.95)
-        .on("mouseenter", function (_event, d: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .on("mouseenter", function (_event) {
           d3.select(this).attr("r", 7);
         })
-        .on("mouseleave", function (_event, d: any) {
+        .on("mouseleave",
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+           function (_event) {
           d3.select(this).attr("r", 5);
         })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .on("click", function (_event, d: any) {
           _event.stopPropagation && _event.stopPropagation();
           if (typeof onClickPoint === "function") onClickPoint(d);
