@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { furnasPool } from "../../configs/db";
+import Erros from "../../utils/erros.model";
+
 
 export const getMapGeoJSON = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -55,6 +57,7 @@ export const getMapGeoJSON = async (req: Request, res: Response): Promise<Respon
     return res.json(geoJSON);
   } catch (error) {
     console.error("Erro no getMapGeoJSON:", error);
-    return res.status(500).json({ error: "Erro ao gerar GeoJSON" });
+    const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
+    return res.status(500).json(erro);
   }
 };

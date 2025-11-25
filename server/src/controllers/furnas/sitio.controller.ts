@@ -4,6 +4,20 @@ import { logger } from "../../configs/logger";
 
 const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
 
+interface Resp  {
+  success: Boolean;
+      page: Number;
+      limit: Number;
+      total: Number;
+      totalPages: Number;
+      data: any
+}
+
+interface Erros {
+  success: Boolean;
+  error: String
+}
+
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Number(req.query.page) || 1;
@@ -53,19 +67,22 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
       descricao: row.descricao,
     }));
 
-    res.status(200).json({
+    const response : Resp = {
       success: true,
       page,
       limit,
       total,
       totalPages: Math.ceil(total / limit),
       data,
-    });
+    };
+
+    res.status(200).json(response);
   } catch (error: any) {
     logger.error("Erro ao consultar tbsitio", {
       message: error.message,
       stack: error.stack,
     });
-    res.status(500).json({ success: false, error: "Erro ao realizar a operação." });
+    const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
+    res.status(500).json(erro);
   }
 };
