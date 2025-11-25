@@ -1,4 +1,5 @@
 // server/src/routes/test-reservatorio.routes.ts
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Router } from "express";
 import { validateReservatorio, batchValidate } from "../utils/reservatorioValidator";
 

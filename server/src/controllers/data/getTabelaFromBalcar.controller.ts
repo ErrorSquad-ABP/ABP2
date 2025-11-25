@@ -23,7 +23,6 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
       count: count.rows[0],
       data: resultData,
     });
-  
   } catch (error: any) {
     logger.error("Erro ao consultar tbfluxoinpe", {
       message: error.message,
@@ -35,6 +34,4 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
       error: "Erro ao realizar a operação.",
     });
   }
-
-  
 };

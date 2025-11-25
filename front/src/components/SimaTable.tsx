@@ -1,4 +1,5 @@
 // src/components/SimaTable.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo, JSX } from "react";
 import styled from "styled-components";
 import { chunkArray } from "../utils/chunkArray";

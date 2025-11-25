@@ -2,7 +2,6 @@
 import { Request, Response } from "express";
 import { logger } from "../../configs/logger";
 
-
 export const health = async (req: Request, res: Response): Promise<void> => {
   try {
     res.status(200).json({
@@ -19,5 +18,4 @@ export const health = async (req: Request, res: Response): Promise<void> => {
       error: "Erro ao realizar a operação.",
     });
   }
-
 };
