@@ -18,6 +18,7 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
     const count = await furnasPool.query(`SELECT COUNT(*) FROM ${tabela}`);
 
     res.status(200).json({
+      success: true,
       colunas: queryColumns,
       count: count.rows[0],
       data: resultData,
@@ -27,5 +28,11 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
       message: error.message,
       stack: error.stack,
     });
+
+     res.status(500).json({
+      success: false,
+      error: "Erro ao realizar a operação.",
+    });
   }
+
 };
