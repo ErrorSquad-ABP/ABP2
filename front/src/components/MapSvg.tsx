@@ -188,11 +188,13 @@ export default function MapSvg({
         .on("mouseenter", function (_event) {
           d3.select(this).attr("r", 7);
         })
-        .on("mouseleave",
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-           function (_event) {
-          d3.select(this).attr("r", 5);
-        })
+        .on(
+          "mouseleave",
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          function (_event) {
+            d3.select(this).attr("r", 5);
+          },
+        )
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .on("click", function (_event, d: any) {
           _event.stopPropagation && _event.stopPropagation();
