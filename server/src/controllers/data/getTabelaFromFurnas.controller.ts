@@ -29,10 +29,9 @@ export const getTabela = async (req: Request, res: Response): Promise<void> => {
       stack: error.stack,
     });
 
-     res.status(500).json({
+    res.status(500).json({
       success: false,
       error: "Erro ao realizar a operação.",
     });
   }
-
 };

@@ -777,7 +777,7 @@ export default function TablesPage(): JSX.Element {
       setAvailableDates([]);
       setStartDate("");
       setEndDate("");
-      return []
+      return [];
     }
 
     const selectedSet = new Set(selectedReservatorios.map(String));
@@ -811,11 +811,11 @@ export default function TablesPage(): JSX.Element {
     if (arr.length) {
       setStartDate(arr[0]);
       setEndDate(arr[arr.length - 1]);
-      return arr
+      return arr;
     } else {
       setStartDate("");
       setEndDate("");
-      return []
+      return [];
     }
   }
 
@@ -889,10 +889,13 @@ export default function TablesPage(): JSX.Element {
     setLoading(true);
     const apiTable = resolveApiTableName(table);
     console.debug("[debug] resolved apiTable:", apiTable);
-    const dates = await fetchAvailableDatesForTableAndReservatorios(selectedReservatorios, apiTable);
+    const dates = await fetchAvailableDatesForTableAndReservatorios(
+      selectedReservatorios,
+      apiTable,
+    );
     if (dates.length == 0) {
       alert("Nenhum dado encontrado!");
-          setLoading(false);
+      setLoading(false);
       return;
     }
     setStage(3);
@@ -1662,15 +1665,20 @@ export default function TablesPage(): JSX.Element {
 
         <RightPanel>
           <ControlsTopRight>
-            <div style={{ display: "flex", gap: 8}}>
-            
-                  <Button onClick={() => setView((v) => (v === "chart" ? "map" : "chart"))}>
-                    {view === "chart" ? "Ver mapa" : "Ver tabela"}
-                  </Button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Button onClick={() => setView((v) => (v === "chart" ? "map" : "chart"))}>
+                {view === "chart" ? "Ver mapa" : "Ver tabela"}
+              </Button>
               <DownloadButtonsContainer>
-                  <DownloadButton variant="csv" disabled={true}>Baixar CSV</DownloadButton>
-                  <DownloadButton variant="json" disabled={true}>Baixar JSON</DownloadButton>
-                  <DownloadButton variant="pdf" disabled={true}>Baixar PDF</DownloadButton>
+                <DownloadButton variant="csv" disabled={true}>
+                  Baixar CSV
+                </DownloadButton>
+                <DownloadButton variant="json" disabled={true}>
+                  Baixar JSON
+                </DownloadButton>
+                <DownloadButton variant="pdf" disabled={true}>
+                  Baixar PDF
+                </DownloadButton>
               </DownloadButtonsContainer>
             </div>
           </ControlsTopRight>

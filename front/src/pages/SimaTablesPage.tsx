@@ -202,17 +202,6 @@ const ColumnItem = styled.label`
 `;
 
 /* ColumnsBox (list container) */
-const ColumnsBox = styled.div`
-  background: ${SURFACE};
-  padding: 14px;
-  border-radius: 12px;
-  box-shadow: 0 8px 28px rgba(6, 58, 128, 0.04);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  overflow: auto;
-  flex: 1 1 auto;
-`;
 
 const RightPanel = styled.div`
   display: flex;
@@ -226,7 +215,7 @@ const ControlsTopRight = styled.div`
   justify-content: flex-end;
   align-items: center;
 
-   @media (max-width: 720px) {
+  @media (max-width: 720px) {
     justify-content: stretch;
     flex-direction: column;
   }
@@ -453,7 +442,7 @@ const DownloadButtonsContainer = styled.div`
 `;
 
 const DownloadButton = styled.button<{ variant: "csv" | "json" | "pdf" }>`
-   padding: 8px 14px;
+  padding: 8px 14px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -858,10 +847,10 @@ export default function SimaTablesPage(): JSX.Element {
         setAvailableDates(arr);
         setStartDate((p) => (p ? p : arr[0]));
         setEndDate((p) => (p ? p : arr[arr.length - 1]));
-        return arr
+        return arr;
       } else {
-      setAvailableDates([]);
-      return []
+        setAvailableDates([]);
+        return [];
       }
     } catch (err) {
       console.error("[dates] error:", err);
@@ -877,12 +866,12 @@ export default function SimaTablesPage(): JSX.Element {
       return;
     }
     setLoading(true);
-    const dates = await fetchDatesForTableAndStations(table, selectedStations)
-    if(dates.length == 0) {
-              alert("Nenhum registro encontrado!")
-              setLoading(false)
-        return;
-            }
+    const dates = await fetchDatesForTableAndStations(table, selectedStations);
+    if (dates.length == 0) {
+      alert("Nenhum registro encontrado!");
+      setLoading(false);
+      return;
+    }
     setStage(3);
     setLoading(false);
   }
@@ -1375,67 +1364,66 @@ export default function SimaTablesPage(): JSX.Element {
               </>
             )}
 
-          {/* Stage 4: columns */}
-          {stage >= 4 && (
-            <>
-              <div style={{ fontWeight: 700 }}>4) Escolha colunas a plotar</div>
-              <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>
-                (colunas de id/data estão desabilitadas para plotagem)
-              </div>
+            {/* Stage 4: columns */}
+            {stage >= 4 && (
+              <>
+                <div style={{ fontWeight: 700 }}>4) Escolha colunas a plotar</div>
+                <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>
+                  (colunas de id/data estão desabilitadas para plotagem)
+                </div>
 
-              <div style={{ marginTop: 8, maxHeight: 320, overflowY: "auto" }}>
-                {columnsForTable && columnsForTable.length ? (
-                  columnsForTable.map((c: any, idx: number) => {
-                    const colName = (c?.nome ?? c?.name ?? String(c)).toString();
-                    const disabled = isIdColumn(colName) || isDateColumn(colName);
-                    const checked = selectedColumns.includes(colName);
-                    return (
-                      <ColumnItem key={colName + "-" + idx}>
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          disabled={disabled}
-                          onChange={() => toggleColumn(colName)}
-                        />
-                        <div style={{ display: "flex", flexDirection: "column" }}>
-                          <div style={{ fontWeight: 700 }}>
-                            {c.label ?? colName}
-                            {disabled ? (
-                              <small style={{ marginLeft: 8, color: "#94a3b8" }}>
-                                (não selecionável)
-                              </small>
-                            ) : null}
+                <div style={{ marginTop: 8, maxHeight: 320, overflowY: "auto" }}>
+                  {columnsForTable && columnsForTable.length ? (
+                    columnsForTable.map((c: any, idx: number) => {
+                      const colName = (c?.nome ?? c?.name ?? String(c)).toString();
+                      const disabled = isIdColumn(colName) || isDateColumn(colName);
+                      const checked = selectedColumns.includes(colName);
+                      return (
+                        <ColumnItem key={colName + "-" + idx}>
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={disabled}
+                            onChange={() => toggleColumn(colName)}
+                          />
+                          <div style={{ display: "flex", flexDirection: "column" }}>
+                            <div style={{ fontWeight: 700 }}>
+                              {c.label ?? colName}
+                              {disabled ? (
+                                <small style={{ marginLeft: 8, color: "#94a3b8" }}>
+                                  (não selecionável)
+                                </small>
+                              ) : null}
+                            </div>
+                            <small style={{ color: "#64748b" }}>{c.type ?? "—"}</small>
                           </div>
-                          <small style={{ color: "#64748b" }}>{c.type ?? "—"}</small>
-                        </div>
-                      </ColumnItem>
-                    );
-                  })
-                ) : (
-                  <div>Carregando colunas... {loading ? <Spinner /> : null}</div>
-                )}
-              </div>
-              <div style={{ margin: 12 }}>
-                <Button
-                  style={{ marginRight: 10 }}
-                  $primary
-                  onClick={handleGenerateChart}
-                  disabled={loading || !(selectedColumns.length > 0)}
-                >
-                  {loading ? "Gerando..." : "Gerar gráfico"}
-                </Button>
-                <Button
-                  $primary
-                  onClick={handleGenerateGraph}
-                  disabled={loading || !(selectedColumns.length > 0)}
-                >
-                  {loading ? "Gerando..." : "Gerar tabela"}
-                </Button>
-              </div>
-            </>
-          )}
-                    </Controls>
-
+                        </ColumnItem>
+                      );
+                    })
+                  ) : (
+                    <div>Carregando colunas... {loading ? <Spinner /> : null}</div>
+                  )}
+                </div>
+                <div style={{ margin: 12 }}>
+                  <Button
+                    style={{ marginRight: 10 }}
+                    $primary
+                    onClick={handleGenerateChart}
+                    disabled={loading || !(selectedColumns.length > 0)}
+                  >
+                    {loading ? "Gerando..." : "Gerar gráfico"}
+                  </Button>
+                  <Button
+                    $primary
+                    onClick={handleGenerateGraph}
+                    disabled={loading || !(selectedColumns.length > 0)}
+                  >
+                    {loading ? "Gerando..." : "Gerar tabela"}
+                  </Button>
+                </div>
+              </>
+            )}
+          </Controls>
         </LeftColumn>
 
         <RightPanel>
