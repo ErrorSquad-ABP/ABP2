@@ -4,7 +4,7 @@
 
 [![Site](https://img.shields.io/badge/🌐_Site-Offline-000000?style=for-the-badge)]()
 [![Status](https://img.shields.io/badge/⚙️_Status-em_progresso-orange?style=for-the-badge)](#-sobre-o-projeto)
-[![Sprint](https://img.shields.io/badge/📅_Sprint-2/3-yellow?style=for-the-badge)](#-sprint-3)
+[![Sprint](https://img.shields.io/badge/📅_Sprint-3/3-green?style=for-the-badge)](#-sprint-3)
 [![Docs](https://img.shields.io/badge/📚_Docs-Wiki-4a90e2?style=for-the-badge)](#documentação)
 
 </div>
@@ -308,7 +308,26 @@ Para melhor estruturação do projeto, modelamos o diagrama de casos de uso:
 
 #### Diagrama de Casos de Uso
 
-![Casos de Uso](./SCRUM/diagramas/diagramas-assets/DIAGRAMA_CASOS_DE_USO.png)
+<p align="center">
+  <a href="https://github.com/ErrorSquad-ABP/ABP2/tree/main/SCRUM/diagramas" target="_blank" style="
+    text-decoration:none;
+    background: linear-gradient(90deg, #004AAD, #0083FF);
+    padding: 14px 28px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    box-shadow: 0px 3px 8px rgba(0,0,0,0.25);
+    transition: 0.25s ease;
+    display: inline-block;
+  "
+  onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0px 4px 12px rgba(0,0,0,0.35)';"
+  onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0px 3px 8px rgba(0,0,0,0.25)';">
+    📊 Ver Diagramas do Projeto
+  </a>
+</p>
+
 
 **Funcionalidades Principais**
 - Pesquisador / Usuário — filtra, gera gráficos, visualiza mapa, exporta dados.  
@@ -421,7 +440,7 @@ Para melhor estruturação do projeto, modelamos o diagrama de casos de uso:
 
 <details>
 <summary><b>🔄 Sprint 2 – Aplicação do Protótipo na Prática</b></summary>
-### 📅 Período
+ 📅 Período
 
 - **Início:** 16/09/2025
 - **Término:** 06/10/2025
@@ -644,15 +663,41 @@ O sistema é estruturado em páginas principais:
 </details>
 
 <details>  
-<summary><b>📋 Visão Geral dos Casos de Uso</b></summary>
+<summary><b>📋 Diagrama de Classes</b></summary>
 
-#### Diagrama de Casos de Uso
+O diagrama de classes representa a estrutura principal do sistema de visualização e disseminação de dados limnológicos, descrevendo:
 
-![Casos de Uso](./SCRUM/diagramas/diagramas-assets/DIAGRAMA_CASOS_DE_USO.png)
+- **Classes responsáveis pela interface e manipulação de dados**
+- **Classes de serviço para integração entre camadas**
+- **Relacionamentos essenciais** entre objetos do sistema
 
-**Funcionalidades Principais**
-- Pesquisador/Usuário: filtra, gera gráficos, exporta CSV, vê mapa, navega por páginas.  
-- Sistema (backend): fornece endpoints para metadados, dados filtrados/paginados, agregados e export.
+### 🔄 Objetivos do Diagrama
+- Garantir clareza arquitetural
+- Facilitar futuras extensões do sistema
+- Servir como base para decisões de implementação
+- Reduzir ambiguidade entre backend ↔ frontend no desenvolvimento
+
+---
+
+<p align="center">
+  <a href="https://github.com/ErrorSquad-ABP/ABP2/tree/main/SCRUM/diagramas" target="_blank" style="
+    text-decoration:none;
+    background: #1351B4;
+    padding: 12px 26px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+    font-family: Arial, sans-serif;
+    letter-spacing: .5px;
+    transition: 0.25s ease;
+    display: inline-block;
+  "
+  onmouseover="this.style.background='#0A3D91';"
+  onmouseout="this.style.background='#1351B4';">
+    📁 Ver Diagramas de Classe
+  </a>
+</p>
 
 </details>
 
@@ -734,201 +779,338 @@ O sistema é estruturado em páginas principais:
 </details>
 
 ---
-
 <details>
 <summary><b>🔄 Sprint 3 – Refinamento e Entrega Final</b></summary>
 
 ### 📅 Período
 
-- **Início:** 16/09/2025
-- **Término:** 06/10/2025
-- **Review:** 07/10/2025
+- **Início:** 16/09/2025  
+- **Término:** 06/10/2025  
+- **Review:** 07/10/2025  
+
+---
 
 ### 🎯 Objetivos Principais
 
-- Implementar as funcionalidades básicas do sistema
-- Desenvolver a interface com base nos protótipos
-- Integrar frontend com backend
+- Implementar funcionalidades essenciais relacionadas à interação no mapa e visualização dos dados.
+- Otimizar o desempenho do sistema e reduzir tempo de carregamento.
+- Refinar e padronizar o design seguindo diretrizes visuais do INPE/gov.br.
+- Desenvolver e integrar o recurso de exportação de gráficos em PDF.
 
-<details>  
-<summary>📌 Histórias Selecionadas para a Sprint 1</summary>
 
-## História –
+<details>
+<summary>📌 Histórias Selecionadas para a Sprint 3</summary>
 
-**Como usuário,**
+## História (US06) – Interface intuitiva e padrão visual INPE/gov.br
 
-**Para**
-
-**Tarefas:**
-
--
--
--
--
-- **Prioridade:**
-
-  **Critérios de Aceite:**
-
--
-- ***
-
-## História –
-
-**Como usuário,**
-
-**Para**
+**Como Product Owner,**  
+Quero que a interface siga o padrão estético do INPE/gov.br e facilite a navegação,  
+**Para** garantir uma aplicação visualmente consistente, acessível e amigável a usuários leigos.
 
 **Tarefas:**
+- Padronizar visualmente componentes UI (cores, espaçamentos, tipografia).
+- Ajustar contraste e responsividade seguindo normas de acessibilidade.
+- Reduzir carga cognitiva nas telas simplificando a hierarquia visual.
+- Revisar a interface com stakeholders.
 
--
--
--
--
-- **Prioridade:**
+**Prioridade:** Baixa (2)
 
-  **Critérios de Aceite:**
+**Critérios de Aceite:**
+- Interface consistente com padrão visual do INPE/gov.br.
+- Navegação clara e intuitiva, especialmente para usuários não técnicos.
+- Melhor apresentação visual dos dados exibidos.
 
--
-- ***
 
-## História –
 
-**Como usuário,**
+## História (US07) – Interação com mapa e consultas por polígonos
 
-**Para**
-
-**Tarefas:**
-
--
--
--
--
-- **Prioridade:**
-
-  **Critérios de Aceite:**
-
--
-- ***
-
-## História –
-
-**Como usuário,**
-
-**Para**
+**Como usuário,**  
+Quero desenhar polígonos no mapa,  
+**Para** consultar reservatórios e visualizar as estações filtradas.
 
 **Tarefas:**
+- Implementar ferramenta de desenho no mapa (Leaflet/Mapbox).
+- Exibir localização das estações georreferenciadas.
+- Consultar e retornar reservatórios dentro do polígono.
+- Integrar com backend geoespacial (PostGIS).
 
--
--
--
--
-- **Prioridade:**
+**Prioridade:** Média (3)
 
-  **Critérios de Aceite:**
+**Critérios de Aceite:**
+- Usuário consegue desenhar polígonos no mapa.
+- Estações exibidas com suas localizações reais.
+- Reservatórios encontrados no polígono exibidos corretamente.
 
--
-- ***
+
+
+
+## História (US08) – Otimização de desempenho
+
+**Como usuário,**  
+Quero que o site carregue rápido e tenha comportamento fluido,  
+**Para** navegar sem travamentos ou lentidão.
+
+**Tarefas:**
+- Minificação e compressão de assets (Gzip/Brotli).
+- Implementar cache controlável ao inserir novos dados.
+- Otimização das consultas backend.
+- Testes de performance (Lighthouse / WebVitals).
+
+**Prioridade:** Média (3)
+
+**Critérios de Aceite:**
+- Cache resetável via ação administrativa.
+- Redução perceptível no tempo de carregamento.
+- Aplicação de boas práticas de performance documentadas.
+- Resultados comprovados com benchmarks.
+
+
+
+## História (US09) – Visualização segmentada por reservatório e estação
+
+**Como usuário,**  
+Quero visualizar dados filtrados por reservatórios e estações,  
+**Para** realizar análises objetivas e direcionadas.
+
+**Tarefas:**
+- Criar filtros específicos por estação.
+- Criar filtros por reservatório.
+- Ajustar endpoints backend para consultas segmentadas.
+- Adequar frontend para exibição segmentada.
+
+**Prioridade:** Alta (5)
+
+**Critérios de Aceite:**
+- Exibição segmentada por estações.
+- Exibição segmentada por reservatórios.
+- Permite alternar entre filtros sem recarregar a página.
+
+
+
+## História (US14) – Exportação de gráficos filtrados em PDF
+
+**Como usuário,**  
+Quero exportar os gráficos filtrados em PDF mantendo sua visualização customizada,  
+**Para** gerar relatórios claros e fiéis.
+
+**Tarefas:**
+- Capturar visualizações (canvas/SVG) com estilo aplicado.
+- Gerar PDF com layout fiel ao gráfico.
+- Preservar filtros e legendas na exportação.
+- Garantir consistência visual e legibilidade.
+
+**Prioridade:** Média (3)
+
+**Critérios de Aceite:**
+- PDF apresenta exatamente o gráfico visualizado.
+- Filtros aplicados preservados.
+- Layout visual limpo, profissional e legível.
 
 </details>
 
-<details>  
-<summary><b>📋 Requisitos da Sprint 1</b></summary>
+<details>
+<summary><b>📋 Requisitos da Sprint 3</b></summary>
 
 **Requisitos Funcionais contemplados:**
+- **RF06:** Interface padrão INPE/gov.br.
+- **RF07:** Ferramenta de desenho de polígonos no mapa.
+- **RF08:** Visualização filtrada por reservatórios e estações.
+- **RF14:** Exportação de gráficos filtrados em PDF.
 
--
-- **Requisitos Não Funcionais contemplados:**
--
--
--
-- ***
-
+**Requisitos Não Funcionais contemplados:**
+- **RNF02:** Otimização de performance do site.
+- **RNF03:** Testes mínimos baseados em métricas de performance (Lighthouse/WebVitals).
 </details>
 
-<details>  
+
+<details>
 <summary><b>📝 Principais Funcionalidades</b></summary>
 
--
--
--
--
--
-
+- Mapa interativo com ferramenta de desenho de polígonos.
+- Exibição de estações e reservatórios diretamente no mapa.
+- Visualização segmentada por estação e reservatório.
+- Exportação de gráficos filtrados para PDF.
+- Interface padronizada com diretrizes gov.br.
+- Sistema com cache configurável e assets otimizados.
 </details>
 
-<details>  
-<summary><b>✅ Critérios de Aceite Gerais da Sprint 1</b></summary>
 
--
--
--
--
--
--
-- </details>
+<details>
+<summary><b>✅ Critérios de Aceite Gerais da Sprint 3</b></summary>
 
-<details>  
+- Interface consistente com identidade visual governamental (INPE/gov.br).
+- Interação no mapa funcional, com seleção por polígonos.
+- Fluxo de visualização segmentada por reservatório/estação operante.
+- Desempenho geral aprimorado e perceptível pelo usuário.
+- PDF gerado com fidelidade visual ao gráfico exibido.
+- Todos os recursos integrados entre frontend e backend.
+</details>
+
+
+<details>
 <summary><b>🎨 Design do Site</b></summary>
 
-- 🧭 Objetivo do Protótipo
-- 📊 Interfaces Principais
-- 🗂️ Arquitetura de Navegação
-- 🎨 Design System
-  - Paleta de Cores
-- 💡 Diferenciais de UX
+📌 **Objetivo do protótipo**
+- Fornecer interfaces intuitivas e simples para usuários leigos.
+- Organizar visualmente dados limnológicos de modo acessível.
+- Integrar mapa, filtros e dashboards sem sobrecarga visual.
+
+📊 **Interfaces Principais**
+- Dashboard de monitoramento geral.
+- Tela de dados por estação/reservatório.
+- Mapa interativo com consulta via polígono.
+- Tela dedicada para exportação/relatórios.
+
+🗂️ **Arquitetura**
+- Navegação horizontal clara.
+- Breadcrumbs em páginas internas.
+- Fluxo principal: **Dashboard → Mapa → Relatórios**.
+
+🎨 **Design System**
+- Paleta padrão gov.br (azul/tons neutros/branco).
+- Botões grandes com contraste e feedback.
+- Tipografia legível e amigável.
+
+💡 **Diferenciais de UX**
+- Menos sobrecarga visual.
+- Layout modular por seções.
+- Fluxo “visualizar → filtrar → exportar” em poucos cliques.
 
 </details>
 
-<details>  
-<summary><b>📋 Visão Geral dos Casos de Uso</b></summary>
+<details>
+<summary><b>📋 Diagrama de Sequência</b></summary>
 
-- 📝 Principais Funcionalidades
-- 👥 Atores do Sistema
+O diagrama de sequência demonstra o fluxo de interação entre usuários, frontend e backend, representando:
+
+- 📌 **Consulta de dados por estação**
+- 📌 **Consulta de dados por reservatório**
+- 📌 **Exportação de dados filtrados em PDF**
+- 📌 **Interações com a API e validação de filtros**
+
+### 🧠 O que o diagrama esclarece
+- A ordem das chamadas de método
+- O ciclo de requisição–resposta
+- Como os filtros influenciam o fluxo da aplicação
+- Como o frontend manipula os dados e renderiza nos gráficos
+
+### ✨ Benefícios
+- Auxilia no alinhamento entre desenvolvedores
+- Evita ambiguidades no comportamento das features
+- Facilita integração e testes
+- Conecta o design técnico aos requisitos funcionais
+
+---
+
+<p align="center">
+  <a href="https://github.com/ErrorSquad-ABP/ABP2/tree/main/SCRUM/diagramas" target="_blank" style="
+    text-decoration:none;
+    background: #1351B4;
+    padding: 12px 26px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+    font-family: Arial, sans-serif;
+    letter-spacing: .5px;
+    transition: 0.25s ease;
+    display: inline-block;
+  "
+  onmouseover="this.style.background='#0A3D91';"
+  onmouseout="this.style.background='#1351B4';">
+    📁 Ver Diagramas de Sequência
+  </a>
+</p>
 
 </details>
 
-<details>  
+<details>
 <summary><b>📊 Modelo de Dados</b></summary>
 
-- Diagrama ER
-- 📝 Principais Classes e Relacionamentos
-- 🔄 Relacionamentos Principais
-- Características Técnicas
-- 💡 Características do Sistema
+**Entidades principais**
+- `Reservatorio`
+- `Estacao`
+- `Medicao`
+- `Parametro`
 
+**Relacionamentos**
+- `Reservatorio` 1—N `Estacao`
+- `Estacao` 1—N `Medicao`
+- `Medicao` N—1 `Parametro`
+
+**Características técnicas**
+- Indexação geoespacial (PostGIS / geohash).
+- Views otimizadas para agregação.
+- Paginação para reduzir payloads.
 </details>
 
-<details>  
+
+<details>
 <summary><b>🚀 Funcionalidades Implementadas</b></summary>
 
-- 💻 Visão Geral das Implementações
-- 🔍 Detalhes das Implementações
-  - Backend
-  - Banco de Dados
-  - Frontend
-  - Arquitetura e Ferramentas
+### 💻 Visão Geral
+- Conclusão de consultas segmentadas por reservatório e estação.
+- Ferramenta de desenho e seleção no mapa.
+- Exportação de gráficos para PDF com fidelidade visual.
+- Padronização visual gov.br.
+- Otimizações de performance.
+
+### 🔍 Detalhamento das Implementações
+
+**Backend**
+- Endpoints filtrados por polígono.
+- Cache resetável ao inserir novos dados.
+- Pipeline de exportação PDF server-side.
+
+**Banco de Dados**
+- Índices geoespaciais.
+- Views dedicadas para análise e agregação.
+
+**Frontend**
+- Componentização de filtros.
+- Tooling geográfico (Leaflet/Mapbox).
+- Captura de gráfico (canvas/SVG) para exportação.
+
+**Arquitetura e Ferramentas**
+- React + Leaflet/Mapbox.
+- Node/Express + PostgreSQL/PostGIS.
+- Build otimizado com Vite, minificação e gzip.
 
 </details>
 
-<details>  
+<details>
 <summary><b>📉 Burndown Chart</b></summary>
 
-- 🖼️ Gráfico de Burndown
-- 📋 Análise do Desempenho
+- Gráfico representou progresso ao longo das três semanas.
+- Queda inicial rápida (implementação de mapas).
+- Estabilidade e finalização com foco em performance/PDF.
 
 </details>
 
-<details>  
+<details>
 <summary><b>🔍 Sprint Retrospective</b></summary>
 
-- 🎯 Visão Geral da Retrospectiva
-- ✅ O que funcionou bem
-- ⚠️ Desafios enfrentados
-- 🚀 Plano de melhorias
-  - Processo e comunicação
-  - Gestão de tarefas
-  - Planejamento e execução
-- 📈 Métricas para Sprint 2
+### Visão Geral
+- Sprint técnica com foco em mapa, exportação e otimização.
+
+### O que funcionou bem
+- Fluxos de visualização claros no mapa e dados segmentados.
+- Ferramenta de desenho estável.
+- Melhoria perceptível no carregamento.
+
+### Desafios
+- Integração de PDF para múltiplos tipos de gráficos.
+- Ajustes de acessibilidade com padrões gov.br.
+
+### Plano de melhorias
+- Refinar contraste e acessibilidade.
+- Modularizar filtros.
+- Políticas reativas de cache.
+
+### Métricas para Sprint 4
+- TTFP médio (Time to First Paint).
+- Latência média de consultas no dashboard.
+- Taxa de uso da exportação PDF.
 
 </details>
 
