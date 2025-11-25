@@ -25,5 +25,4 @@ export const health = async (req: Request, res: Response): Promise<void> => {
       error: "Erro ao realizar a operação.",
     });
   }
-
 };

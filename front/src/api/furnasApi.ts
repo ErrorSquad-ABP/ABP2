@@ -6,6 +6,7 @@ export interface DownloadParams {
   startDate?: string;
   endDate?: string;
   columns?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filters?: Record<string, any>;
 }
 

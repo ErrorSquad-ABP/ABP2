@@ -1,4 +1,5 @@
 // server/src/controllers/polygon.controller.ts
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Request, Response } from "express";
 import { polygonStore, Polygon } from "../data-structures/IntersectionPolygonStore";
 
