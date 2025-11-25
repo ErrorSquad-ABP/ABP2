@@ -442,9 +442,9 @@ Para melhor estruturação do projeto, modelamos o diagrama de casos de uso:
 <summary><b>🔄 Sprint 2 – Aplicação do Protótipo na Prática</b></summary>
  📅 Período
 
-- **Início:** 16/09/2025
-- **Término:** 06/10/2025
-- **Review:** 07/10/2025
+- **Início:** 13/10/2025
+- **Término:** 31/10/2025
+- **Review:** 04/11/2025
 
 ### 🎯 Objetivos Principais
 
@@ -784,9 +784,9 @@ O diagrama de classes representa a estrutura principal do sistema de visualizaç
 
 ### 📅 Período
 
-- **Início:** 16/09/2025  
-- **Término:** 06/10/2025  
-- **Review:** 07/10/2025  
+- **Início:** 06/11/2025  
+- **Término:** 24/11/2025  
+- **Review:** 25/11/2025  
 
 ---
 
