@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // front/src/pages/TablesPage.tsx
 
@@ -6,6 +7,7 @@ import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import MapBrazil from "../components/MapBrazil";
 import SimaTable from "../components/SimaTable";
+import axios from "axios";
 import * as turf from "@turf/turf";
 import * as d3 from "d3";
 
@@ -467,7 +469,7 @@ export default function TablesPage(): JSX.Element {
 
   const [tablesOptions, setTablesOptions] = useState<Array<{ api: string; label: string }>>([]);
 
-  const [campanhas] = useState<any[]>([]);
+  const [campanhas, setCampanhas] = useState<any[]>([]);
   const [reservatorios, setReservatorios] = useState<any[]>([]);
   const [selectedReservatorios, setSelectedReservatorios] = useState<(string | number)[]>([]);
   const [selectAllReservatorios, setSelectAllReservatorios] = useState<boolean>(false);
@@ -1179,6 +1181,170 @@ export default function TablesPage(): JSX.Element {
   // ED: função que utiliza coordenadas dos reservatórios para construir polígonos (MC 108)
   // MC 108 Criar função para gerar as localizações usando as coordenadas dos reservatórios
   // MC 104 Criar função de geração do poligono com base nos reservatorios
+  async function handleGeoSearch() {
+    if (!selectedReservatorios || selectedReservatorios.length === 0) {
+      alert("Selecione ao menos um reservatório.");
+      return;
+    }
+
+    setLoading(true);
+
+    let allReservs: any[] = [];
+
+    try {
+      const resp = await fetch("http://localhost:3001/furnas/reservatorio/all");
+      if (!resp.ok) {
+        throw new Error(`Erro ao buscar reservatórios: ${resp.status} ${resp.statusText}`);
+      }
+      const allJson = await resp.json();
+      const allReservsRaw = Array.isArray(allJson)
+        ? allJson
+        : (allJson?.data ?? allJson?.rows ?? []);
+
+      // Normalize lat/lon robustly: aceita r.lat, r.latitude, strings, etc.
+      allReservs = allReservsRaw.map((r: any) => {
+        const rawLat =
+          r.lat ??
+          r.latitude ??
+          r.latitude_deg ??
+          r.latitude_deg_str ??
+          r.latitud ??
+          r.Latitud ??
+          null;
+        const rawLon =
+          r.lng ?? r.longitude ?? r.lon ?? r.longitude_deg ?? r.longitude_deg_str ?? r.long ?? null;
+
+        const latitude = rawLat == null ? NaN : Number(String(rawLat).replace(",", ".").trim());
+        const longitude = rawLon == null ? NaN : Number(String(rawLon).replace(",", ".").trim());
+
+        return {
+          id: String(
+            r.idreservatorio ??
+              r.id ??
+              r.idReservatorio ??
+              r.id_reservatorio ??
+              r.id_reservatorio ??
+              "",
+          ),
+          latitude: Number.isFinite(latitude) ? latitude : NaN,
+          longitude: Number.isFinite(longitude) ? longitude : NaN,
+          nome: r.nome ?? r.name ?? "",
+          raw: r,
+        };
+      });
+
+      const selectedPoints = allReservs.filter((r) =>
+        selectedReservatorios.some((sid) => String(sid) === r.id),
+      );
+
+      if (selectedPoints.length >= 3) {
+        const coords = selectedPoints
+          .map((p) => [Number(p.longitude), Number(p.latitude)])
+          .filter((c) => Number.isFinite(c[0]) && Number.isFinite(c[1]));
+        if (coords.length < 3) {
+          // not enough valid coords
+          await handleGenerateTableForCurrentSelection(selectedReservatorios);
+          setPolygonReservoirs(selectedPoints);
+          setInsidePolygonReservatorios([]);
+          setView("map");
+          return;
+        }
+        const ring = [...coords, coords[0]];
+
+        const inside = allReservs.filter((r) => {
+          if (!Number.isFinite(r.latitude) || !Number.isFinite(r.longitude)) return false;
+          try {
+            if (typeof turf !== "undefined" && typeof turf.booleanPointInPolygon === "function") {
+              return turf.booleanPointInPolygon(
+                turf.point([Number(r.longitude), Number(r.latitude)]),
+                turf.polygon([ring]),
+              );
+            }
+          } catch (e) {
+            // fallback to raycast below
+          }
+          const x = Number(r.longitude),
+            y = Number(r.latitude);
+          let insideFlag = false;
+          for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+            const xi = ring[i][0],
+              yi = ring[i][1];
+            const xj = ring[j][0],
+              yj = ring[j][1];
+            const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+            if (intersect) insideFlag = !insideFlag;
+          }
+          return insideFlag;
+        });
+
+        // set polygon points (selected reservoir points)
+        setPolygonReservoirs(selectedPoints);
+        // ensure inside entries have numeric lat/lon
+        setInsidePolygonReservatorios(
+          inside.map((p) => ({
+            ...p,
+            latitude: Number.isFinite(Number(p.latitude)) ? Number(p.latitude) : NaN,
+            longitude: Number.isFinite(Number(p.longitude)) ? Number(p.longitude) : NaN,
+          })),
+        );
+
+        const insideIds = inside.map((p) => String(p.id));
+
+        await handleGenerateTableForCurrentSelection(insideIds);
+
+        setSelectedReservatorios(insideIds);
+
+        setView("map");
+        return;
+      } else {
+        await handleGenerateTableForCurrentSelection(selectedReservatorios);
+
+        setPolygonReservoirs(selectedPoints);
+        setInsidePolygonReservatorios([]);
+
+        setView("map");
+      }
+    } catch (err) {
+      console.error("handleGeoSearch error:", err);
+      alert("Erro ao processar consulta geográfica. Veja console.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleSavePolygonFromGeoQuery() {
+    if (!polygonReservoirs || polygonReservoirs.length < 3) {
+      alert("É necessário ter pelo menos 3 reservatórios para formar um polígono antes de salvar.");
+      return;
+    }
+
+    const newPoly = {
+      id:
+        typeof crypto !== "undefined" && (crypto as any).randomUUID
+          ? (crypto as any).randomUUID()
+          : String(Date.now()),
+      points: polygonReservoirs.map((p) => ({
+        lat: Number(p.latitude),
+        lon: Number(p.longitude),
+      })),
+      createdAt: new Date().toISOString(),
+    };
+
+    setSavedPolygons((prev) => {
+      setPolygonVisibility((pv) => ({ ...pv, [newPoly.id]: true }));
+      return [...prev, newPoly];
+    });
+
+    // cache residents inside
+    // MC 92: usamos computeReservatoriosInsidePolygon para descobrir quais reservatórios caem dentro
+    const found = computeReservatoriosInsidePolygon(newPoly);
+    setPolygonReservsMap((prev) => ({ ...prev, [newPoly.id]: found }));
+
+    // MC 110 Criar função para adicionar mais poligonos na consulta entre reservatorios, gerando intersecções
+    // ED: Aqui salvamos o polígono; interseção entre polígonos poderia ser computada em outra função que usa turf.intersect
+    setPolygonReservoirs([]);
+    setInsidePolygonReservatorios([]);
+  }
 
   /* ---------------- Drawing: click-to-add vertices, create poligon ---------------- */
 
