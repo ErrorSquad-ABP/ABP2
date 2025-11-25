@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
+import Erros from "../../utils/erros.model";
+
 
 export const getDataByInstituicao = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -76,9 +78,9 @@ export const getDataByInstituicao = async (req: Request, res: Response): Promise
       message: error.message,
       stack: error.stack,
     });
-    res.status(500).json({
-      success: false,
-      error: "Erro interno ao buscar dados por instituição.",
-    });
+
+    const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
+  
+    res.status(500).json(erro);
   }
 };

@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
+import Erros from "../../utils/erros.model";
+
 
 const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 20;
 
@@ -89,7 +91,8 @@ export const getUnionData = async (req: Request, res: Response): Promise<void> =
     });
   } catch (error: any) {
     logger.error("Erro no getUnionData", { message: error.message, stack: error.stack });
-    res.status(500).json({ success: false, error: "Erro ao processar requisição." });
+    const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
+    res.status(500).json(erro);
   }
 };
 

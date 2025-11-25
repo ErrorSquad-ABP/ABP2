@@ -3,6 +3,13 @@
 import { Request, Response } from "express";
 import { polygonStore, Polygon } from "../data-structures/IntersectionPolygonStore";
 
+interface Resp  {
+  success: Boolean;
+  data: any;
+  total: any;
+  error?: String;
+}
+
 export const criarPoligono = (req: Request, res: Response): void => {
   try {
     const { name, coordinates, type, metadata } = req.body;
@@ -29,9 +36,13 @@ export const criarPoligono = (req: Request, res: Response): void => {
 export const listarPoligonos = (req: Request, res: Response): void => {
   const poligonos = polygonStore.buscarTodos();
 
-  res.status(200).json({
+  const response : Resp = {
     success: true,
     data: poligonos,
-    total: polygonStore.getQuantidade(),
-  });
+    total: polygonStore.getQuantidade()
+  }
+
+  res.status(200).json(
+    response
+  );
 };
