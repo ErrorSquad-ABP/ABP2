@@ -1,3 +1,4 @@
+/* prettier-ignore-file */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // front/src/pages/SimaTablesPage.tsx
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
@@ -536,7 +537,6 @@ export default function SimaTablesPage(): JSX.Element {
   const [, /*showTable*/ setShowTable] = useState<boolean>(false);
 
   const [zoom, setZoom] = useState<number>(1);
-  const [showStateNames, setShowStateNames] = useState<boolean>(true);
   const [pan, setPan] = useState({ x: 0, y: 0 });
 
   const [page, setPage] = useState(0);
