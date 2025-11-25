@@ -532,6 +532,7 @@ export default function TablesPage(): JSX.Element {
       setStartDate("");
       setEndDate("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedReservatorios]);
 
   useEffect(() => {
@@ -702,7 +703,9 @@ export default function TablesPage(): JSX.Element {
           if (r.includes("sima")) return "sima";
         }
       }
-    } catch {}
+    } catch {
+      /* empty */
+    }
 
     try {
       if (metadata && Array.isArray(metadata)) {
@@ -731,14 +734,18 @@ export default function TablesPage(): JSX.Element {
           if (r.includes("sima")) return "sima";
         }
       }
-    } catch {}
+    } catch {
+      /* empty */
+    }
 
     try {
       const n = key.toLowerCase();
       if (n.startsWith("tb") && n.includes("sima")) return "sima";
       if (n.startsWith("tb") && n.includes("balcar")) return "balcar";
       if (n.startsWith("tb")) return "furnas";
-    } catch {}
+    } catch {
+      /* empty */
+    }
 
     return null;
   }

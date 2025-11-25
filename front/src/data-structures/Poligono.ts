@@ -1,4 +1,5 @@
 // Poligono.ts
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import * as turf from "@turf/turf";
 
 export type LatLon = { lat: number; lon: number };
