@@ -596,71 +596,6 @@ Quero visualizar dados em tabelas com colunas ordenáveis e paginação,
 
 </details>
 
-<details>  
-<summary><b>🎨 Design do Site</b></summary>
-🧭 Objetivo do Protótipo
-
-O protótipo tem a finalidade de demonstrar visualmente a interface do sistema para consulta e análise de dados limnológicos e cartografia de pontos de coleta, com foco em usabilidade e responsividade.
-
-### 📊 Interfaces Principais
-
-<div align="center">
-  <table>
-    <tr>
-      <th width="50%">Página — Gerador de Gráficos</th>
-      <th width="50%">Página — Tabelas</th>
-    </tr>
-    <tr>
-      <td>
-        <img src="./SCRUM/assets/grafico_prototipo.png" alt="Gerador de gráfico" width="100%">
-        <p><strong>Gerador de gráfico:</strong> seleção passo-a-passo (estações → tabela → período → colunas).</p>
-      </td>
-      <td>
-        <img src="./SCRUM/assets/tabela_prototipo.png" alt="Tabela paginada" width="100%">
-        <p><strong>Tabela paginada:</strong> colunas configuráveis, ordenação e export.</p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="./SCRUM/assets/mapa_prototipo.png" alt="Mapa Interativo" width="100%">
-        <p><strong>Mapa Interativo:</strong> polígonos por estado e pontos de coleta com popups.</p>
-      </td>
-      <td>
-        <img src="./SCRUM/assets/HomePageSima.png" alt="Homepage Sima" width="100%">
-        <p><strong>Homepage Sima:</strong> entrada para o fluxo SIMA.</p>
-      </td>
-    </tr>
-  </table>
-</div>
-
-### 🗂️ Arquitetura de Navegação
-
-O sistema é estruturado em páginas principais:
-- **Home**: cartões por tópico (SIMA, Abióticos, Bióticos, etc.).  
-- **Tables / Consulta**: fluxo de seleção para gerar tabelas e gráficos.  
-- **Mapa**: visão espacial com pontos e filtros.  
-- **Projetos**: páginas detalhadas para cada base (SIMA, Furnas, Balcar).
-
-- 🎨 Design System
-  - `styled-components` com ThemeProvider.
-  - Tipografia sans-serif para legibilidade (Helvetica Neue / Inter).
-  - Componentes com ênfase em clareza: cards, botões, controles passo-a-passo.
-
-#### Paleta de Cores (resumo)
-
-<div align="center">
-  <table>
-    <tr>
-      <td style="background-color:#0B5394; color:white; text-align:center; padding:8px">Azul Escuro<br>#0B5394</td>
-      <td style="background-color:#2563EB; color:white; text-align:center; padding:8px">Azul Primário<br>#2563EB</td>
-      <td style="background-color:#DBEAFE; color:#0b2740; text-align:center; padding:8px">Fundo Claro<br>#DBEAFE</td>
-      <td style="background-color:#0B2740; color:white; text-align:center; padding:8px">Texto Escuro<br>#0B2740</td>
-      <td style="background-color:#FFFFFF; color:black; text-align:center; padding:8px; border:1px solid #ccc">Branco<br>#FFFFFF</td>
-    </tr>
-  </table>
-</div>
-
-</details>
 
 <details>  
 <summary><b>📋 Diagrama de Classes</b></summary>
@@ -700,35 +635,6 @@ O diagrama de classes representa a estrutura principal do sistema de visualizaç
 </p>
 
 </details>
-
-<details>  
-<summary><b>📊 Modelo de Dados</b></summary>
-
-- **Bancos envolvidos**
-  - `bdfurnas-campanha` (Furnas)
-  - `bdsima` (SIMA)
-  - `bdbalcar-campanha` (Balcar)
-
-- **Entidades principais**
-  - `reservatorio` (id, nome, instituicao, lat, lng, geom)
-  - `instituicao` (id, nome)
-  - `estacao` (idestacao, rotulo, lat, lng)
-  - `medicao` (id, dataHora/dataMedida, idestacao/idreservatorio, coluna1, coluna2, ...)
-  - `campanha`, `sitio`, `amostra`
-
-- **Relacionamentos**
-  - `instituicao` 1:N `reservatorio`
-  - `reservatorio` 1:N `medicao`
-  - `estacao` 1:N `medicao` (SIMA)
-  - `campanha` 1:N `sitio` → 1:N `amostra` → 1:N `medicao`
-
-- **Características Técnicas**
-  - Datas: normalizar `dataHora` / `dataMedida` no frontend.
-  - Paginação: backend deve suportar `page` e `pageSize`.
-  - Export: endpoint que suporta CSV ou retorno JSON paginado a ser convertido no frontend.
-
-</details>
-
 <details>  
 <summary><b>🚀 Funcionalidades Implementadas / Planejadas</b></summary>
 
@@ -747,8 +653,6 @@ O diagrama de classes representa a estrutura principal do sistema de visualizaç
 
 <details>  
 <summary><b>📉 Burndown Chart</b></summary>
-
-- Gráfico de Burndown será atualizado ao longo da sprint e anexado ao repositório SCRUM/burndown.
 
 <div align="center">
   <!-- placeholder image - substituir pelo gráfico real -->
@@ -947,36 +851,6 @@ Quero exportar os gráficos filtrados em PDF mantendo sua visualização customi
 </details>
 
 
-<details>
-<summary><b>🎨 Design do Site</b></summary>
-
-📌 **Objetivo do protótipo**
-- Fornecer interfaces intuitivas e simples para usuários leigos.
-- Organizar visualmente dados limnológicos de modo acessível.
-- Integrar mapa, filtros e dashboards sem sobrecarga visual.
-
-📊 **Interfaces Principais**
-- Dashboard de monitoramento geral.
-- Tela de dados por estação/reservatório.
-- Mapa interativo com consulta via polígono.
-- Tela dedicada para exportação/relatórios.
-
-🗂️ **Arquitetura**
-- Navegação horizontal clara.
-- Breadcrumbs em páginas internas.
-- Fluxo principal: **Dashboard → Mapa → Relatórios**.
-
-🎨 **Design System**
-- Paleta padrão gov.br (azul/tons neutros/branco).
-- Botões grandes com contraste e feedback.
-- Tipografia legível e amigável.
-
-💡 **Diferenciais de UX**
-- Menos sobrecarga visual.
-- Layout modular por seções.
-- Fluxo “visualizar → filtrar → exportar” em poucos cliques.
-
-</details>
 
 <details>
 <summary><b>📋 Diagrama de Sequência</b></summary>
@@ -1025,27 +899,6 @@ O diagrama de sequência demonstra o fluxo de interação entre usuários, front
 </details>
 
 <details>
-<summary><b>📊 Modelo de Dados</b></summary>
-
-**Entidades principais**
-- `Reservatorio`
-- `Estacao`
-- `Medicao`
-- `Parametro`
-
-**Relacionamentos**
-- `Reservatorio` 1—N `Estacao`
-- `Estacao` 1—N `Medicao`
-- `Medicao` N—1 `Parametro`
-
-**Características técnicas**
-- Indexação geoespacial (PostGIS / geohash).
-- Views otimizadas para agregação.
-- Paginação para reduzir payloads.
-</details>
-
-
-<details>
 <summary><b>🚀 Funcionalidades Implementadas</b></summary>
 
 ### 💻 Visão Geral
@@ -1078,12 +931,13 @@ O diagrama de sequência demonstra o fluxo de interação entre usuários, front
 
 </details>
 
-<details>
+<details>  
 <summary><b>📉 Burndown Chart</b></summary>
 
-- Gráfico representou progresso ao longo das três semanas.
-- Queda inicial rápida (implementação de mapas).
-- Estabilidade e finalização com foco em performance/PDF.
+<div align="center">
+  <!-- placeholder image - substituir pelo gráfico real -->
+  <img src="SCRUM/burndown/Sprint 3/BurndownSprint3.jpg" alt="Burndown Sprint 3" width="80%">
+</div>
 
 </details>
 
