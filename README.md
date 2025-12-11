@@ -3,7 +3,7 @@
 <div align="center">
 
 [![Site](https://img.shields.io/badge/🌐_Site-Offline-000000?style=for-the-badge)]()
-[![Status](https://img.shields.io/badge/⚙️_Status-em_progresso-orange?style=for-the-badge)](#-sobre-o-projeto)
+[![Status](https://img.shields.io/badge/⚙️_Status-concluido-green?style=for-the-badge)](#-sobre-o-projeto)
 [![Sprint](https://img.shields.io/badge/📅_Sprint-3/3-green?style=for-the-badge)](#-sprint-3)
 [![Docs](https://img.shields.io/badge/📚_Docs-Wiki-4a90e2?style=for-the-badge)](#documentação)
 
