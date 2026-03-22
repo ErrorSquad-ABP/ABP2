@@ -7,7 +7,7 @@ import SimaPage from "./pages/SimaPage";
 import SimasPage from "./pages/SimasPage";
 import FurnasPage from "./pages/FurnasPage";
 import BalcarPage from "./pages/BalcarPage";
-import SimaTablesPage from "./pages/SimaTablesPage"; // rota específica para SIMA
+import SimaTablesPage from "./pages/SimaTablesPage";
 
 function App() {
   return (
