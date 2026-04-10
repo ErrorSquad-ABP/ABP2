@@ -1,15 +1,37 @@
 import { CorsOptions } from "cors";
+import { getEnv } from "./env";
 
-const allowedOrigins = [process.env.CORS_ORIGIN || "http://localhost:3002"];
+const env = getEnv();
+
+const baseOrigins = [
+  env.CORS_ORIGIN,
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+].filter(Boolean);
 
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (env.CORS_ORIGIN === "*") {
       callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
+      return;
     }
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+    if (baseOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    if (origin.includes(".vercel.app")) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error("Not allowed by CORS"));
   },
-  methods: ["GET"], // Apenas SELECTs
+  methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 };

@@ -3,8 +3,9 @@ import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 import Erros from "../../utils/erros.model";
 
+import { getDefaultPageSize } from "../../configs/pagination";
 
-const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
+const PAGE_SIZE = getDefaultPageSize();
 
 // GET todas as instituições (com paginação e filtro opcional)
 export const getAll = async (req: Request, res: Response): Promise<void> => {
@@ -67,8 +68,8 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
       message: error.message,
       stack: error.stack,
     });
-        const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
-    
+    const erro: Erros = { success: false, error: "Erro ao realizar a operação." };
+
     res.status(500).json(erro);
   }
 };

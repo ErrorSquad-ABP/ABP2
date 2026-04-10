@@ -3,7 +3,6 @@ import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 import Erros from "../../utils/erros.model";
 
-
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   try {
     // consulta com paginação
@@ -66,8 +65,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
       stack: error.stack,
     });
 
-    const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
-
+    const erro: Erros = { success: false, error: "Erro ao realizar a operação." };
 
     res.status(500).json(erro);
   }

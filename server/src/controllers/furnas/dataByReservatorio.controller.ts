@@ -3,7 +3,6 @@ import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 import Erros from "../../utils/erros.model";
 
-
 /*const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10; */
 
 export const getReservatorioById = async (req: Request, res: Response): Promise<void> => {
@@ -60,8 +59,8 @@ export const getReservatorioById = async (req: Request, res: Response): Promise<
       message: error.message,
       stack: error.stack,
     });
-        const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
-    
+    const erro: Erros = { success: false, error: "Erro ao realizar a operação." };
+
     res.status(500).json(erro);
   }
 };

@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 import Erros from "../../utils/erros.model";
+import { getDefaultPageSize } from "../../configs/pagination";
 
-
-const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 20;
+const PAGE_SIZE = getDefaultPageSize();
 
 // 🔒 Tabelas permitidas
 const allowedTables: Record<string, string[]> = {
@@ -91,7 +91,7 @@ export const getUnionData = async (req: Request, res: Response): Promise<void> =
     });
   } catch (error: any) {
     logger.error("Erro no getUnionData", { message: error.message, stack: error.stack });
-    const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
+    const erro: Erros = { success: false, error: "Erro ao realizar a operação." };
     res.status(500).json(erro);
   }
 };

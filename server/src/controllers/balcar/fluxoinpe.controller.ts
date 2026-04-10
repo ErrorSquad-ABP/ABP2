@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import { balcarPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 
-const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
+import { getDefaultPageSize } from "../../configs/pagination";
+
+const PAGE_SIZE = getDefaultPageSize();
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   try {

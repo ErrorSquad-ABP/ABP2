@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { logger } from "../../configs/logger";
 import Erros from "../../utils/erros.model";
 
-
 export const exportCSV = async (req: Request, res: Response): Promise<void> => {
   try {
     const { table } = req.query;
@@ -68,7 +67,7 @@ export const exportCSV = async (req: Request, res: Response): Promise<void> => {
       stack: error.stack,
     });
 
-    const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
+    const erro: Erros = { success: false, error: "Erro ao realizar a operação." };
 
     res.status(500).json(erro);
   }

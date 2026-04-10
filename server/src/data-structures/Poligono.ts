@@ -21,7 +21,6 @@ export default class Poligono {
     this.createdAt = new Date().toISOString();
   }
 
-
   removePointAt(index: number) {
     if (index >= 0 && index < this.points.length) this.points.splice(index, 1);
   }
@@ -36,8 +35,6 @@ export default class Poligono {
   clear() {
     this.points = [];
   }
-
-
 
   // Return a turf polygon feature (closed anel)
   toTurfPolygon() {
@@ -116,5 +113,4 @@ export default class Poligono {
   toLatLonArray() {
     return this.points.map((p) => ({ lat: Number(p.lat), lon: Number(p.lon) }));
   }
-
 }
