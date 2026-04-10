@@ -1,4 +1,3 @@
-/* prettier-ignore-file */
 import { JSX } from "react";
 import styled, { keyframes } from "styled-components";
 import { lightenHex } from "../../utils/limnologicData";

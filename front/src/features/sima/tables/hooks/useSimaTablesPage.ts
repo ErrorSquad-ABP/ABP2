@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- legado SIMA; estreitar tipos depois */
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import MapBrazil from "../../../../components/MapBrazil";
 import { useToast } from "../../../../components/Toast/useToast";
-import { isoDate } from "../../../../utils/limnologicData";
+import { messageForFailedSimaExport } from "../api/simaExportFeedback";
 import { simaDownloadPath, type SimaTableId } from "../../api/simaEndpoints";
 import {
   fetchColumnsForTable,
@@ -12,7 +11,9 @@ import {
 } from "../api/simaTablesClient";
 import { aggregateRowsByDay } from "../model/aggregateRowsByDay";
 import { isDateColumn, isIdColumn } from "../model/columnGuards";
+import { filterSimaRowsByStationsAndDateRange } from "../model/simaRowFilter";
 import { safeSimaExportBasename } from "../model/safeExportName";
+import type { SimaMapBrazilComponent, SimaMapPoint } from "../types/mapBrazil";
 import {
   initialSimaTablesUiState,
   simaTablesUiReducer,
@@ -31,8 +32,8 @@ export type SimaTablesPageController = {
   setTooltip: React.Dispatch<React.SetStateAction<SimaTablesTooltipState>>;
   chartRef: React.RefObject<HTMLDivElement | null>;
   chartMainRef: React.RefObject<HTMLDivElement | null>;
-  latLonPoints: { id: string | number; lat: number; lon: number; label?: string }[];
-  MapBrazilAny: typeof MapBrazil;
+  latLonPoints: SimaMapPoint[];
+  MapBrazilTyped: SimaMapBrazilComponent;
   handleMouseMove: (e: React.MouseEvent<HTMLDivElement>) => void;
   handleDownloadCSV: () => Promise<void>;
   handleDownloadJSON: () => Promise<void>;
@@ -46,6 +47,8 @@ export type SimaTablesPageController = {
   resetWizard: () => void;
   showToast: (codigo?: number | null, conteudo?: string, cor?: string, emoji?: string) => void;
 };
+
+const MapBrazilTyped = MapBrazil as SimaMapBrazilComponent;
 
 export function useSimaTablesPage(): SimaTablesPageController {
   const { showToast } = useToast();
@@ -72,63 +75,6 @@ export function useSimaTablesPage(): SimaTablesPageController {
     }
   }, [stationsReady]);
 
-  const downloadCSV = useCallback(() => {
-    const dataForTablePreview = stateRef.current.dataForTablePreview;
-    const table = stateRef.current.table;
-    if (!dataForTablePreview || !dataForTablePreview.length) {
-      showToast(null, "Gere o dado de tabela para ter dados para exportar.");
-      return;
-    }
-    const headers = Object.keys(dataForTablePreview[0] || {});
-    const rows = dataForTablePreview.map((r: any) =>
-      headers.map((h) => (r[h] === undefined ? "" : `${r[h]}`)),
-    );
-    const csv = [
-      headers.join(","),
-      ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")),
-    ].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${safeSimaExportBasename(table)}_export.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [showToast]);
-
-  const exportPDF = useCallback(() => {
-    const table = stateRef.current.table;
-    if (!chartRef.current) {
-      showToast(null, "Gere/abra a tabela para ter conteúdo para exportar.");
-      return;
-    }
-    const html = `
-      <html>
-        <head>
-          <title>Export PDF</title>
-          <style>
-            body { font-family: Arial, Helvetica, sans-serif; padding: 16px; }
-            .wrap { width: 100%; }
-          </style>
-        </head>
-        <body>
-          <h3>Export - ${table}</h3>
-          <div class="wrap">${chartRef.current.innerHTML}</div>
-        </body>
-      </html>
-    `;
-    const w = window.open("", "_blank");
-    if (!w) {
-      showToast(null, "Permita popups para exportar PDF.");
-      return;
-    }
-    w.document.write(html);
-    w.document.close();
-    setTimeout(() => {
-      w.print();
-    }, 500);
-  }, [showToast]);
-
   const handleDownloadCSV = useCallback(async () => {
     const { dataForTablePreview, startDate, endDate, selectedStations, selectedColumns, table } =
       stateRef.current;
@@ -146,25 +92,24 @@ export function useSimaTablesPage(): SimaTablesPageController {
         method: "GET",
         headers: { Accept: "text/csv" },
       });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${safeSimaExportBasename(table)}_${new Date().toISOString().split("T")[0]}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } else {
-        downloadCSV();
+      if (!response.ok) {
+        showToast(null, await messageForFailedSimaExport(response));
+        return;
       }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${safeSimaExportBasename(table)}_${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Erro ao exportar CSV:", error);
-      showToast(null, "Erro ao exportar CSV. Usando método alternativo...");
-      downloadCSV();
+      showToast(null, "Falha de rede ao exportar CSV. Tente novamente.");
     }
-  }, [downloadCSV, showToast]);
+  }, [showToast]);
 
   const handleDownloadJSON = useCallback(async () => {
     const {
@@ -189,38 +134,22 @@ export function useSimaTablesPage(): SimaTablesPageController {
         method: "GET",
         headers: { Accept: "application/json" },
       });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${safeSimaExportBasename(table)}_${new Date().toISOString().split("T")[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } else {
-        const jsonData = {
-          table,
-          exportedAt: new Date().toISOString(),
-          totalRecords: dataForTablePreview.length,
-          stations: selectedStations,
-          period: { startDate, endDate },
-          data: dataForTablePreview,
-        };
-        const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${safeSimaExportBasename(table)}_${new Date().toISOString().split("T")[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+      if (!response.ok) {
+        showToast(null, await messageForFailedSimaExport(response));
+        return;
       }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${safeSimaExportBasename(table)}_${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Erro ao exportar JSON:", error);
-      showToast(null, "Erro ao exportar JSON. Verifique o console para mais detalhes.");
+      showToast(null, "Falha de rede ao exportar JSON. Tente novamente.");
     }
   }, [showToast]);
 
@@ -238,25 +167,24 @@ export function useSimaTablesPage(): SimaTablesPageController {
         method: "GET",
         headers: { Accept: "application/pdf" },
       });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${safeSimaExportBasename(table)}_${new Date().toISOString().split("T")[0]}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } else {
-        exportPDF();
+      if (!response.ok) {
+        showToast(null, await messageForFailedSimaExport(response));
+        return;
       }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${safeSimaExportBasename(table)}_${new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Erro ao exportar PDF:", error);
-      showToast(null, "Erro ao exportar PDF. Usando método alternativo...");
-      exportPDF();
+      showToast(null, "Falha de rede ao exportar PDF. Tente novamente.");
     }
-  }, [exportPDF, showToast]);
+  }, [showToast]);
 
   const handleConfirmTable = useCallback(async () => {
     const { selectedStations, table, startDate, endDate } = stateRef.current;
@@ -356,17 +284,8 @@ export function useSimaTablesPage(): SimaTablesPageController {
       const cols = ["idestacao", "dataHora", ...selectedColumns];
       const rows = await fetchSimaRows(table, cols);
       const stationSet = new Set(selectedStations.map((s) => String(s).trim()));
-      const filtered = (rows || []).filter((r: any) => {
-        const sid = String(r.idestacao ?? r.id ?? "").trim();
-        if (!stationSet.has(sid)) return false;
-        const dv = r.dataHora ?? r.datahora ?? r.datamedida ?? r.inicio ?? r.fim ?? r.data ?? null;
-        if (!dv) return false;
-        const d = new Date(dv);
-        if (isNaN(d.getTime())) return false;
-        const day = isoDate(d);
-        return day >= startDate && day <= endDate;
-      });
-      dispatch({ type: "patch", patch: { dataForTablePreview: filtered as any[] } });
+      const filtered = filterSimaRowsByStationsAndDateRange(rows, stationSet, startDate, endDate);
+      dispatch({ type: "patch", patch: { dataForTablePreview: filtered } });
       if (!filtered.length) {
         showToast(null, "Nenhum dado no período para as estações e colunas selecionadas.");
         dispatch({ type: "patch", patch: { chartData: [], view: "chart", loading: false } });
@@ -411,21 +330,12 @@ export function useSimaTablesPage(): SimaTablesPageController {
       const cols = ["idestacao", "dataHora", ...selectedColumns];
       const rows = await fetchSimaRows(table, cols);
       const stationSet = new Set(selectedStations.map((s) => String(s).trim()));
-      const filtered = (rows || []).filter((r: any) => {
-        const sid = String(r.idestacao ?? r.id ?? "").trim();
-        if (!stationSet.has(sid)) return false;
-        const dv = r.dataHora ?? r.datahora ?? r.datamedida ?? r.inicio ?? r.fim ?? r.data ?? null;
-        if (!dv) return false;
-        const d = new Date(dv);
-        if (isNaN(d.getTime())) return false;
-        const day = isoDate(d);
-        return day >= startDate && day <= endDate;
-      });
+      const filtered = filterSimaRowsByStationsAndDateRange(rows, stationSet, startDate, endDate);
       const aggregated = aggregateRowsByDay(filtered, selectedColumns) as Record<string, unknown>[];
       dispatch({
         type: "patch",
         patch: {
-          dataForTablePreview: filtered as any[],
+          dataForTablePreview: filtered,
           chartData: aggregated,
           view: "table",
           loading: false,
@@ -444,11 +354,11 @@ export function useSimaTablesPage(): SimaTablesPageController {
 
   const { selectedStations, dataForTablePreview } = state;
   const latLonPoints = useMemo(() => {
-    const points: { id: string | number; lat: number; lon: number; label?: string }[] = [];
+    const points: SimaMapPoint[] = [];
     for (const id of selectedStations) {
       const s = stationsList.find((x) => x.id === String(id).trim());
       if (s && typeof s.lat === "number" && typeof s.lng === "number") {
-        points.push({ id: s.id, lat: s.lat as number, lon: s.lng as number, label: s.name });
+        points.push({ id: s.id, lat: s.lat, lon: s.lng, label: s.name });
       }
     }
     if (!points.length && dataForTablePreview && dataForTablePreview.length) {
@@ -478,8 +388,6 @@ export function useSimaTablesPage(): SimaTablesPageController {
     setTooltip({ visible: false, left: 0, top: 0, page: 0 });
   }, []);
 
-  const MapBrazilAny = MapBrazil as any;
-
   return {
     state,
     dispatch,
@@ -490,7 +398,7 @@ export function useSimaTablesPage(): SimaTablesPageController {
     chartRef,
     chartMainRef,
     latLonPoints,
-    MapBrazilAny,
+    MapBrazilTyped,
     handleMouseMove,
     handleDownloadCSV,
     handleDownloadJSON,
