@@ -154,7 +154,7 @@ function MenuBar() {
         </MobileButton>
 
         <RightLogos $open={isOpen}>
-          <LogoButton to="/simas" title="SIMAS">
+          <LogoButton to="/sima/institucional" title="SIMAS">
             <img src={simasLogo} alt="SIMAS" />
           </LogoButton>
           <LogoButton to="/furnas" title="FURNAS">
