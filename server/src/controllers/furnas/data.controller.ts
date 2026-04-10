@@ -3,7 +3,6 @@ import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 import Erros from "../../utils/erros.model";
 
-
 // limite máximo de registros por página
 const MAX_LIMIT = 500;
 
@@ -484,8 +483,8 @@ export const getData = async (req: Request, res: Response): Promise<void> => {
       message: error.message,
       stack: error.stack,
     });
-        const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
-    
+    const erro: Erros = { success: false, error: "Erro ao realizar a operação." };
+
     res.status(500).json(erro);
   }
 };

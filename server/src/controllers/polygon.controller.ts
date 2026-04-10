@@ -3,7 +3,7 @@
 import { Request, Response } from "express";
 import { polygonStore, Polygon } from "../data-structures/IntersectionPolygonStore";
 
-interface Resp  {
+interface Resp {
   success: Boolean;
   data: any;
   total: any;
@@ -36,13 +36,11 @@ export const criarPoligono = (req: Request, res: Response): void => {
 export const listarPoligonos = (req: Request, res: Response): void => {
   const poligonos = polygonStore.buscarTodos();
 
-  const response : Resp = {
+  const response: Resp = {
     success: true,
     data: poligonos,
-    total: polygonStore.getQuantidade()
-  }
+    total: polygonStore.getQuantidade(),
+  };
 
-  res.status(200).json(
-    response
-  );
+  res.status(200).json(response);
 };

@@ -1,21 +1,22 @@
 import { Request, Response } from "express";
 import { furnasPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
+import { getDefaultPageSize } from "../../configs/pagination";
 
-const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
+const PAGE_SIZE = getDefaultPageSize();
 
-interface Resp  {
+interface Resp {
   success: Boolean;
-      page: Number;
-      limit: Number;
-      total: Number;
-      totalPages: Number;
-      data: any
+  page: Number;
+  limit: Number;
+  total: Number;
+  totalPages: Number;
+  data: any;
 }
 
 interface Erros {
   success: Boolean;
-  error: String
+  error: String;
 }
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {
@@ -67,7 +68,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
       descricao: row.descricao,
     }));
 
-    const response : Resp = {
+    const response: Resp = {
       success: true,
       page,
       limit,
@@ -82,7 +83,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
       message: error.message,
       stack: error.stack,
     });
-    const erro : Erros = { success: false, error: "Erro ao realizar a operação." }
+    const erro: Erros = { success: false, error: "Erro ao realizar a operação." };
     res.status(500).json(erro);
   }
 };

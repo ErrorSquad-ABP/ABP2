@@ -1,28 +1,28 @@
-// server/src/controllers/data/health.controller.ts
 import { Request, Response } from "express";
-import { logger } from "../../configs/logger";
+import { balcarPool, furnasPool, simaPool } from "../../configs/db";
+import { pingDatabases } from "../../application/health/pingDatabases";
 
-interface Resp  {
-  success: Boolean;
-  error?: String;
-}
+export const health = async (_req: Request, res: Response): Promise<void> => {
+  const summary = await pingDatabases({
+    furnas: furnasPool,
+    sima: simaPool,
+    balcar: balcarPool,
+  });
 
-export const health = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const response : Resp = {
-      success: true
-    }
+  const uptimeSec = Math.floor(process.uptime());
+  const memory = process.memoryUsage();
 
-    res.status(200).json(response);
-  } catch (error: any) {
-    logger.error("Erro ao consultar tbfluxoinpe", {
-      message: error.message,
-      stack: error.stack,
-    });
+  const body = {
+    success: summary.ok,
+    status: summary.ok ? "ok" : "degraded",
+    uptimeSec,
+    memory: {
+      rss: memory.rss,
+      heapUsed: memory.heapUsed,
+      heapTotal: memory.heapTotal,
+    },
+    dependencies: summary.dependencies,
+  };
 
-    res.status(500).json({
-      success: false,
-      error: "Erro ao realizar a operação.",
-    });
-  }
+  res.status(summary.ok ? 200 : 503).json(body);
 };

@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { simaPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
+import { getDefaultPageSize } from "../../configs/pagination";
 
-const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
+const PAGE_SIZE = getDefaultPageSize();
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   try {

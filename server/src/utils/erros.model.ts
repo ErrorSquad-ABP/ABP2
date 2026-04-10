@@ -1,4 +1,4 @@
-export default  interface Erros {
+export default interface Erros {
   success: Boolean;
-  error: String
+  error: String;
 }
