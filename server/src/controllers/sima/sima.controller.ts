@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { simaPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 import { getDefaultPageSize } from "../../configs/pagination";
+import { parseSimaExportQuery } from "../../utils/simaPublicValidation";
 
 const PAGE_SIZE = getDefaultPageSize();
 
@@ -114,7 +115,18 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
 
 export const downloadCSV = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { startDate, endDate, stations, sortBy, sortOrder } = req.query;
+    const q = parseSimaExportQuery(req.query as Record<string, unknown>);
+    if (!q.ok) {
+      res.status(400).json({ success: false, error: q.error, code: "INVALID_QUERY" });
+      return;
+    }
+    const { startDate, endDate, stations, sortBy, sortOrder } = {
+      startDate: q.data.startDate,
+      endDate: q.data.endDate,
+      stations: q.data.stations,
+      sortBy: q.data.sortBy,
+      sortOrder: q.data.sortOrder,
+    };
     let query = `
       SELECT 
         idsima,
@@ -197,10 +209,21 @@ export const downloadCSV = async (req: Request, res: Response): Promise<void> =>
 
 export const downloadJSON = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { startDate, endDate, stations, sortBy, sortOrder } = req.query;
+    const q = parseSimaExportQuery(req.query as Record<string, unknown>);
+    if (!q.ok) {
+      res.status(400).json({ success: false, error: q.error, code: "INVALID_QUERY" });
+      return;
+    }
+    const { startDate, endDate, stations, sortBy, sortOrder } = {
+      startDate: q.data.startDate,
+      endDate: q.data.endDate,
+      stations: q.data.stations,
+      sortBy: q.data.sortBy,
+      sortOrder: q.data.sortOrder,
+    };
 
     let query = `
-      SELECT 
+      SELECT
         idsima,
         idestacao,
         datahora,
@@ -279,10 +302,21 @@ export const downloadJSON = async (req: Request, res: Response): Promise<void> =
 
 export const downloadPDF = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { startDate, endDate, stations, sortBy, sortOrder } = req.query;
+    const q = parseSimaExportQuery(req.query as Record<string, unknown>);
+    if (!q.ok) {
+      res.status(400).json({ success: false, error: q.error, code: "INVALID_QUERY" });
+      return;
+    }
+    const { startDate, endDate, stations, sortBy, sortOrder } = {
+      startDate: q.data.startDate,
+      endDate: q.data.endDate,
+      stations: q.data.stations,
+      sortBy: q.data.sortBy,
+      sortOrder: q.data.sortOrder,
+    };
 
     let query = `
-      SELECT 
+      SELECT
         idsima,
         idestacao,
         datahora,

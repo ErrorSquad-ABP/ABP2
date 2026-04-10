@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { simaPool } from "../../configs/db";
 import { logger } from "../../configs/logger";
 import { getDefaultPageSize } from "../../configs/pagination";
+import { parseSimaExportQuery } from "../../utils/simaPublicValidation";
 
 const PAGE_SIZE = getDefaultPageSize();
 
@@ -55,7 +56,12 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
 
 export const downloadCSV = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { startDate, endDate, stations } = req.query;
+    const q = parseSimaExportQuery(req.query as Record<string, unknown>);
+    if (!q.ok) {
+      res.status(400).json({ success: false, error: q.error, code: "INVALID_QUERY" });
+      return;
+    }
+    const { startDate, endDate, stations } = q.data;
 
     let query = `
       SELECT 
@@ -129,7 +135,12 @@ export const downloadCSV = async (req: Request, res: Response): Promise<void> =>
 
 export const downloadJSON = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { startDate, endDate, stations } = req.query;
+    const q = parseSimaExportQuery(req.query as Record<string, unknown>);
+    if (!q.ok) {
+      res.status(400).json({ success: false, error: q.error, code: "INVALID_QUERY" });
+      return;
+    }
+    const { startDate, endDate, stations } = q.data;
 
     let query = `
       SELECT 
@@ -202,7 +213,12 @@ export const downloadJSON = async (req: Request, res: Response): Promise<void> =
 
 export const downloadPDF = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { startDate, endDate } = req.query;
+    const q = parseSimaExportQuery(req.query as Record<string, unknown>);
+    if (!q.ok) {
+      res.status(400).json({ success: false, error: q.error, code: "INVALID_QUERY" });
+      return;
+    }
+    const { startDate, endDate } = q.data;
 
     let query = `
       SELECT 
