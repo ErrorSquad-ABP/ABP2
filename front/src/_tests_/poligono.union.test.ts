@@ -1,6 +1,6 @@
 // front/src/__tests__/poligono.union.test.ts
 
-import { Poligono } from "../models/Poligono";
+import { Poligono } from "@/models/Poligono";
 
 describe("Classe Poligono", () => {
   it("calcula área corretamente para um quadrado 1x1", () => {
