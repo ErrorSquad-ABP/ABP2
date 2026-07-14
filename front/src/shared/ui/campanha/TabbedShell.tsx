@@ -20,8 +20,13 @@ export interface CampanhaTab {
 }
 
 interface TabbedShellProps {
-  /** Título exibido no cabeçalho. */
-  title: string;
+  /** Título exibido no cabeçalho (usado quando `titleContent` não é informado). */
+  title?: string;
+  /**
+   * Conteúdo customizado do cabeçalho. Quando informado, substitui o
+   * `<HeaderText>` padrão (útil quando a página precisa de título + subtítulo).
+   */
+  titleContent?: ReactNode;
   /** Abas disponíveis no menu. */
   tabs: CampanhaTab[];
   /** Aba atualmente ativa. */
@@ -39,18 +44,17 @@ interface TabbedShellProps {
  */
 export function TabbedShell({
   title,
+  titleContent,
   tabs,
   activeTab,
   onTabChange,
   children,
-}: TabbedShellProps): JSX.Element {
+}: Readonly<TabbedShellProps>): JSX.Element {
   return (
     <PageContainer>
       <HeaderWrapper>
         <HeaderSeparator />
-        <HeaderContainer>
-          <HeaderText>{title}</HeaderText>
-        </HeaderContainer>
+        <HeaderContainer>{titleContent ?? <HeaderText>{title}</HeaderText>}</HeaderContainer>
         <Separator />
         <Menu>
           {tabs.map((tab) =>

@@ -6,7 +6,7 @@ import TablesPage from "./pages/TablesPage";
 import SimaPage from "./pages/SimaPage";
 import SimasPage from "./pages/SimasPage";
 import FurnasPage from "./features/furnas/FurnasPage";
-import BalcarPage from "./pages/BalcarPage";
+import BalcarPage from "./features/balcar/BalcarPage";
 import SimaTablesPage from "./pages/SimaTablesPage";
 
 function SimaSection() {
