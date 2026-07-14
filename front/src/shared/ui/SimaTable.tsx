@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo, JSX } from "react";
 import styled from "styled-components";
-import { chunkArray } from "../../utils/chunkArray";
+import { chunkArray } from "@/utils/chunkArray";
 
 /**
  * SimaTable (versão dinâmica)

@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { isoDate } from "../../../../utils/limnologicData";
+import { isoDate } from "@/utils/limnologicData";
 import type { SimaStationRow } from "../api/simaTablesClient";
 import {
   INSTITUTION_FILL_COLORS,

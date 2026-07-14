@@ -1,7 +1,7 @@
 import { JSX } from "react";
 import { Block, BlockTitle, Image } from "../ui/furnasContent";
-import UsinasImg1 from "../../../assets/usinashidreletricas1.png";
-import UsinasImg2 from "../../../assets/usinashidreletricas2.png";
+import UsinasImg1 from "@/assets/usinashidreletricas1.png";
+import UsinasImg2 from "@/assets/usinashidreletricas2.png";
 
 export function UsinasSection(): JSX.Element {
   return (

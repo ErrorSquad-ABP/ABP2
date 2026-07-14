@@ -1,6 +1,6 @@
 import { JSX } from "react";
 import styled, { keyframes } from "styled-components";
-import { lightenHex } from "../../../../utils/limnologicData";
+import { lightenHex } from "@/utils/limnologicData";
 
 export const PRIMARY_BLUE = "#0b5fff";
 export const PRIMARY_BLUE_HOVER = "#2a7bff";

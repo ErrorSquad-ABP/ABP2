@@ -7,11 +7,11 @@ import {
   LogosHeader,
   TwoColumnContainer,
 } from "../ui/furnasContent";
-import logoCepel from "../../../assets/logoCepel.png";
-import logoCoppe from "../../../assets/logoCoppe.png";
-import logolie from "../../../assets/logoIie.png";
-import logoInpe from "../../../assets/logoInpe.png";
-import logoUfjf from "../../../assets/logoUfjf.png";
+import logoCepel from "@/assets/logoCepel.png";
+import logoCoppe from "@/assets/logoCoppe.png";
+import logolie from "@/assets/logoIie.png";
+import logoInpe from "@/assets/logoInpe.png";
+import logoUfjf from "@/assets/logoUfjf.png";
 
 export function HomeSection(): JSX.Element {
   return (

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import MapBrazil from "../../../../components/MapBrazil";
-import { useToast } from "../../../../components/Toast/useToast";
+import MapBrazil from "@/components/MapBrazil";
+import { useToast } from "@/components/Toast/useToast";
 import { messageForFailedSimaExport } from "../api/simaExportFeedback";
 import { simaDownloadPath, type SimaTableId } from "../../api/simaEndpoints";
 import {

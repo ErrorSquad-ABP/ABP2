@@ -1,6 +1,6 @@
 import { JSX } from "react";
 import { Block, BlockText, BlockTitle } from "../ui/furnasContent";
-import { PageContainer } from "../../../shared/ui/campanha";
+import { PageContainer } from "@/shared/ui/campanha";
 
 export function PublicacoesSection(): JSX.Element {
   return (

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- respostas da API limnológica são heterogéneas */
-import { API_BASE } from "../../../config/apiBase";
+import { API_BASE } from "@/config/apiBase";
 
 export type TableOption = { api: string; label: string };
 

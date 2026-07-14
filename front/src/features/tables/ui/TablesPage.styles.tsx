@@ -1,6 +1,6 @@
 /* prettier-ignore-file */
 import styled from "styled-components";
-import { lightenHex } from "../../../utils/limnologicData";
+import { lightenHex } from "@/utils/limnologicData";
 
 export const PRIMARY_BLUE = "#0b5fff";
 export const PRIMARY_BLUE_HOVER = "#2a7bff";

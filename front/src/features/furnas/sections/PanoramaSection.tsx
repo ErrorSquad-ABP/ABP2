@@ -1,9 +1,9 @@
 import { JSX } from "react";
 import { Block, BlockText, BlockTitle } from "../ui/furnasContent";
-import PanoramaImg from "../../../assets/panorama1.png";
-import PanoramaImg2 from "../../../assets/panorama2.png";
-import PanoramaImg3 from "../../../assets/panorama3.png";
-import PanoramaImg4 from "../../../assets/panorama4.png";
+import PanoramaImg from "@/assets/panorama1.png";
+import PanoramaImg2 from "@/assets/panorama2.png";
+import PanoramaImg3 from "@/assets/panorama3.png";
+import PanoramaImg4 from "@/assets/panorama4.png";
 
 export function PanoramaSection(): JSX.Element {
   return (

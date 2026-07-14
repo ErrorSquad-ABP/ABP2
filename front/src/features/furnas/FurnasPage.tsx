@@ -1,5 +1,5 @@
 import { JSX, useState } from "react";
-import { CampanhaTab, TabbedShell } from "../../shared/ui/campanha";
+import { CampanhaTab, TabbedShell } from "@/shared/ui/campanha";
 import { HomeSection } from "./sections/HomeSection";
 import { MetodologiaSection } from "./sections/MetodologiaSection";
 import { PanoramaSection } from "./sections/PanoramaSection";

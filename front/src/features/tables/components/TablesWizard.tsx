@@ -1,7 +1,7 @@
 /* prettier-ignore-file */
 /* eslint-disable @typescript-eslint/no-explicit-any -- linhas de reservatório/colunas da API */
 import type { TablesPageController } from "../hooks/useTablesPage";
-import { isIdOrDateColumn } from "../../../utils/limnologicData";
+import { isIdOrDateColumn } from "@/utils/limnologicData";
 import {
   Button,
   ColumnItem,

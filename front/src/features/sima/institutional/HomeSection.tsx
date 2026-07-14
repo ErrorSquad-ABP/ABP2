@@ -1,7 +1,7 @@
-import sima1 from "../../../assets/sima1.png";
-import sima2 from "../../../assets/sima2.png";
-import sima3 from "../../../assets/sima3.png";
-import sonda from "../../../assets/sonda.png";
+import sima1 from "@/assets/sima1.png";
+import sima2 from "@/assets/sima2.png";
+import sima3 from "@/assets/sima3.png";
+import sonda from "@/assets/sonda.png";
 import {
   Block,
   BlockText,

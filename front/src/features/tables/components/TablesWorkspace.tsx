@@ -1,7 +1,7 @@
 /* prettier-ignore-file */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { TablesPageController } from "../hooks/useTablesPage";
-import SimaTable from "../../../components/SimaTable";
+import SimaTable from "@/components/SimaTable";
 import {
   Button,
   ChartMain,

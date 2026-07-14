@@ -1,5 +1,5 @@
 import { simaTablesPath } from "../../api/simaEndpoints";
-import { isoDate } from "../../../../utils/limnologicData";
+import { isoDate } from "@/utils/limnologicData";
 
 export type SimaStationRow = { id: string; name: string; lat?: number; lng?: number };
 
