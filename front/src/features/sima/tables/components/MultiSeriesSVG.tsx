@@ -8,7 +8,7 @@ import {
 } from "../model/constants";
 import type { Dispatch, SetStateAction } from "react";
 import type { SimaTablesTooltipState } from "../hooks/simaTablesUiReducer";
-import { Tooltip, TooltipFooter, TooltipStationList } from "../../../../pages/sima/SimaTablesPage.styles";
+import { Tooltip, TooltipFooter, TooltipStationList } from "../ui/SimaTablesPage.styles";
 
 type Props = {
   rows: Record<string, unknown>[];

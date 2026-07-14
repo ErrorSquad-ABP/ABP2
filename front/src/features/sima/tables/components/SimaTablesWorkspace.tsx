@@ -15,7 +15,7 @@ import {
   Spinner,
   TableElement,
   TablePreview,
-} from "../../../../pages/sima/SimaTablesPage.styles";
+} from "../ui/SimaTablesPage.styles";
 
 export function SimaTablesWorkspace(c: SimaTablesPageController) {
   const {

@@ -3,7 +3,7 @@ import type { SimaMapBrazilComponent, SimaMapPoint } from "../types/mapBrazil";
 import {
   MapPlaceholder,
   ZoomControls,
-} from "../../../../pages/sima/SimaTablesPage.styles";
+} from "../ui/SimaTablesPage.styles";
 
 type Props = {
   latLonPoints: SimaMapPoint[];

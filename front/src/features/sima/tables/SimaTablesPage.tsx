@@ -1,5 +1,5 @@
 import { JSX } from "react";
-import { Container, Page } from "../../../pages/sima/SimaTablesPage.styles";
+import { Container, Page } from "./ui/SimaTablesPage.styles";
 import { SimaTablesWizard } from "./components/SimaTablesWizard";
 import { SimaTablesWorkspace } from "./components/SimaTablesWorkspace";
 import { useSimaTablesPage } from "./hooks/useSimaTablesPage";

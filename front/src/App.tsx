@@ -1,13 +1,13 @@
 import { HashRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import BarraBrasil from "./components/BarraBrasil";
 import MenuBar from "./components/MenuBar";
-import HomePage from "./pages/HomePage";
-import TablesPage from "./pages/TablesPage";
-import SimaPage from "./pages/SimaPage";
-import SimasPage from "./pages/SimasPage";
+import HomePage from "./features/home/HomePage";
+import TablesPage from "./features/tables/TablesPage";
+import SimaRecordsListPage from "./features/sima/records/SimaRecordsListPage";
+import InstitutionalPage from "./features/sima/institutional/InstitutionalPage";
 import FurnasPage from "./features/furnas/FurnasPage";
 import BalcarPage from "./features/balcar/BalcarPage";
-import SimaTablesPage from "./pages/SimaTablesPage";
+import SimaTablesPage from "./features/sima/tables/SimaTablesPage";
 
 function SimaSection() {
   return <Outlet />;
@@ -24,8 +24,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
 
             <Route path="/sima" element={<SimaSection />}>
-              <Route index element={<SimaPage />} />
-              <Route path="institucional" element={<SimasPage />} />
+              <Route index element={<SimaRecordsListPage />} />
+              <Route path="institucional" element={<InstitutionalPage />} />
             </Route>
 
             <Route path="/simas" element={<Navigate to="/sima/institucional" replace />} />

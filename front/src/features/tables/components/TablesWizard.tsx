@@ -12,7 +12,7 @@ import {
   MUTED_BLUE,
   Row,
   Select,
-} from "../../../pages/tables/TablesPage.styles";
+} from "../ui/TablesPage.styles";
 
 export function TablesWizard(c: TablesPageController) {
   return (

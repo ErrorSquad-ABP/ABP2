@@ -3,7 +3,7 @@ import {
   Button,
   DownloadButton,
   DownloadButtonsContainer,
-} from "../../../../pages/sima/SimaTablesPage.styles";
+} from "../ui/SimaTablesPage.styles";
 
 type Props = { c: SimaTablesPageController };
 

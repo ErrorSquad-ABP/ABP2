@@ -1,6 +1,6 @@
 import { isDateColumn, isIdColumn } from "../model/columnGuards";
 import type { SimaTablesPageController } from "../hooks/useSimaTablesPage";
-import { Button, ColumnItem, Spinner } from "../../../../pages/sima/SimaTablesPage.styles";
+import { Button, ColumnItem, Spinner } from "../ui/SimaTablesPage.styles";
 
 type Props = { c: SimaTablesPageController };
 

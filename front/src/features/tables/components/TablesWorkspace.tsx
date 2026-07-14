@@ -20,7 +20,7 @@ import {
   TableElement,
   TablePreview,
   ZoomControls,
-} from "../../../pages/tables/TablesPage.styles";
+} from "../ui/TablesPage.styles";
 
 export function TablesWorkspace(c: TablesPageController) {
   const MapBrazilAny = c.MapBrazilAny;
