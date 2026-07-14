@@ -1,4 +1,4 @@
-// src/components/SimaTable.tsx
+// SimaTable — tabela dinâmica reutilizável (shared/ui)
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo, JSX } from "react";
 import styled from "styled-components";

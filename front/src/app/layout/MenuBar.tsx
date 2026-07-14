@@ -3,9 +3,9 @@ import { useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import simasLogo from "../assets/simas.png";
-import furnasLogo from "../assets/furnas.png";
-import balcarLogo from "../assets/Balcar.png";
+import simasLogo from "@/assets/simas.png";
+import furnasLogo from "@/assets/furnas.png";
+import balcarLogo from "@/assets/Balcar.png";
 
 const Nav = styled.nav`
   background: linear-gradient(

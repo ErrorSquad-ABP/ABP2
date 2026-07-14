@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { furnasApi, DownloadParams } from "../api/furnasApi";
+import { furnasApi, DownloadParams } from "@/api/furnasApi";
 
 const DownloadContainer = styled.div`
   display: flex;

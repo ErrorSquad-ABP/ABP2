@@ -1,6 +1,6 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import styled from "styled-components";
-import { useSortableTable } from "../hooks/useSortableTable";
+import { useSortableTable } from "@/hooks/useSortableTable";
 
 interface Column {
   key: string;
@@ -8,9 +8,11 @@ interface Column {
   sortable?: boolean;
 }
 
+type TableRowData = Record<string, unknown>;
+
 interface SortableTableProps {
   columns: Column[];
-  data: any[];
+  data: TableRowData[];
   onSortChange?: (sortParams: { sortBy?: string; sortOrder?: string }) => void;
 }
 
@@ -100,7 +102,7 @@ export const SortableTable: React.FC<SortableTableProps> = ({ columns, data, onS
         {data.map((row, index) => (
           <TableRow key={index}>
             {columns.map((column) => (
-              <TableCell key={column.key}>{row[column.key]}</TableCell>
+              <TableCell key={column.key}>{row[column.key] as ReactNode}</TableCell>
             ))}
           </TableRow>
         ))}

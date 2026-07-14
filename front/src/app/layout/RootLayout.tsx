@@ -1,7 +1,7 @@
 import { JSX } from "react";
 import { Outlet } from "react-router-dom";
-import BarraBrasil from "@/components/BarraBrasil";
-import MenuBar from "@/components/MenuBar";
+import BarraBrasil from "@/app/layout/BarraBrasil";
+import MenuBar from "@/app/layout/MenuBar";
 
 /**
  * Layout raiz da aplicação: renderiza o chrome fixo (Barra do Governo Federal

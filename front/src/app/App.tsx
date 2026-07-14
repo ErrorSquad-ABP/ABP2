@@ -1,7 +1,7 @@
 import { JSX } from "react";
 import { ThemeProvider } from "styled-components";
 import { AppProviders } from "@/shared/providers/AppProviders";
-import { ToastProvider } from "@/components/Toast/ToastProvider";
+import { ToastProvider } from "@/shared/ui/Toast/ToastProvider";
 import GlobalStyle from "@/styles/GlobalStyle";
 import theme from "@/styles/theme";
 import { AppRouter } from "@/app/router/AppRouter";

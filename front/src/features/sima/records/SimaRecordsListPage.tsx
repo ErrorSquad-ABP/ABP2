@@ -2,7 +2,7 @@ import { useState } from "react";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
 import { getSima } from "@/api/simaApi";
-import SimaTable from "@/components/SimaTable";
+import SimaTable from "@/shared/ui/SimaTable";
 import type { Sima } from "@/types/sima";
 
 const PageContainer = styled.div`

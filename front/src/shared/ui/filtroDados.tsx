@@ -1,8 +1,8 @@
 /*
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { FiltroDadosProps, AppliedFilters } from "../types/filtroDados";
-import { fetchMetadata, fetchColumns } from "../api/filtroApi"; // wrappers para GET /tables/:table/metadata e /columns
+import { FiltroDadosProps, AppliedFilters } from "@/types/filtroDados";
+import { fetchMetadata, fetchColumns } from "@/api/filtroApi"; // wrappers para GET /tables/:table/metadata e /columns
 
 // ====== Styled Components ======
 const Wrapper = styled.div`

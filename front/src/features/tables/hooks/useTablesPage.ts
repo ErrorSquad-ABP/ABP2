@@ -5,7 +5,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import MapBrazil from "@/components/MapBrazil";
+import MapBrazil from "@/shared/ui/MapBrazil";
 import {
   fetchMergedTableRows,
   fetchTbcampanhaRows,
