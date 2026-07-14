@@ -219,10 +219,7 @@ export function PublicacoesSection() {
             </span>
           </PubLink>
 
-          <PubLink
-            href="http://www.scielo.br/pdf/%0D/aa/v36n3/v36n3a07.pdf"
-            target="_blank"
-          >
+          <PubLink href="http://www.scielo.br/pdf/%0D/aa/v36n3/v36n3a07.pdf" target="_blank">
             <span className="autor">
               LIMA, I. B. T.; BARBOSA, C. C.; NOVO, E. M. L. M.; CARVALHO, J. C.; and STECH, J. L.
             </span>{" "}
@@ -264,10 +261,7 @@ export function PublicacoesSection() {
             </span>
           </PublicationPara>
 
-          <PubLink
-            href="http://www.springerlink.com/content/jh05152758w0082m/"
-            target="_blank"
-          >
+          <PubLink href="http://www.springerlink.com/content/jh05152758w0082m/" target="_blank">
             <span className="autor">
               ROLAND, F.; VIDAL, L. O.; PACHECO, F. S.; BARROS, N. O.; ASSIREU, A.; OMETTO, J. P. H.
               B.; CIMBLERIS, A. C. P.; and COLE, J. J.
@@ -281,10 +275,7 @@ export function PublicacoesSection() {
             </span>
           </PubLink>
 
-          <PubLink
-            href="http://www.agu.org/pubs/crossref/2011/2011JG001699.shtml"
-            target="_blank"
-          >
+          <PubLink href="http://www.agu.org/pubs/crossref/2011/2011JG001699.shtml" target="_blank">
             <span className="autor">
               RUDORFF, C. M.; MELACK, J. M.; MACINTYRE, S.; BARBOSA, C. C. F.; and NOVO, E. M. L. M.
             </span>{" "}
@@ -312,10 +303,7 @@ export function PublicacoesSection() {
             </span>
           </PublicationPara>
 
-          <PubLink
-            href="http://lojavirtual.parentese.com.br/reservatorios.html"
-            target="_blank"
-          >
+          <PubLink href="http://lojavirtual.parentese.com.br/reservatorios.html" target="_blank">
             <span className="autor">
               ALCÂNTARA, E. H.; NOVO, E. M. L. M.; and STECH, J. L. (Orgs.).
             </span>{" "}
@@ -333,10 +321,7 @@ export function PublicacoesSection() {
 
         <PubSection>
           <PubSectionTitle>Livro</PubSectionTitle>
-          <PubLink
-            href="http://lojavirtual.parentese.com.br/reservatorios.html"
-            target="_blank"
-          >
+          <PubLink href="http://lojavirtual.parentese.com.br/reservatorios.html" target="_blank">
             <span className="autor">
               ALCÂNTARA, E. H.; NOVO, E. M. L. M.; and STECH, J. L. (Orgs.).
             </span>{" "}
@@ -349,10 +334,7 @@ export function PublicacoesSection() {
             </span>
           </PubLink>
 
-          <PubLink
-            href="http://lojavirtual.parentese.com.br/reservatorios.html"
-            target="_blank"
-          >
+          <PubLink href="http://lojavirtual.parentese.com.br/reservatorios.html" target="_blank">
             <span className="autor">
               ALCÂNTARA, E. H.; STECH, J. L.; LORENZZETTI, J. A.; and NOVO, E. M. L. M.
             </span>{" "}
@@ -424,10 +406,7 @@ export function PublicacoesSection() {
             </span>
           </PubLink>
 
-          <PubLink
-            href="http://lojavirtual.parentese.com.br/reservatorios.html"
-            target="_blank"
-          >
+          <PubLink href="http://lojavirtual.parentese.com.br/reservatorios.html" target="_blank">
             <span className="autor">PACHECO, F. S.; ASSIREU, A. T.; and ROLAND, F.</span>{" "}
             <span className="titulo">
               Uso de Derivadores Rastreados por Satélite em Ambientes Aquáticos Continentais.
@@ -439,10 +418,7 @@ export function PublicacoesSection() {
             </span>
           </PubLink>
 
-          <PubLink
-            href="http://lojavirtual.parentese.com.br/reservatorios.html"
-            target="_blank"
-          >
+          <PubLink href="http://lojavirtual.parentese.com.br/reservatorios.html" target="_blank">
             <span className="autor">
               STECH, J.; ALCÂNTARA, E. H.; LORENZZETTI, J. A.; NOVO, E. M. L. M.; and LIMA, I. B. T.
             </span>{" "}
@@ -476,10 +452,7 @@ export function PublicacoesSection() {
             </span>
           </PubLink>
 
-          <PubLink
-            href="http://www.conferences.earsel.org/abstract/show/2507"
-            target="_blank"
-          >
+          <PubLink href="http://www.conferences.earsel.org/abstract/show/2507" target="_blank">
             <span className="autor">ALCÂNTARA, E.; and STECH, J.</span>{" "}
             <span className="titulo">Spatially Water Heat Flux using MODIS/terra data.</span>{" "}
             <span className="fonte">

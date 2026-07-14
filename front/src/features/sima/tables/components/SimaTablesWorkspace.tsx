@@ -15,7 +15,7 @@ import {
   Spinner,
   TableElement,
   TablePreview,
-} from "../../../../pages/sima/SimaTablesPage.styles";
+} from "../ui/SimaTablesPage.styles";
 
 export function SimaTablesWorkspace(c: SimaTablesPageController) {
   const {
@@ -88,9 +88,7 @@ export function SimaTablesWorkspace(c: SimaTablesPageController) {
                   <MultiSeriesSVG
                     rows={chartData as Record<string, unknown>[]}
                     columns={selectedColumns}
-                    dataForTablePreview={
-                      dataForTablePreview as Record<string, unknown>[] | null
-                    }
+                    dataForTablePreview={dataForTablePreview as Record<string, unknown>[] | null}
                     stationsList={stationsList}
                     chartMainRef={chartMainRef}
                     tooltip={tooltip}

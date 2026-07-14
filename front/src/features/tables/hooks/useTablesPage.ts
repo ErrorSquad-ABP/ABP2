@@ -5,7 +5,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import MapBrazil from "../../../components/MapBrazil";
+import MapBrazil from "@/shared/ui/MapBrazil";
 import {
   fetchMergedTableRows,
   fetchTbcampanhaRows,
@@ -19,7 +19,7 @@ import {
 import { getProviderForApi } from "../model/getProviderForApi";
 import { createProjection, parseTransformString } from "../model/mapDrawingProjection";
 import { resolveApiTableName } from "../model/resolveApiTableName";
-import { isoDate, isIdOrDateColumn } from "../../../utils/limnologicData";
+import { isoDate, isIdOrDateColumn } from "@/utils/limnologicData";
 import { useTablesCampanhaQuery } from "./useTablesCampanhaQuery";
 import { useTablesMetadataQuery } from "./useTablesMetadataQuery";
 import { useTablesReservatoriosQuery } from "./useTablesReservatoriosQuery";
@@ -108,7 +108,11 @@ export function useTablesPage() {
   useEffect(() => {
     if (selectedReservatorios.length > 0) {
       const rows = campanhaQuery.data ?? [];
-      const arr = availableDatesForSelectedReservatoriosOnly(rows, selectedReservatorios, campanhas);
+      const arr = availableDatesForSelectedReservatoriosOnly(
+        rows,
+        selectedReservatorios,
+        campanhas,
+      );
       setAvailableDates(arr);
       setStartDate(arr[0] ?? "");
       setEndDate(arr[arr.length - 1] ?? "");

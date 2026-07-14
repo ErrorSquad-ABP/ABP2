@@ -1,4 +1,4 @@
-import { isoDate } from "../../../../utils/limnologicData";
+import { isoDate } from "@/utils/limnologicData";
 
 /** Agrega linhas brutas por dia (média numérica por coluna). */
 export function aggregateRowsByDay(rows: unknown[], cols: string[]): Record<string, unknown>[] {

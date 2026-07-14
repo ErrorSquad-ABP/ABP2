@@ -1,14 +1,10 @@
 import type { RefObject } from "react";
-import { isoDate } from "../../../../utils/limnologicData";
+import { isoDate } from "@/utils/limnologicData";
 import type { SimaStationRow } from "../api/simaTablesClient";
-import {
-  INSTITUTION_FILL_COLORS,
-  POPUP_PAGE_SIZE,
-  SERIES_COLORS,
-} from "../model/constants";
+import { INSTITUTION_FILL_COLORS, POPUP_PAGE_SIZE, SERIES_COLORS } from "../model/constants";
 import type { Dispatch, SetStateAction } from "react";
 import type { SimaTablesTooltipState } from "../hooks/simaTablesUiReducer";
-import { Tooltip, TooltipFooter, TooltipStationList } from "../../../../pages/sima/SimaTablesPage.styles";
+import { Tooltip, TooltipFooter, TooltipStationList } from "../ui/SimaTablesPage.styles";
 
 type Props = {
   rows: Record<string, unknown>[];
@@ -77,9 +73,7 @@ export function MultiSeriesSVG({
   const range = max - min || 1;
   const yFor = (v: number) => ((max - v) / range) * (height - 80) + 40;
 
-  const uniqueInsts = Array.from(
-    new Set(rows.map((r) => String(r.instituicao ?? "—"))),
-  );
+  const uniqueInsts = Array.from(new Set(rows.map((r) => String(r.instituicao ?? "—"))));
   const instColorMap: Record<string, string> = {};
   uniqueInsts.forEach(
     (inst, idx) =>
@@ -107,8 +101,7 @@ export function MultiSeriesSVG({
 
       const values: Record<string, number | string> = {};
       for (const col of columns) {
-        const raw =
-          r[col] ?? r[col.toLowerCase()] ?? r[col.toUpperCase()];
+        const raw = r[col] ?? r[col.toLowerCase()] ?? r[col.toUpperCase()];
         const n = Number(raw);
         values[col] = Number.isFinite(n) ? Number(n) : "—";
       }

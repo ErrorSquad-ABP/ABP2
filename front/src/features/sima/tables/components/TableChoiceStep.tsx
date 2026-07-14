@@ -1,5 +1,5 @@
 import type { SimaTablesPageController } from "../hooks/useSimaTablesPage";
-import { Button } from "../../../../pages/sima/SimaTablesPage.styles";
+import { Button } from "../ui/SimaTablesPage.styles";
 
 type Props = { c: SimaTablesPageController };
 

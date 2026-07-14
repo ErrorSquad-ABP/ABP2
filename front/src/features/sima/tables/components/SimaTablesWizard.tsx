@@ -1,5 +1,5 @@
 import type { SimaTablesPageController } from "../hooks/useSimaTablesPage";
-import { Controls, LeftColumn } from "../../../../pages/sima/SimaTablesPage.styles";
+import { Controls, LeftColumn } from "../ui/SimaTablesPage.styles";
 import { ColumnsStep } from "./ColumnsStep";
 import { DateRangeStep } from "./DateRangeStep";
 import { StationsStep } from "./StationsStep";

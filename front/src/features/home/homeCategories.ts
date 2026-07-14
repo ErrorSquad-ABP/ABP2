@@ -1,13 +1,13 @@
-import icon1 from "../../assets/icons/icon1.png";
-import icon2 from "../../assets/icons/icon2.png";
-import icon3 from "../../assets/icons/icon3.png";
-import icon4 from "../../assets/icons/icon4.png";
-import icon5 from "../../assets/icons/icon5.png";
-import icon6 from "../../assets/icons/icon6.png";
-import icon7 from "../../assets/icons/icon7.png";
-import icon8 from "../../assets/icons/icon8.png";
-import icon9 from "../../assets/icons/icon9.png";
-import icon10 from "../../assets/icons/icon10.png";
+import icon1 from "@/assets/icons/icon1.png";
+import icon2 from "@/assets/icons/icon2.png";
+import icon3 from "@/assets/icons/icon3.png";
+import icon4 from "@/assets/icons/icon4.png";
+import icon5 from "@/assets/icons/icon5.png";
+import icon6 from "@/assets/icons/icon6.png";
+import icon7 from "@/assets/icons/icon7.png";
+import icon8 from "@/assets/icons/icon8.png";
+import icon9 from "@/assets/icons/icon9.png";
+import icon10 from "@/assets/icons/icon10.png";
 
 export type HomeCategory = {
   id: string;

@@ -1,6 +1,6 @@
 /*
 import { render, screen, fireEvent } from "@testing-library/react";
-import { FiltroDados } from "../components/filtroDados";
+import { FiltroDados } from "@/shared/ui/filtroDados";
 
 describe("FiltroDados", () => {
   it("renderiza inputs básicos", () => {

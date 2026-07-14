@@ -1,6 +1,6 @@
 /*
-import { Instituicao } from "../models/instituicao.ts";
-import { IReservatorio } from "../types/reservatorio.ts";
+import { Instituicao } from "@/models/instituicao";
+import { IReservatorio } from "@/types/reservatorio";
 
 describe("Instituicao", () => {
   let reservatorioA: IReservatorio;

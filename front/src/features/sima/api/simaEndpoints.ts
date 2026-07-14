@@ -1,4 +1,4 @@
-import { API_BASE } from "../../../config/apiBase";
+import { API_BASE } from "@/config/apiBase";
 
 export type SimaTableId = "tbsima" | "tbsimaoffline";
 

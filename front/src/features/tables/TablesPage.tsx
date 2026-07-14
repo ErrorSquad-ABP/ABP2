@@ -1,5 +1,5 @@
 import { JSX } from "react";
-import { Container, Page } from "../../pages/tables/TablesPage.styles";
+import { Container, Page } from "./ui/TablesPage.styles";
 import { TablesWizard } from "./components/TablesWizard";
 import { TablesWorkspace } from "./components/TablesWorkspace";
 import { useTablesPage } from "./hooks/useTablesPage";

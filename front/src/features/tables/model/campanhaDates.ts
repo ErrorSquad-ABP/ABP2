@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- linhas crus de tbcampanha */
-import { getField, isoDate } from "../../../utils/limnologicData";
+import { getField, isoDate } from "@/utils/limnologicData";
 
 /** Datas distintas (ordenadas) para reservatórios selecionados a partir das linhas de tbcampanha. */
 export function availableDatesForTableAndReservatorios(
