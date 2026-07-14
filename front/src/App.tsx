@@ -5,7 +5,7 @@ import HomePage from "./pages/HomePage";
 import TablesPage from "./pages/TablesPage";
 import SimaPage from "./pages/SimaPage";
 import SimasPage from "./pages/SimasPage";
-import FurnasPage from "./pages/FurnasPage";
+import FurnasPage from "./features/furnas/FurnasPage";
 import BalcarPage from "./pages/BalcarPage";
 import SimaTablesPage from "./pages/SimaTablesPage";
 
