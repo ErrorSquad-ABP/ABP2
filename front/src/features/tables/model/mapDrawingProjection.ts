@@ -10,7 +10,11 @@ export function createProjection(widthPx: number, heightPx: number) {
 }
 
 /** Interpreta `translate` / `scale` / `matrix` de um SVG transform. */
-export function parseTransformString(transformStr: string | null): { x: number; y: number; k: number } {
+export function parseTransformString(transformStr: string | null): {
+  x: number;
+  y: number;
+  k: number;
+} {
   let x = 0,
     y = 0,
     k = 1;

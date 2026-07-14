@@ -47,7 +47,12 @@ export function computeReservatoriosInsidePolygon(
 
     return (latLonPoints || [])
       .filter((r) => Number.isFinite(Number(r.longitude)) && Number.isFinite(Number(r.latitude)))
-      .map((r) => ({ id: r.id, nome: r.nome ?? "", lat: Number(r.latitude), lon: Number(r.longitude) }))
+      .map((r) => ({
+        id: r.id,
+        nome: r.nome ?? "",
+        lat: Number(r.latitude),
+        lon: Number(r.longitude),
+      }))
       .filter((r) => {
         const x = Number(r.lon),
           y = Number(r.lat);
