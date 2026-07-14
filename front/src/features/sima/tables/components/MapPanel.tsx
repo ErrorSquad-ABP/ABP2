@@ -1,9 +1,6 @@
 import type { SimaTablesUiAction } from "../hooks/simaTablesUiReducer";
 import type { SimaMapBrazilComponent, SimaMapPoint } from "../types/mapBrazil";
-import {
-  MapPlaceholder,
-  ZoomControls,
-} from "../ui/SimaTablesPage.styles";
+import { MapPlaceholder, ZoomControls } from "../ui/SimaTablesPage.styles";
 
 type Props = {
   latLonPoints: SimaMapPoint[];
@@ -59,9 +56,7 @@ export function MapPanel({ latLonPoints, zoom, pan, dispatch, MapBrazil, onMouse
             <button
               type="button"
               aria-label="Center"
-              onClick={() =>
-                dispatch({ type: "patch", patch: { zoom: 1, pan: { x: 0, y: 0 } } })
-              }
+              onClick={() => dispatch({ type: "patch", patch: { zoom: 1, pan: { x: 0, y: 0 } } })}
             >
               ⤾
             </button>

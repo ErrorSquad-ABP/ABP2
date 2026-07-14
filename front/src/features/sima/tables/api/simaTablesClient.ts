@@ -83,9 +83,7 @@ export async function fetchDatesForTableAndStations(
         if (/^\d{4}-\d{2}-\d{2}$/.test(maybe)) foundDates.add(maybe);
       }
     }
-    return Array.from(foundDates).sort(
-      (a, b) => new Date(a).getTime() - new Date(b).getTime(),
-    );
+    return Array.from(foundDates).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
   } catch {
     return [];
   }
@@ -105,11 +103,7 @@ export async function fetchColumnsForTable(tableName: string): Promise<ColumnMet
       return Object.keys(first || {}).map((k) => {
         const val = first[k];
         const type =
-          typeof val === "number"
-            ? "number"
-            : /data|hora|inicio|fim/i.test(k)
-              ? "date"
-              : "string";
+          typeof val === "number" ? "number" : /data|hora|inicio|fim/i.test(k) ? "date" : "string";
         return { nome: k, label: k, type };
       });
     }

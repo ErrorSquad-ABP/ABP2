@@ -19,7 +19,11 @@ export function ColumnsStep({ c }: Props) {
       <div style={{ marginTop: 8, maxHeight: 320, overflowY: "auto" }}>
         {columnsForTable && columnsForTable.length ? (
           columnsForTable.map((col, idx) => {
-            const colName = (col?.nome ?? (col as { name?: string }).name ?? String(col)).toString();
+            const colName = (
+              col?.nome ??
+              (col as { name?: string }).name ??
+              String(col)
+            ).toString();
             const disabled = isIdColumn(colName) || isDateColumn(colName);
             const checked = selectedColumns.includes(colName);
             return (

@@ -138,7 +138,9 @@ export async function fetchTbcampanhaRows(): Promise<any[]> {
   return Array.isArray(json) ? json : json?.data || json?.rows || [];
 }
 
-export function inferColumnsFromFirstRow(rows: any[]): Array<{ nome: string; label: string; type: string }> {
+export function inferColumnsFromFirstRow(
+  rows: any[],
+): Array<{ nome: string; label: string; type: string }> {
   if (!rows?.length) return [];
   const keys = Object.keys(rows[0] || {}).map((k) => {
     const val = rows[0][k];

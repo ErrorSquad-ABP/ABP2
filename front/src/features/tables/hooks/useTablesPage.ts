@@ -108,7 +108,11 @@ export function useTablesPage() {
   useEffect(() => {
     if (selectedReservatorios.length > 0) {
       const rows = campanhaQuery.data ?? [];
-      const arr = availableDatesForSelectedReservatoriosOnly(rows, selectedReservatorios, campanhas);
+      const arr = availableDatesForSelectedReservatoriosOnly(
+        rows,
+        selectedReservatorios,
+        campanhas,
+      );
       setAvailableDates(arr);
       setStartDate(arr[0] ?? "");
       setEndDate(arr[arr.length - 1] ?? "");

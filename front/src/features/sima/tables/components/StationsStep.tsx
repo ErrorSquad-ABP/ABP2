@@ -66,9 +66,7 @@ export function StationsStep({ c }: Props) {
             );
           })
         ) : (
-          <div>
-            Carregando estações... {stationsFetching || loading ? <Spinner /> : null}
-          </div>
+          <div>Carregando estações... {stationsFetching || loading ? <Spinner /> : null}</div>
         )}
       </div>
 

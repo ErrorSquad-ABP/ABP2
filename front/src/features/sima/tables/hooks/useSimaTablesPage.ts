@@ -66,8 +66,11 @@ export function useSimaTablesPage(): SimaTablesPageController {
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartMainRef = useRef<HTMLDivElement | null>(null);
 
-  const { data: stationsList = [], isFetching: stationsFetching, isSuccess: stationsReady } =
-    useSimaStationsQuery();
+  const {
+    data: stationsList = [],
+    isFetching: stationsFetching,
+    isSuccess: stationsReady,
+  } = useSimaStationsQuery();
 
   useEffect(() => {
     if (stationsReady) {
@@ -112,14 +115,8 @@ export function useSimaTablesPage(): SimaTablesPageController {
   }, [showToast]);
 
   const handleDownloadJSON = useCallback(async () => {
-    const {
-      dataForTablePreview,
-      startDate,
-      endDate,
-      selectedStations,
-      selectedColumns,
-      table,
-    } = stateRef.current;
+    const { dataForTablePreview, startDate, endDate, selectedStations, selectedColumns, table } =
+      stateRef.current;
     if (!dataForTablePreview || dataForTablePreview.length === 0) {
       showToast(null, "Gere os dados da tabela primeiro para exportar.");
       return;

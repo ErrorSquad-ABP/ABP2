@@ -88,9 +88,7 @@ export function SimaTablesWorkspace(c: SimaTablesPageController) {
                   <MultiSeriesSVG
                     rows={chartData as Record<string, unknown>[]}
                     columns={selectedColumns}
-                    dataForTablePreview={
-                      dataForTablePreview as Record<string, unknown>[] | null
-                    }
+                    dataForTablePreview={dataForTablePreview as Record<string, unknown>[] | null}
                     stationsList={stationsList}
                     chartMainRef={chartMainRef}
                     tooltip={tooltip}
