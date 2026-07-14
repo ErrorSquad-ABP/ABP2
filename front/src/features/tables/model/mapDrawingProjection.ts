@@ -1,12 +1,17 @@
 import * as d3 from "d3";
+import {
+  MAP_PROJECTION_CENTER,
+  MAP_PROJECTION_SCALE,
+  MAP_VERTICAL_TRANSLATE_DIVISOR,
+} from "@/shared/lib/mapProjection";
 
 /** Projeção alinhada ao MapSvg / MapBrazil desta página (mercator). */
 export function createProjection(widthPx: number, heightPx: number) {
   return d3
     .geoMercator()
-    .scale(300)
-    .center([0, 20])
-    .translate([widthPx / 2, heightPx / 1.8]);
+    .scale(MAP_PROJECTION_SCALE)
+    .center(MAP_PROJECTION_CENTER)
+    .translate([widthPx / 2, heightPx / MAP_VERTICAL_TRANSLATE_DIVISOR]);
 }
 
 /** Interpreta `translate` / `scale` / `matrix` de um SVG transform. */

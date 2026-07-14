@@ -3,6 +3,12 @@
 // MapSvg.tsx
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
+import {
+  MAP_MIN_WIDTH_PX,
+  MAP_PROJECTION_CENTER,
+  MAP_PROJECTION_SCALE,
+  MAP_VERTICAL_TRANSLATE_DIVISOR,
+} from "@/shared/lib/mapProjection";
 
 /**
  * MapSvg
@@ -35,7 +41,7 @@ export default function MapSvg({
 
   useEffect(() => {
     // compute dims
-    const width = Math.max(800, window.innerWidth);
+    const width = Math.max(MAP_MIN_WIDTH_PX, window.innerWidth);
     const h = height ?? window.innerHeight;
 
     const svg = d3.select(svgRef.current);
@@ -65,9 +71,9 @@ export default function MapSvg({
     const projection = d3
       .geoMercator()
       // These params were used originally; keep them to ensure coordinates/projection match.
-      .scale(300)
-      .center([0, 20])
-      .translate([width / 2, h / 1.8]);
+      .scale(MAP_PROJECTION_SCALE)
+      .center(MAP_PROJECTION_CENTER)
+      .translate([width / 2, h / MAP_VERTICAL_TRANSLATE_DIVISOR]);
 
     const path = d3.geoPath().projection(projection);
 

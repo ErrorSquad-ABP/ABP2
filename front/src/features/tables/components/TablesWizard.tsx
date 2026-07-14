@@ -178,8 +178,8 @@ export function TablesWizard(c: TablesPageController) {
             </div>
             <div style={{ marginTop: 8, maxHeight: 320, overflowY: "auto" }}>
               {c.columnsForTable && c.columnsForTable.length ? (
-                c.columnsForTable.map((c: any, idx: number) => {
-                  const colName = (c?.nome ?? c?.name ?? String(c)).toString();
+                c.columnsForTable.map((col: any, idx: number) => {
+                  const colName = (col?.nome ?? col?.name ?? String(col)).toString();
                   const disabled = isIdOrDateColumn(colName);
                   const checked = c.selectedColumns.includes(colName);
                   return (
@@ -192,14 +192,14 @@ export function TablesWizard(c: TablesPageController) {
                       />
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <div style={{ fontWeight: 700 }}>
-                          {c.label ?? colName}
+                          {col.label ?? colName}
                           {disabled ? (
                             <small style={{ marginLeft: 8, color: "#94a3b8" }}>
                               (não selecionável)
                             </small>
                           ) : null}
                         </div>
-                        <small style={{ color: "#64748b" }}>{c.type ?? "—"}</small>
+                        <small style={{ color: "#64748b" }}>{col.type ?? "—"}</small>
                       </div>
                     </ColumnItem>
                   );
